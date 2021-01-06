@@ -1,102 +1,123 @@
 package mangadex
 
 import (
-	"fmt"
 	"image"
-	"sync"
-
-	"github.com/leotaku/manki/mangadex/api"
-	"golang.org/x/text/language"
+	"sort"
 )
 
 type Manga struct {
-	Title       string
-	Authors     []string
-	Artists     []string
-	Description string
-	IsHentai    bool
-	Id          int
-	Versions    []Version
-}
-
-type Version struct {
-	GroupNames []string
-	Volumes    []Volume
-	Missing    []Identifier
-	Region     language.Region
+	Info    MangaInfo
+	Volumes map[Identifier]Volume
 }
 
 type Volume struct {
-	Number     Identifier
-	CoverImage Image
-	Chapters   []Chapter
+	Cover      image.Image
+	Identifier Identifier
+	Chapters   map[Identifier]Chapter
 }
 
 type Chapter struct {
-	Title  string
-	Number Identifier
-	Views  int
-	Hash   string
-	Id     int
-	Images []Image `json:",omitempty"`
+	Info       ChapterInfo
+	Identifier Identifier
+	Pages      map[int]image.Image
 }
 
-type Image struct {
-	Url   string
-	Image image.Image
+func (m Manga) Sorted() []Identifier {
+	result := make([]Identifier, 0)
+	for key := range m.Volumes {
+		result = append(result, key)
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Less(result[j])
+	})
+
+	return result
 }
 
-func Fetch(mangaID int) (*Manga, error) {
-	b, err := api.FetchBase(mangaID)
-	if err != nil {
-		return nil, fmt.Errorf("Fetch base: %w", err)
-	}
-	co, err := api.FetchCovers(mangaID)
-	if err != nil {
-		return nil, fmt.Errorf("Fetch covers: %w", err)
-	}
-	ca, err := api.FetchChapters(mangaID)
-	if err != nil {
-		return nil, fmt.Errorf("Fetch chapters: %w", err)
+func (m Volume) Sorted() []Identifier {
+	result := make([]Identifier, 0)
+	for key := range m.Chapters {
+		result = append(result, key)
 	}
 
-	manga := convert(b.Data, ca.Data, co.Data)
-	return &manga, nil
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Less(result[j])
+	})
+
+	return result
 }
 
-func FetchAsync(mangaID int) (*Manga, error) {
-	wg := new(sync.WaitGroup)
-	wg.Add(3)
-
-	// Fetch base data
-	var b *api.Base
-	var be error
-	go func() {
-		b, be = api.FetchBase(mangaID)
-		wg.Done()
-	}()
-
-	// Fetch chapter data
-	var ca *api.Chapters
-	var cae error
-	go func() {
-		ca, cae = api.FetchChapters(mangaID)
-		wg.Done()
-	}()
-
-	// Fetch cover data
-	var co *api.Covers
-	var coe error
-	go func() {
-		co, coe = api.FetchCovers(mangaID)
-		wg.Done()
-	}()
-
-	wg.Wait()
-	if be != nil || cae != nil || coe != nil {
-		return nil, fmt.Errorf("%v, %v, %v", be, cae, coe)
+func (m Chapter) Sorted() []image.Image {
+	result := make([]image.Image, len(m.Pages))
+	for key, val := range m.Pages {
+		result[key] = val
 	}
 
-	manga := convert(b.Data, ca.Data, co.Data)
-	return &manga, nil
+	return result
+}
+
+func Rebuild(mi MangaInfo, ci []ChapterInfo) Manga {
+	vols := make(map[Identifier]Volume)
+	for _, info := range ci {
+		chapId := info.Identifier
+		volId := info.VolumeIdentifier
+		if vol, ok := vols[volId]; ok {
+			if _, ok := vol.Chapters[chapId]; !ok {
+				vols[volId].Chapters[chapId] = extractChapter(info)
+			}
+		} else {
+			vols[volId] = extractVolume(info)
+		}
+	}
+
+	return Manga{
+		Info:    mi,
+		Volumes: vols,
+	}
+}
+
+func (m Manga) WithPages(pages []ImageInfo) Manga {
+	for _, in := range pages {
+		m.Volumes[in.volumeId].Chapters[in.chapterId].Pages[in.imageId] = in.Image
+	}
+
+	return m
+}
+
+func (m Manga) WithCovers(covers []ImageInfo) Manga {
+	for _, in := range covers {
+		val := m.Volumes[in.volumeId]
+		val.Cover = in.Image
+		m.Volumes[in.volumeId] = val
+	}
+
+	return m
+}
+
+func extractManga(mi MangaInfo, info ChapterInfo) Manga {
+	volumes := make(map[Identifier]Volume)
+	volumes[info.VolumeIdentifier] = extractVolume(info)
+
+	return Manga{
+		Volumes: volumes,
+		Info:    mi,
+	}
+}
+
+func extractVolume(info ChapterInfo) Volume {
+	chapters := make(map[Identifier]Chapter)
+	chapters[info.Identifier] = extractChapter(info)
+	return Volume{
+		Chapters:   chapters,
+		Identifier: info.VolumeIdentifier,
+	}
+}
+
+func extractChapter(info ChapterInfo) Chapter {
+	return Chapter{
+		Info:       info,
+		Identifier: info.Identifier,
+		Pages:      make(map[int]image.Image),
+	}
 }
