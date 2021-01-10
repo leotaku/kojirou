@@ -55,18 +55,18 @@ func (m Manga) Keys() []Identifier {
 	return result
 }
 
-func (m Volume) Sorted() []Chapter {
+func (v Volume) Sorted() []Chapter {
 	result := make([]Chapter, 0)
-	for _, idx := range m.Keys() {
-		result = append(result, m.Chapters[idx])
+	for _, idx := range v.Keys() {
+		result = append(result, v.Chapters[idx])
 	}
 
 	return result
 }
 
-func (m Volume) Keys() []Identifier {
+func (v Volume) Keys() []Identifier {
 	result := make([]Identifier, 0)
-	for key := range m.Chapters {
+	for key := range v.Chapters {
 		result = append(result, key)
 	}
 
@@ -77,9 +77,9 @@ func (m Volume) Keys() []Identifier {
 	return result
 }
 
-func (m Chapter) Sorted() []image.Image {
-	result := make([]image.Image, len(m.Pages))
-	for key, val := range m.Pages {
+func (c Chapter) Sorted() []image.Image {
+	result := make([]image.Image, len(c.Pages))
+	for key, val := range c.Pages {
 		result[key] = val
 	}
 
@@ -87,49 +87,67 @@ func (m Chapter) Sorted() []image.Image {
 }
 
 func (m Manga) WithChapters(chapters ChapterList) Manga {
-	m.Volumes = make(map[Identifier]Volume)
+	vols := make(map[Identifier]Volume)
+	for idx, vol := range m.Volumes {
+		vol.Chapters = make(map[Identifier]Chapter)
+		vols[idx] = vol
+	}
 	for _, info := range chapters {
 		chapID := info.Identifier
 		volID := info.VolumeIdentifier
-		if vol, ok := m.Volumes[volID]; ok {
+		if vol, ok := vols[volID]; ok {
 			if _, ok := vol.Chapters[chapID]; !ok {
-				m.Volumes[volID].Chapters[chapID] = extractChapter(info)
+				vols[volID].Chapters[chapID] = extractChapter(info)
 			}
 		} else {
-			m.Volumes[volID] = extractVolume(info)
+			vols[volID] = extractVolume(info)
 		}
 	}
 
-	return m
+	return Manga{
+		Info:    m.Info,
+		Volumes: vols,
+	}
 }
 
 func (m Manga) WithPages(pages ImageList) Manga {
-	for idx, vol := range m.Volumes {
-		vol.Chapters = make(map[Identifier]Chapter)
-		m.Volumes[idx] = vol
+	vols := make(map[Identifier]Volume)
+	for Idx, vol := range m.Volumes {
+		vols[Idx] = vol
+		for idx, chap := range vol.Chapters {
+			chap.Pages = make(map[int]image.Image)
+			m.Volumes[Idx].Chapters[idx] = chap
+		}
 	}
-	for _, in := range pages {
-		if _, ok := m.Volumes[in.volumeID].Chapters[in.chapterID]; ok {
-			m.Volumes[in.volumeID].Chapters[in.chapterID].Pages[in.imageID] = in.Image
+	for _, it := range pages {
+		if _, ok := vols[it.volumeID].Chapters[it.chapterID]; ok {
+			vols[it.volumeID].Chapters[it.chapterID].Pages[it.imageID] = it.Image
 		}
 	}
 
-	return m
+	return Manga{
+		Info:    m.Info,
+		Volumes: vols,
+	}
 }
 
 func (m Manga) WithCovers(covers ImageList) Manga {
+	vols := make(map[Identifier]Volume)
 	for idx, vol := range m.Volumes {
 		vol.Cover = nil
-		m.Volumes[idx] = vol
+		vols[idx] = vol
 	}
 	for _, in := range covers {
-		if val, ok := m.Volumes[in.volumeID]; ok {
+		if val, ok := vols[in.volumeID]; ok {
 			val.Cover = in.Image
-			m.Volumes[in.volumeID] = val
+			vols[in.volumeID] = val
 		}
 	}
 
-	return m
+	return Manga{
+		Info:    m.Info,
+		Volumes: vols,
+	}
 }
 
 func extractVolume(info ChapterInfo) Volume {
