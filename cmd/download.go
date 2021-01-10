@@ -106,9 +106,9 @@ func writeBook(book mobi.Book, path string) error {
 	return nil
 }
 
-func writeThumb(book mobi.Book, dir string) error {
+func writeThumb(book mobi.Book, root string) error {
 	if book.CoverImage != nil {
-		path := path.Join(dir, book.GetThumbFilename())
+		path := path.Join(root, book.GetThumbFilename())
 		f, err := os.Create(path)
 		if err != nil {
 			return err
