@@ -11,13 +11,18 @@ type Bar struct {
 	*pb.ProgressBar
 }
 
-func NewBar(title string) *Bar {
+func NewBar() *Bar {
 	pb := pb.New(0).SetTemplate(tmpl).Start()
-	pb.Set("prefix", title)
 
 	return &Bar{
 		ProgressBar: pb,
 	}
+}
+
+func (b *Bar) Message(msg string) *Bar {
+	b.Set("prefix", msg)
+
+	return b
 }
 
 func (b *Bar) Fail(msg string) *Bar {

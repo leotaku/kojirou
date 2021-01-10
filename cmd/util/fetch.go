@@ -1,130 +1,98 @@
 package util
 
 import (
-	"fmt"
+	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
+	"net/http"
 	"sync"
 
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/leotaku/manki/mangadex"
 )
 
 const limitArg = 8
 
-type item struct {
-	pages []mangadex.PathInfo
-	err   error
+var (
+	Client     *mangadex.Client
+	httpClient *http.Client
+)
+
+func init() {
+	retry := retryablehttp.NewClient()
+	retry.Logger = nil
+	httpClient = retry.StandardClient()
+	Client = mangadex.NewClient().WithHTTPClient(*httpClient)
 }
 
-type page struct {
-	page mangadex.ImageInfo
+type unitem struct {
+	page mangadex.PathItem
 	err  error
 }
 
-func FetchChapters(cs []mangadex.ChapterInfo, pb *Bar) ([]mangadex.ImageInfo, error) {
+type item struct {
+	page mangadex.ImageItem
+	err  error
+}
+
+func FetchChapters(cs mangadex.ChapterList, pb *Bar) (mangadex.ImageList, error) {
 	pb.AddTotal(int64(len(cs)))
 
 	// Fetch chapters in parallel
-	wip := runChapters(cs)
-	pres := make([]mangadex.PathInfo, 0)
-	for it := range wip {
-		if it.err == nil {
-			pres = append(pres, it.pages...)
-			pb.AddTotal(int64(len(it.pages)))
-			pb.Increment()
-		} else {
-			pb.Fail("Failed fetching chapters")
-			return nil, fmt.Errorf("Chapters: %w", it.err)
-		}
-	}
+	wip := make(chan unitem, 200)
+	go runChapters(cs, wip, pb)
 
 	// Fetch images in parallel
-	pages, err := fetchImages(pres, pb)
+	images, err := fetchImages(wip, pb)
 	if err != nil {
 		return nil, err
 	}
 
-	return pages, nil
+	return images, nil
 }
 
-func FetchCovers(cs []mangadex.PathInfo, pb *Bar) ([]mangadex.ImageInfo, error) {
+func FetchCovers(cs mangadex.PathList, pb *Bar) (mangadex.ImageList, error) {
 	pb.AddTotal(int64(len(cs)))
-	return fetchImages(cs, pb)
-}
-
-func fetchImages(cs []mangadex.PathInfo, pb *Bar) ([]mangadex.ImageInfo, error) {
-	out := runImages(cs)
-	covers := make([]mangadex.ImageInfo, 0)
-	for it := range out {
-		if it.err == nil {
-			covers = append(covers, it.page)
-			pb.Increment()
-		} else {
-			pb.Fail("Failed fetching images")
-			return nil, fmt.Errorf("Images: %w", it.err)
-		}
-	}
-
-	return covers, nil
-}
-
-func runImages(pages []mangadex.PathInfo) chan page {
-	in := make(chan mangadex.PathInfo)
-	out := make(chan page)
-	wg := new(sync.WaitGroup)
-
-	for i := 0; i < limitArg; i++ {
-		wg.Add(1)
-		go func() {
-			for it := range in {
-				err := Retry(func() error {
-					paths, err := it.GetImage()
-					if err == nil {
-						out <- page{page: *paths}
-					}
-					return err
-				})
-
-				if err != nil {
-					out <- page{err: err}
-				}
-			}
-			wg.Done()
-		}()
-	}
-
+	in := make(chan unitem)
 	go func() {
-		wg.Wait()
-		close(out)
-	}()
-
-	go func() {
-		for _, it := range pages {
-			in <- it
+		for _, path := range cs {
+			in <- unitem{page: path}
 		}
 		close(in)
 	}()
 
-	return out
+	return fetchImages(in, pb)
 }
 
-func runChapters(chaps []mangadex.ChapterInfo) chan item {
+func fetchImages(in <-chan unitem, pb *Bar) (mangadex.ImageList, error) {
+	result := make(mangadex.ImageList, 0)
+	for it := range runImages(in, pb) {
+		if it.err != nil {
+			return nil, it.err
+		}
+		result = append(result, it.page)
+	}
+	return result, nil
+}
+
+func runChapters(chaps []mangadex.ChapterInfo, out chan unitem, pb *Bar) {
 	in := make(chan mangadex.ChapterInfo)
-	out := make(chan item)
 	wg := new(sync.WaitGroup)
 
 	for i := 0; i < limitArg; i++ {
 		wg.Add(1)
 		go func() {
 			for it := range in {
-				err := Retry(func() error {
-					paths, err := it.GetImagePaths()
-					if err == nil {
-						out <- item{pages: paths}
-					}
-					return err
-				})
+				paths, err := Client.FetchChapter(it)
+				pb.Increment()
+				pb.AddTotal(int64(len(paths)))
+				for _, path := range paths {
+					out <- unitem{page: path}
+				}
 
 				if err != nil {
-					out <- item{err: err}
+					out <- unitem{err: err}
 				}
 			}
 			wg.Done()
@@ -142,6 +110,53 @@ func runChapters(chaps []mangadex.ChapterInfo) chan item {
 		}
 		close(in)
 	}()
+}
+
+func runImages(in <-chan unitem, pb *Bar) chan item {
+	out := make(chan item, 100)
+	wg := new(sync.WaitGroup)
+
+	for i := 0; i < limitArg; i++ {
+		wg.Add(1)
+		go func() {
+			for it := range in {
+				if it.err != nil {
+					out <- item{err: it.err}
+					return
+				}
+
+				img, err := fetchImage(it.page.Url)
+				pb.Increment()
+
+				if err != nil {
+					out <- item{err: err}
+				} else {
+					out <- item{page: it.page.WithImage(img)}
+				}
+			}
+			wg.Done()
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(out)
+	}()
 
 	return out
+}
+
+func fetchImage(url string) (image.Image, error) {
+	resp, err := httpClient.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	img, _, err := image.Decode(resp.Body)
+	defer resp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return img, err
 }

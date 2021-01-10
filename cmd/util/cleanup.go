@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path"
+	"syscall"
 )
 
-var clean = make(chan func(), 100)
+var clean = make(chan func(), 1000)
 
 func Cleanup(f func()) {
 	clean <- f
@@ -14,7 +16,7 @@ func Cleanup(f func()) {
 
 func InitCleanup() {
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, os.Kill)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		for sig := range c {
 			RunCleanup()
@@ -34,5 +36,26 @@ func RunCleanup() {
 	// Cleanup
 	for _, f := range fs {
 		f()
+	}
+}
+
+func SetupDirectories(dirs ...string) error {
+	for _, dir := range dirs {
+		cleanupDirectory(dir)
+		err := os.MkdirAll(dir, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func cleanupDirectory(dir string) {
+	for ; dir != "." && dir != "/"; dir = path.Dir(dir) {
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			tmp := dir
+			Cleanup(func() { os.Remove(tmp) })
+		}
 	}
 }

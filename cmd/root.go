@@ -9,9 +9,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var kindleFolderModeArg bool
-var langArg string
-var outArg string
+var (
+	kindleFolderModeArg bool
+	langArg             string
+	outArg              string
+)
 
 var rootCmd = &cobra.Command{
 	Use:     "manki [flags..] <identifier>",
@@ -19,22 +21,22 @@ var rootCmd = &cobra.Command{
 	Version: "0.1",
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		cmd.SilenceUsage = true
-		util.InitCleanup()
-		defer util.RunCleanup()
-
 		id, err := strconv.ParseInt(args[0], 10, 32)
 		if err != nil {
 			return err
 		}
+		cmd.SilenceUsage = true
 
-		down, err := preDownload(int(id))
+		util.InitCleanup()
+		defer util.RunCleanup()
+
+		down, err := downloadManga(int(id))
 		if err != nil {
 			return err
 		}
 
 		// Variables
-		title := down.incomplete.Info.Title
+		title := down.Info.Title
 
 		// Write
 		if !kindleFolderModeArg {
@@ -43,12 +45,12 @@ var rootCmd = &cobra.Command{
 			}
 
 			// Setup directories
-			err := setupDirectories(outArg)
+			err := util.SetupDirectories(outArg)
 			if err != nil {
 				return err
 			}
 
-			return download(*down, outArg, nil)
+			return downloadWriteVolumes(*down, outArg, nil)
 		} else {
 			if len(outArg) == 0 {
 				outArg = "kindle"
@@ -57,12 +59,12 @@ var rootCmd = &cobra.Command{
 			thumbRoot := path.Join(outArg, "system", "thumbnails")
 
 			// Setup directories
-			err := setupDirectories(root, thumbRoot)
+			err := util.SetupDirectories(root, thumbRoot)
 			if err != nil {
 				return err
 			}
 
-			return download(*down, root, &thumbRoot)
+			return downloadWriteVolumes(*down, root, &thumbRoot)
 		}
 	},
 	DisableFlagsInUseLine: true,
@@ -75,10 +77,10 @@ func Execute() {
 }
 
 func init() {
-	// rootCmd.Flags().IntVarP(&limitArg, "max", "x", 8, "maximum number of concurrent connections")
-	// rootCmd.Flags().IntVarP(&retryArg, "retry", "r", 4, "number of retries on failed downloads")
-	rootCmd.Flags().BoolVarP(&kindleFolderModeArg, "kindle-folder-mode", "k", false, "generate folder structure for Kindle devices")
 	rootCmd.Flags().StringVarP(&langArg, "language", "l", "en", "language for MangaDex download")
+	rootCmd.Flags().BoolVarP(&kindleFolderModeArg, "kindle-folder-mode", "k", false, "generate folder structure for Kindle devices")
 	rootCmd.Flags().StringVarP(&outArg, "out", "o", "", "output directory")
 	rootCmd.Flags().SortFlags = false
+	rootCmd.SetHelpFunc(help)
+	rootCmd.SetUsageFunc(usage)
 }

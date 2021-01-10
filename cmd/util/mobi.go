@@ -30,7 +30,7 @@ func VolumeToMobi(manga mangadex.MangaInfo, vol mangadex.Volume) mobi.Book {
 
 	// Pages
 	groupNames := make([]string, 0)
-	for _, idx := range vol.Sorted() {
+	for _, idx := range vol.Keys() {
 		chap := vol.Chapters[idx]
 		groupNames = append(groupNames, chap.Info.GroupNames...)
 		links := make([]string, 0)
