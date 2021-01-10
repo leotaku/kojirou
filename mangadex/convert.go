@@ -1,7 +1,9 @@
 package mangadex
 
 import (
+	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/leotaku/manki/mangadex/api"
 	"golang.org/x/text/language"
@@ -17,20 +19,20 @@ func convertBase(b api.BaseData) MangaInfo {
 	}
 }
 
-func convertCovers(co api.CoversData) []PathInfo {
-	result := make([]PathInfo, 0)
+func convertCovers(co api.CoversData) PathList {
+	result := make(PathList, 0)
 	for id, url := range groupCovers(co) {
-		result = append(result, PathInfo{
+		result = append(result, PathItem{
 			Url:      url,
-			volumeId: GuessIdentifier(id, "Special"),
+			volumeId: NewIdentifier(id, "Special"),
 		})
 	}
 
 	return result
 }
 
-func convertChapters(ca api.ChaptersData) []ChapterInfo {
-	sorted := make([]ChapterInfo, 0)
+func convertChapters(ca api.ChaptersData) ChapterList {
+	sorted := make(ChapterList, 0)
 	groups := groupGroups(ca.Groups)
 
 	for _, info := range ca.Chapters {
@@ -42,13 +44,29 @@ func convertChapters(ca api.ChaptersData) []ChapterInfo {
 			Hash:             info.Hash,
 			GroupNames:       getGroups(groups, info.Groups),
 			Id:               info.Id,
-			Identifier:       GuessIdentifier(info.Chapter, info.Title),
-			VolumeIdentifier: GuessIdentifier(info.Volume, "Special"),
+			Identifier:       NewIdentifier(info.Chapter, info.Title),
+			VolumeIdentifier: NewIdentifier(info.Volume, "Special"),
 		})
 	}
 
 	reverse(sorted)
 	return sorted
+}
+
+func convertChapter(c api.ChapterData, chapterId Identifier, volumeId Identifier) PathList {
+	result := make(PathList, 0)
+	for i, filename := range c.Pages {
+		server := strings.TrimRight(c.Server, "/")
+		url := fmt.Sprintf("%v/%v/%v", server, c.Hash, filename)
+		result = append(result, PathItem{
+			Url:       url,
+			imageId:   i,
+			chapterId: chapterId,
+			volumeId:  volumeId,
+		})
+	}
+
+	return result
 }
 
 type groupsMapping = map[int]string

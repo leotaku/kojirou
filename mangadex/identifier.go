@@ -13,7 +13,7 @@ type Identifier struct {
 	fallback string
 }
 
-func GuessIdentifier(num string, fallback string) Identifier {
+func NewIdentifier(num string, fallback string) Identifier {
 	f, err := strconv.ParseFloat(num, 64)
 	if err != nil {
 		return Identifier{
@@ -72,6 +72,6 @@ func (n Identifier) MarshalJSON() ([]byte, error) {
 	}
 }
 
-func (a Identifier) MarshalText() ([]byte, error) {
-	return []byte(a.String()), nil
+func (n Identifier) MarshalText() ([]byte, error) {
+	return []byte(n.String()), nil
 }

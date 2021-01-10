@@ -7,6 +7,10 @@ import (
 
 type ChapterList []ChapterInfo
 
+type PathList []PathItem
+
+type ImageList []ImageItem
+
 func (m ChapterList) CollapseBy(f func(ChapterInfo) interface{}) ChapterList {
 	keys := make([]interface{}, 0)
 	mapped := make(map[interface{}]ChapterInfo)
@@ -46,6 +50,6 @@ func (m ChapterList) SortBy(f func(ChapterInfo, ChapterInfo) bool) ChapterList {
 	return sorted
 }
 
-func (n ChapterList) MarshalJSON() ([]byte, error) {
-	return json.Marshal([]ChapterInfo(n))
+func (m ChapterList) MarshalJSON() ([]byte, error) {
+	return json.Marshal([]ChapterInfo(m))
 }
