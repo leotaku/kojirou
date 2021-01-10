@@ -15,7 +15,7 @@ func convertBase(b api.BaseData) MangaInfo {
 		Authors:  b.Author,
 		Artists:  b.Artist,
 		IsHentai: b.IsHentai,
-		Id:       b.Id,
+		ID:       b.ID,
 	}
 }
 
@@ -23,8 +23,8 @@ func convertCovers(co api.CoversData) PathList {
 	result := make(PathList, 0)
 	for id, url := range groupCovers(co) {
 		result = append(result, PathItem{
-			Url:      url,
-			volumeId: NewIdentifier(id, "Special"),
+			URL:      url,
+			volumeID: NewIdentifier(id, "Special"),
 		})
 	}
 
@@ -43,7 +43,7 @@ func convertChapters(ca api.ChaptersData) ChapterList {
 			Views:            info.Views,
 			Hash:             info.Hash,
 			GroupNames:       getGroups(groups, info.Groups),
-			Id:               info.Id,
+			ID:               info.ID,
 			Identifier:       NewIdentifier(info.Chapter, info.Title),
 			VolumeIdentifier: NewIdentifier(info.Volume, "Special"),
 		})
@@ -53,16 +53,16 @@ func convertChapters(ca api.ChaptersData) ChapterList {
 	return sorted
 }
 
-func convertChapter(c api.ChapterData, chapterId Identifier, volumeId Identifier) PathList {
+func convertChapter(c api.ChapterData, chapterID Identifier, volumeID Identifier) PathList {
 	result := make(PathList, 0)
 	for i, filename := range c.Pages {
 		server := strings.TrimRight(c.Server, "/")
 		url := fmt.Sprintf("%v/%v/%v", server, c.Hash, filename)
 		result = append(result, PathItem{
-			Url:       url,
-			imageId:   i,
-			chapterId: chapterId,
-			volumeId:  volumeId,
+			URL:       url,
+			imageID:   i,
+			chapterID: chapterID,
+			volumeID:  volumeID,
 		})
 	}
 
@@ -74,7 +74,7 @@ type groupsMapping = map[int]string
 func groupGroups(gs []api.GroupMapping) groupsMapping {
 	mapping := make(groupsMapping)
 	for _, val := range gs {
-		mapping[val.Id] = val.Name
+		mapping[val.ID] = val.Name
 	}
 	return mapping
 }
@@ -94,7 +94,7 @@ type coversMapping = map[string]string
 func groupCovers(co api.CoversData) coversMapping {
 	mapping := make(coversMapping)
 	for _, val := range co {
-		mapping[val.Volume] = val.Url
+		mapping[val.Volume] = val.URL
 	}
 	return mapping
 }

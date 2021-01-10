@@ -125,7 +125,7 @@ func runImages(in <-chan unitem, pb *Bar) chan item {
 					return
 				}
 
-				img, err := fetchImage(it.page.Url)
+				img, err := fetchImage(it.page.URL)
 				pb.Increment()
 
 				if err != nil {

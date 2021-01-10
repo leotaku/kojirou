@@ -7,7 +7,7 @@ type Base struct {
 }
 
 type BaseData struct {
-	Id           int
+	ID           int
 	Title        string
 	AltTitles    []string
 	Description  string
@@ -37,7 +37,7 @@ type BaseData struct {
 }
 
 type Relation struct {
-	Id       int
+	ID       int
 	Title    string
 	Type     int
 	IsHentai bool
@@ -55,9 +55,9 @@ type ChaptersData struct {
 }
 
 type ChapterInfo struct {
-	Id         int
+	ID         int
 	Hash       string
-	MangaId    int
+	MangaID    int
 	MangaTitle string
 	Volume     string
 	Chapter    string
@@ -71,7 +71,7 @@ type ChapterInfo struct {
 }
 
 type GroupMapping struct {
-	Id   int
+	ID   int
 	Name string
 }
 
@@ -82,9 +82,9 @@ type Chapter struct {
 }
 
 type ChapterData struct {
-	Id             int
+	ID             int
 	Hash           string
-	MangaId        int
+	MangaID        int
 	MangaTitle     string
 	Volume         string
 	Chapter        string
@@ -111,5 +111,5 @@ type CoversData []CoversMapping
 
 type CoversMapping struct {
 	Volume string
-	Url    string
+	URL    string
 }

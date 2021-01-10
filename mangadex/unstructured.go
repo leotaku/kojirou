@@ -10,26 +10,26 @@ type ImageItem struct {
 	Image image.Image
 
 	// hidden
-	imageId   int
-	chapterId Identifier
-	volumeId  Identifier
+	imageID   int
+	chapterID Identifier
+	volumeID  Identifier
 }
 
 type PathItem struct {
-	Url string
+	URL string
 
 	// hidden
-	imageId   int
-	chapterId Identifier
-	volumeId  Identifier
+	imageID   int
+	chapterID Identifier
+	volumeID  Identifier
 }
 
 func (i PathItem) WithImage(img image.Image) ImageItem {
 	return ImageItem{
 		Image:     img,
-		chapterId: i.chapterId,
-		volumeId:  i.volumeId,
-		imageId:   i.imageId,
+		chapterID: i.chapterID,
+		volumeID:  i.volumeID,
+		imageID:   i.imageID,
 	}
 }
 
@@ -39,7 +39,7 @@ type ChapterInfo struct {
 	Region     language.Region
 	GroupNames []string
 	Hash       string
-	Id         int
+	ID         int
 
 	// hidden
 	Identifier       Identifier
@@ -51,5 +51,5 @@ type MangaInfo struct {
 	Authors  []string
 	Artists  []string
 	IsHentai bool
-	Id       int
+	ID       int
 }

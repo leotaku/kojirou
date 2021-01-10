@@ -55,7 +55,7 @@ func (c *Client) FetchCovers(mangaID int) (PathList, error) {
 }
 
 func (c *Client) FetchChapter(ci ChapterInfo) (PathList, error) {
-	chap, err := c.base.FetchChapter(ci.Id)
+	chap, err := c.base.FetchChapter(ci.ID)
 	if err != nil {
 		return nil, fmt.Errorf("Fetch chapter: %w", err)
 	}
