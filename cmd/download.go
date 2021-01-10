@@ -95,6 +95,7 @@ func writeBook(book mobi.Book, path string) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 
 	db := book.Realize()
 	err = db.Write(f)
@@ -112,6 +113,8 @@ func writeThumb(book mobi.Book, dir string) error {
 		if err != nil {
 			return err
 		}
+		defer f.Close()
+
 		err = jpeg.Encode(f, book.CoverImage, nil)
 		if err != nil {
 			return err
