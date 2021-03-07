@@ -1,6 +1,7 @@
 package mangadex
 
 import (
+	"html"
 	"path"
 	"reflect"
 	"strings"
@@ -43,7 +44,7 @@ func convertChapters(ca api.ChaptersData) ChapterList {
 			Region:           region,
 			Views:            info.Views,
 			Hash:             info.Hash,
-			GroupNames:       getGroups(groups, info.Groups),
+			GroupNames:       unescape(getGroups(groups, info.Groups)),
 			Published:        time.Unix(int64(info.Timestamp), 0),
 			ID:               info.ID,
 			Identifier:       NewIdentifier(info.Chapter, info.Title),
@@ -112,4 +113,13 @@ func reverse(v interface{}) {
 	default:
 		panic("not a slice")
 	}
+}
+
+func unescape(ss []string) []string {
+	result := make([]string, 0)
+	for _, it := range ss {
+		result = append(result, html.UnescapeString(it))
+	}
+
+	return result
 }
