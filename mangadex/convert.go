@@ -4,6 +4,7 @@ import (
 	"path"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/leotaku/manki/mangadex/api"
 	"golang.org/x/text/language"
@@ -43,6 +44,7 @@ func convertChapters(ca api.ChaptersData) ChapterList {
 			Views:            info.Views,
 			Hash:             info.Hash,
 			GroupNames:       getGroups(groups, info.Groups),
+			Published:        time.Unix(int64(info.Timestamp), 0),
 			ID:               info.ID,
 			Identifier:       NewIdentifier(info.Chapter, info.Title),
 			VolumeIdentifier: NewIdentifier(info.Volume, "Special"),

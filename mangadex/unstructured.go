@@ -2,6 +2,7 @@ package mangadex
 
 import (
 	"image"
+	"time"
 
 	"golang.org/x/text/language"
 )
@@ -38,6 +39,7 @@ type ChapterInfo struct {
 	Views      int
 	Region     language.Region
 	GroupNames []string
+	Published  time.Time
 	Hash       string
 	ID         int
 
