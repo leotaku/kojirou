@@ -1,43 +1,79 @@
 package cmd
 
 import (
-	"fmt"
 	"strings"
+	"time"
 
 	"github.com/leotaku/manki/cmd/util"
 	"github.com/leotaku/manki/mangadex"
 	"golang.org/x/text/language"
 )
 
-func filter(m mangadex.ChapterList, lang language.Tag) (*mangadex.ChapterList, error) {
+type Filter = func(mangadex.ChapterList) mangadex.ChapterList
+
+func gid(ci mangadex.ChapterInfo) string {
+	return strings.Join(ci.GroupNames, " and ")
+}
+
+func filterLang(cl mangadex.ChapterList, lang language.Tag) mangadex.ChapterList {
 	// Filter group by language
-	m = m.FilterBy(func(c mangadex.ChapterInfo) bool {
+	return cl.FilterBy(func(c mangadex.ChapterInfo) bool {
 		return util.MatchRegion(c.Region) == lang
 	})
+}
 
-	// Rank groups by total views
-	gid := func(ci mangadex.ChapterInfo) string {
-		return strings.Join(ci.GroupNames, "")
+func rankNewest(cl mangadex.ChapterList) mangadex.ChapterList {
+	return cl.SortBy(func(ci1, ci2 mangadex.ChapterInfo) bool {
+		return ci1.Published.After(ci2.Published)
+	})
+}
+
+func rankTotalNewest(cl mangadex.ChapterList) mangadex.ChapterList {
+	groupRanking := make(map[string]time.Time)
+	for _, ci := range cl {
+		if val, ok := groupRanking[gid(ci)]; !ok || ci.Published.Before(val) {
+			groupRanking[gid(ci)] = ci.Published
+		}
 	}
+
+	return cl.SortBy(func(ci1, ci2 mangadex.ChapterInfo) bool {
+		return groupRanking[gid(ci1)].After(groupRanking[gid(ci2)])
+	})
+}
+
+func rankViews(cl mangadex.ChapterList) mangadex.ChapterList {
+	return cl.SortBy(func(ci1, ci2 mangadex.ChapterInfo) bool {
+		return ci1.Views > ci2.Views
+	})
+}
+
+func rankTotalViews(cl mangadex.ChapterList) mangadex.ChapterList {
 	groupRanking := make(map[string]int)
-	for _, ci := range m {
+	for _, ci := range cl {
 		groupRanking[gid(ci)] += ci.Views
 	}
 
-	// Sort, collapse and sort again
-	m = m.SortBy(func(ci1, ci2 mangadex.ChapterInfo) bool {
+	return cl.SortBy(func(ci1, ci2 mangadex.ChapterInfo) bool {
 		return groupRanking[gid(ci1)] > groupRanking[gid(ci2)]
 	})
-	m = m.CollapseBy(func(c mangadex.ChapterInfo) interface{} {
+}
+
+func rankMost(cl mangadex.ChapterList) mangadex.ChapterList {
+	groupRanking := make(map[string]int)
+	for _, ci := range cl {
+		groupRanking[gid(ci)] += 1
+	}
+
+	return cl.SortBy(func(ci1, ci2 mangadex.ChapterInfo) bool {
+		return groupRanking[gid(ci1)] > groupRanking[gid(ci2)]
+	})
+}
+
+func doRank(cl mangadex.ChapterList) mangadex.ChapterList {
+	cl = cl.CollapseBy(func(c mangadex.ChapterInfo) interface{} {
 		return c.Identifier
 	})
-	m = m.SortBy(func(ci1, ci2 mangadex.ChapterInfo) bool {
+	return cl.SortBy(func(ci1, ci2 mangadex.ChapterInfo) bool {
 		return ci1.Identifier.Less(ci2.Identifier)
 	})
-
-	if len(m) > 0 {
-		return &m, nil
-	} else {
-		return nil, fmt.Errorf("No matching scantlations found")
-	}
 }

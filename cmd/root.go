@@ -30,7 +30,7 @@ var rootCmd = &cobra.Command{
 		util.InitCleanup()
 		defer util.RunCleanup()
 
-		down, err := downloadManga(int(id))
+		down, err := downloadMetaFor(int(id), nil)
 		if err != nil {
 			return err
 		}

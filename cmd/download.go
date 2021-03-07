@@ -11,7 +11,7 @@ import (
 	"github.com/leotaku/mobi"
 )
 
-func downloadManga(id int) (*mangadex.Manga, error) {
+func downloadMetaFor(id int, filter Filter) (*mangadex.Manga, error) {
 	manga, err := util.Client.FetchManga(id)
 	if err != nil {
 		return nil, err
@@ -22,17 +22,20 @@ func downloadManga(id int) (*mangadex.Manga, error) {
 		return nil, err
 	}
 
-	cos, err := util.Client.FetchCovers(id)
+	filtered := filter(chs)
+	if len(filtered) == 0 {
+		return nil, fmt.Errorf("no matching scantlations found")
+	}
+
+	result := manga.WithChapters(filtered)
+	return &result, nil
+}
+
+func downloadAddCovers(m mangadex.Manga) (*mangadex.Manga, error) {
+	cos, err := util.Client.FetchCovers(m.Info.ID)
 	if err != nil {
 		return nil, err
 	}
-
-	lang := util.MatchLang(langArg)
-	chapters, err := filter(chs, lang)
-	if err != nil {
-		return nil, err
-	}
-
 	pb := util.NewBar().Message("Covers")
 	covers, err := util.FetchCovers(cos, pb)
 	if err != nil {
@@ -40,11 +43,16 @@ func downloadManga(id int) (*mangadex.Manga, error) {
 	}
 	pb.Finish()
 
-	incomplete := manga.WithChapters(*chapters).WithCovers(covers)
-	return &incomplete, nil
+	result := m.WithCovers(covers)
+	return &result, nil
 }
 
-func downloadWriteVolumes(m mangadex.Manga, root string, thumbRoot *string) error {
+func downloadAndWrite(ma mangadex.Manga, root string, thumbRoot *string) error {
+	m, err := downloadAddCovers(ma)
+	if err != nil {
+		return err
+	}
+
 	for _, idx := range m.Keys() {
 		// Variables
 		path := fmt.Sprintf("%v/%v.azw3", root, idx)
