@@ -15,6 +15,7 @@ import (
 const (
 	maxChapterJobs   = 8
 	maxImageJobs     = 16
+	maxDecodeRetries = 4
 )
 
 var (
@@ -121,7 +122,7 @@ func runImages(in <-chan pathOrErr, pb *Bar) chan imageOrErr {
 					return
 				}
 
-				img, err := fetchImage(it.page.URL)
+				img, err := fetchImage(it.page.URL, maxDecodeRetries)
 				pb.Increment()
 
 				if err != nil {
@@ -142,7 +143,7 @@ func runImages(in <-chan pathOrErr, pb *Bar) chan imageOrErr {
 	return out
 }
 
-func fetchImage(url string) (image.Image, error) {
+func fetchImage(url string, retry int) (image.Image, error) {
 	resp, err := httpClient.Get(url)
 	if err != nil {
 		return nil, err
@@ -150,8 +151,8 @@ func fetchImage(url string) (image.Image, error) {
 
 	img, _, err := image.Decode(resp.Body)
 	defer resp.Body.Close()
-	if err != nil {
-		return nil, err
+	if err != nil && retry > 0 {
+		return fetchImage(url, retry-1)
 	}
 
 	return img, err
