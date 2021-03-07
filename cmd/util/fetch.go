@@ -12,7 +12,10 @@ import (
 	"github.com/leotaku/manki/mangadex"
 )
 
-const limitArg = 8
+const (
+	maxChapterJobs   = 8
+	maxImageJobs     = 16
+)
 
 var (
 	Client     *mangadex.Client
@@ -73,7 +76,7 @@ func runChapters(chaps []mangadex.ChapterInfo, out chan pathOrErr, pb *Bar) {
 	in := make(chan mangadex.ChapterInfo)
 	wg := new(sync.WaitGroup)
 
-	for i := 0; i < limitArg; i++ {
+	for i := 0; i < maxChapterJobs; i++ {
 		wg.Add(1)
 		go func() {
 			for it := range in {
@@ -109,7 +112,7 @@ func runImages(in <-chan pathOrErr, pb *Bar) chan imageOrErr {
 	out := make(chan imageOrErr, 100)
 	wg := new(sync.WaitGroup)
 
-	for i := 0; i < limitArg; i++ {
+	for i := 0; i < maxImageJobs; i++ {
 		wg.Add(1)
 		go func() {
 			for it := range in {
