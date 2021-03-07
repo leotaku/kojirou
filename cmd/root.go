@@ -3,6 +3,7 @@ package cmd
 import (
 	"os"
 	"path"
+	"runtime/pprof"
 	"strconv"
 
 	"github.com/leotaku/manki/cmd/util"
@@ -16,6 +17,7 @@ var (
 	kindleFolderModeArg bool
 	dryRunArg           bool
 	outArg              string
+	cpuprofileArg       string
 )
 
 var rootCmd = &cobra.Command{
@@ -30,6 +32,14 @@ var rootCmd = &cobra.Command{
 		}
 		cmd.SilenceUsage = true
 
+		if cpuprofileArg != "" {
+			f, err := os.Create(cpuprofileArg)
+			if err != nil {
+				return err
+			}
+			pprof.StartCPUProfile(f)
+			defer pprof.StopCPUProfile()
+		}
 		util.InitCleanup()
 		defer util.RunCleanup()
 
@@ -114,6 +124,7 @@ func init() {
 	rootCmd.Flags().BoolVarP(&kindleFolderModeArg, "kindle-folder-mode", "k", false, "generate folder structure for Kindle devices")
 	rootCmd.Flags().BoolVarP(&dryRunArg, "dry-run", "d", false, "disable writing of any files")
 	rootCmd.Flags().StringVarP(&outArg, "out", "o", "", "output directory")
+	rootCmd.Flags().StringVarP(&cpuprofileArg, "cpuprofile", "", "", "write CPU profile to this file")
 	rootCmd.Flags().SortFlags = false
 	rootCmd.MarkFlagRequired("language")
 	rootCmd.SetHelpFunc(help)
