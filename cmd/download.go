@@ -68,7 +68,7 @@ func downloadWriteVolumes(m mangadex.Manga, root string, thumbRoot *string) erro
 
 		// Write book and thumbnail
 		manga := m.WithChapters(filtered).WithPages(pages)
-		mobi := util.VolumeToMobi(manga.Info, manga.Volumes[idx])
+		mobi := util.VolumesToMobi(manga)
 		err = writeBook(mobi, path)
 		if err != nil {
 			util.Cleanup(func() { os.Remove(path) })
