@@ -104,37 +104,37 @@ func downloadAndWrite(ma mangadex.Manga, root string, thumbRoot *string) error {
 	return nil
 }
 
-var groupColors = []color.Attribute{
-	color.FgRed,
-	color.FgBlue,
-	color.FgMagenta,
-	color.FgCyan,
-	color.FgGreen,
-	color.FgYellow,
-	color.BgRed,
-	color.BgBlue,
-	color.BgMagenta,
-	color.BgCyan,
-	color.BgGreen,
+var groupColors = []*color.Color{
+	color.New(color.FgRed),
+	color.New(color.FgBlue),
+	color.New(color.FgMagenta),
+	color.New(color.FgCyan),
+	color.New(color.FgGreen),
+	color.New(color.FgYellow),
+	color.New(color.BgRed),
+	color.New(color.BgBlue),
+	color.New(color.BgMagenta),
+	color.New(color.BgCyan),
+	color.New(color.BgGreen),
 }
 
 func printGroupMapping(cl mangadex.ChapterList) {
 	groupMapping := make(map[string]int)
 	ids := make([]string, 0)
 	for _, ci := range cl {
-		attr := len(groupMapping) - 1
+		idx := len(groupMapping) - 1
 		if val, ok := groupMapping[gid(ci)]; ok {
-			attr = val
+			idx = val
 		} else {
-			attr += 1
-			groupMapping[gid(ci)] = attr
+			idx += 1
+			groupMapping[gid(ci)] = idx
 		}
-		ids = append(ids, color.New(groupColors[attr%len(groupColors)]).Sprint(ci.Identifier))
+		ids = append(ids, groupColors[idx%len(groupColors)].Sprint(ci.Identifier))
 	}
 
 	groups := make([]string, len(groupMapping))
 	for key, val := range groupMapping {
-		groups[val] = color.New(groupColors[val%len(groupColors)]).Sprint(key)
+		groups[val] = groupColors[val%len(groupColors)].Sprint(key)
 	}
 
 	fmt.Printf("Groups: %v\n", strings.Join(groups, ", "))
