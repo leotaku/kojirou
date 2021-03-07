@@ -49,11 +49,11 @@ func FetchChapters(cs mangadex.ChapterList, pb *Bar) (mangadex.ImageList, error)
 	return images, nil
 }
 
-func FetchCovers(cs mangadex.PathList, pb *Bar) (mangadex.ImageList, error) {
-	pb.AddTotal(int64(len(cs)))
+func FetchCovers(ps mangadex.PathList, pb *Bar) (mangadex.ImageList, error) {
+	pb.AddTotal(int64(len(ps)))
 	in := make(chan pathOrErr)
 	go func() {
-		for _, path := range cs {
+		for _, path := range ps {
 			in <- pathOrErr{page: path}
 		}
 		close(in)
