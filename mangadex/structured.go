@@ -88,10 +88,6 @@ func (c Chapter) Sorted() []image.Image {
 
 func (m Manga) WithChapters(chapters ChapterList) Manga {
 	vols := make(map[Identifier]Volume)
-	for idx, vol := range m.Volumes {
-		vol.Chapters = make(map[Identifier]Chapter)
-		vols[idx] = vol
-	}
 	for _, info := range chapters {
 		chapID := info.Identifier
 		volID := info.VolumeIdentifier
@@ -100,7 +96,11 @@ func (m Manga) WithChapters(chapters ChapterList) Manga {
 				vols[volID].Chapters[chapID] = extractChapter(info)
 			}
 		} else {
-			vols[volID] = extractVolume(info)
+			vol := extractVolume(info)
+			if v, ok := m.Volumes[volID]; ok {
+				vol.Cover = v.Cover
+			}
+			vols[volID] = vol
 		}
 	}
 
