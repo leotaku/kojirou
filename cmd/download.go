@@ -5,7 +5,9 @@ import (
 	"image/jpeg"
 	"os"
 	"path"
+	"strings"
 
+	"github.com/fatih/color"
 	"github.com/leotaku/manki/cmd/util"
 	"github.com/leotaku/manki/mangadex"
 	"github.com/leotaku/mobi"
@@ -26,6 +28,10 @@ func downloadMetaFor(id int, filter Filter) (*mangadex.Manga, error) {
 	if len(filtered) == 0 {
 		return nil, fmt.Errorf("no matching scantlations found")
 	}
+
+	authors := strings.Join(manga.Info.Authors, " and ")
+	simpleColorPrint("Title: ", manga.Info.Title, ", Authors: ", authors)
+	printGroupMapping(filtered)
 
 	result := manga.WithChapters(filtered)
 	return &result, nil
@@ -96,6 +102,51 @@ func downloadAndWrite(ma mangadex.Manga, root string, thumbRoot *string) error {
 	}
 
 	return nil
+}
+
+var groupColors = []color.Attribute{
+	color.FgRed,
+	color.FgBlue,
+	color.FgMagenta,
+	color.FgCyan,
+	color.FgGreen,
+	color.FgYellow,
+	color.BgRed,
+	color.BgBlue,
+	color.BgMagenta,
+	color.BgCyan,
+	color.BgGreen,
+}
+
+func printGroupMapping(cl mangadex.ChapterList) {
+	groupMapping := make(map[string]int)
+	ids := make([]string, 0)
+	for _, ci := range cl {
+		attr := len(groupMapping) - 1
+		if val, ok := groupMapping[gid(ci)]; ok {
+			attr = val
+		} else {
+			attr += 1
+			groupMapping[gid(ci)] = attr
+		}
+		ids = append(ids, color.New(groupColors[attr%len(groupColors)]).Sprint(ci.Identifier))
+	}
+
+	groups := make([]string, len(groupMapping))
+	for key, val := range groupMapping {
+		groups[val] = color.New(groupColors[val%len(groupColors)]).Sprint(key)
+	}
+
+	fmt.Printf("Groups: %v\n", strings.Join(groups, ", "))
+	fmt.Printf("Chapters: %v\n", strings.Join(ids, ", "))
+}
+
+func simpleColorPrint(ss ...string) {
+	for n := 0; n < len(ss); n += 2 {
+		fmt.Print(ss[n])
+		color.New(color.Underline).Print(ss[n+1])
+	}
+	fmt.Println()
 }
 
 func writeBook(book mobi.Book, path string) error {
