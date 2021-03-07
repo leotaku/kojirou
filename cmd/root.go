@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"runtime/pprof"
@@ -28,7 +29,7 @@ var rootCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		id, err := strconv.ParseInt(args[0], 10, 32)
 		if err != nil {
-			return err
+			return fmt.Errorf(`parsing "%v": not a valid identifier`, args[0])
 		}
 		cmd.SilenceUsage = true
 
