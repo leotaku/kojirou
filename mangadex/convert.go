@@ -1,7 +1,7 @@
 package mangadex
 
 import (
-	"fmt"
+	"path"
 	"reflect"
 	"strings"
 
@@ -57,7 +57,7 @@ func convertChapter(c api.ChapterData, chapterID Identifier, volumeID Identifier
 	result := make(PathList, 0)
 	for i, filename := range c.Pages {
 		server := strings.TrimRight(c.Server, "/")
-		url := fmt.Sprintf("%v/%v/%v", server, c.Hash, filename)
+		url := path.Join(server, c.Hash, filename)
 		result = append(result, PathItem{
 			URL:       url,
 			imageID:   i,
