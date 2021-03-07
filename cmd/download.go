@@ -97,13 +97,7 @@ func writeBook(book mobi.Book, path string) error {
 	}
 	defer f.Close()
 
-	db := book.Realize()
-	err = db.Write(f)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return book.Realize().Write(f)
 }
 
 func writeThumb(book mobi.Book, root string) error {
@@ -115,10 +109,7 @@ func writeThumb(book mobi.Book, root string) error {
 		}
 		defer f.Close()
 
-		err = jpeg.Encode(f, book.CoverImage, nil)
-		if err != nil {
-			return err
-		}
+		return jpeg.Encode(f, book.CoverImage, nil)
 	}
 
 	return nil
