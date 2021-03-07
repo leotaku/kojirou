@@ -19,6 +19,8 @@ var (
 	dryRunArg           bool
 	outArg              string
 	cpuprofileArg       string
+	helpRankingFlag     bool
+	helpFilterFlag      bool
 )
 
 var rootCmd = &cobra.Command{
@@ -61,8 +63,52 @@ var rootCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 }
 
+var helpRankingCmd = &cobra.Command{
+	Long: `Help for chapter ranking
+
+As you might already know manga on MangaDex are scanned,
+translated and typeset by independent hobbyist groups
+generally referred to as "scantlators".  Because of the
+lack of any monetary incentive, it is rare for a project
+to be scantlated from beginning to end by a single group.
+
+To make the best out of this situation, Manki provides a
+rudimentary ranking system in order to select the highest
+quality scantlations.
+
+By running the following command, you can try out different
+ranking algorithms without downloading chapters or images.
+If you are happy with the resulting list of chapters, just
+remove the "--dry-run" switch to download the manga.
+
+  $ manki --rank ALGORITHM --dry-run
+
+Here is a short explanation for each of the available rankings.
+
+  newest-total (default):
+Prefer chapters by groups with the newest upload.
+  newest:
+Prefer chapters that have been uploaded most recently.
+  views-total:
+Prefer chapters by groups with the most total views.
+  views:
+Prefer chapters with the most views.
+  most:
+Prefer chapters by groups with the most uploaded chapters.`,
+}
+
+var helpFilterCmd = &cobra.Command{
+	Long: `Help for chapter filtering
+
+The filtering system is not yet implemented.`,
+}
+
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if helpRankingFlag {
+		helpRankingCmd.Help()
+	} else if helpFilterFlag {
+		helpFilterCmd.Help()
+	} else if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
@@ -126,8 +172,11 @@ func init() {
 	rootCmd.Flags().BoolVarP(&dryRunArg, "dry-run", "d", false, "disable writing of any files")
 	rootCmd.Flags().StringVarP(&outArg, "out", "o", "", "output directory")
 	rootCmd.Flags().StringVarP(&cpuprofileArg, "cpuprofile", "", "", "write CPU profile to this file")
+	rootCmd.Flags().BoolVarP(&helpRankingFlag, "help-ranking", "R", false, "Help for chapter ranking")
+	rootCmd.Flags().BoolVarP(&helpFilterFlag, "help-filter", "F", false, "Help for chapter filtering")
 	rootCmd.Flags().SortFlags = false
 	rootCmd.MarkFlagRequired("language")
 	rootCmd.SetHelpFunc(help)
 	rootCmd.SetUsageFunc(usage)
+	rootCmd.ParseFlags(os.Args)
 }
