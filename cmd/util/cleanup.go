@@ -20,7 +20,7 @@ func InitCleanup() {
 	go func() {
 		for sig := range c {
 			RunCleanup()
-			fmt.Println(sig)
+			fmt.Fprintln(os.Stderr, sig)
 			os.Exit(2)
 		}
 	}()
