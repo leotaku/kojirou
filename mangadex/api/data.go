@@ -58,6 +58,7 @@ type ChapterInfo struct {
 	ID         int
 	Hash       string
 	MangaID    int
+	ThreadID   int
 	MangaTitle string
 	Volume     string
 	Chapter    string
@@ -85,6 +86,7 @@ type ChapterData struct {
 	ID             int
 	Hash           string
 	MangaID        int
+	ThreadID       int
 	MangaTitle     string
 	Volume         string
 	Chapter        string
