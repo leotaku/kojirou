@@ -25,7 +25,7 @@ func (c *Client) WithHTTPClient(http http.Client) *Client {
 func (c *Client) FetchManga(mangaID int) (*Manga, error) {
 	b, err := c.base.FetchBase(mangaID)
 	if err != nil {
-		return nil, fmt.Errorf("Fetch manga: %w", err)
+		return nil, fmt.Errorf("fetch manga: %w", err)
 	}
 
 	return &Manga{
@@ -37,7 +37,7 @@ func (c *Client) FetchManga(mangaID int) (*Manga, error) {
 func (c *Client) FetchChapters(mangaID int) (ChapterList, error) {
 	ca, err := c.base.FetchChapters(mangaID)
 	if err != nil {
-		return nil, fmt.Errorf("Fetch chapters: %w", err)
+		return nil, fmt.Errorf("fetch chapters: %w", err)
 	}
 
 	chapters := convertChapters(ca.Data)
@@ -47,7 +47,7 @@ func (c *Client) FetchChapters(mangaID int) (ChapterList, error) {
 func (c *Client) FetchCovers(mangaID int) (PathList, error) {
 	co, err := c.base.FetchCovers(mangaID)
 	if err != nil {
-		return nil, fmt.Errorf("Fetch covers: %w", err)
+		return nil, fmt.Errorf("fetch covers: %w", err)
 	}
 
 	covers := convertCovers(co.Data)
@@ -57,7 +57,7 @@ func (c *Client) FetchCovers(mangaID int) (PathList, error) {
 func (c *Client) FetchChapter(ci ChapterInfo) (PathList, error) {
 	chap, err := c.base.FetchChapter(ci.ID)
 	if err != nil {
-		return nil, fmt.Errorf("Fetch chapter: %w", err)
+		return nil, fmt.Errorf("fetch chapter: %w", err)
 	}
 
 	paths := convertChapter(chap.Data, ci.Identifier, ci.VolumeIdentifier)
