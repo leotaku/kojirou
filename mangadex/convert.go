@@ -4,7 +4,6 @@ import (
 	"html"
 	"path"
 	"reflect"
-	"strings"
 	"time"
 
 	"github.com/leotaku/manki/mangadex/api"
@@ -59,8 +58,7 @@ func convertChapters(ca api.ChaptersData) ChapterList {
 func convertChapter(c api.ChapterData, chapterID Identifier, volumeID Identifier) PathList {
 	result := make(PathList, 0)
 	for i, filename := range c.Pages {
-		server := strings.TrimRight(c.Server, "/")
-		url := path.Join(server, c.Hash, filename)
+		url := c.Server + path.Join(c.Hash, filename)
 		result = append(result, PathItem{
 			URL:       url,
 			imageID:   i,
