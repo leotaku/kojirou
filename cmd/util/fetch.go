@@ -19,13 +19,6 @@ var (
 	httpClient *http.Client
 )
 
-func init() {
-	retry := retryablehttp.NewClient()
-	retry.Logger = nil
-	httpClient = retry.StandardClient()
-	Client = mangadex.NewClient().WithHTTPClient(*httpClient)
-}
-
 type unitem struct {
 	page mangadex.PathItem
 	err  error
@@ -159,4 +152,11 @@ func fetchImage(url string) (image.Image, error) {
 	}
 
 	return img, err
+}
+
+func init() {
+	retry := retryablehttp.NewClient()
+	retry.Logger = nil
+	httpClient = retry.StandardClient()
+	Client = mangadex.NewClient().WithHTTPClient(*httpClient)
 }
