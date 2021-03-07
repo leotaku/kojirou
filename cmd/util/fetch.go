@@ -19,12 +19,12 @@ var (
 	httpClient *http.Client
 )
 
-type unitem struct {
+type pathOrErr struct {
 	page mangadex.PathItem
 	err  error
 }
 
-type item struct {
+type imageOrErr struct {
 	page mangadex.ImageItem
 	err  error
 }
@@ -33,7 +33,7 @@ func FetchChapters(cs mangadex.ChapterList, pb *Bar) (mangadex.ImageList, error)
 	pb.AddTotal(int64(len(cs)))
 
 	// Fetch chapters in parallel
-	wip := make(chan unitem, 200)
+	wip := make(chan pathOrErr, 200)
 	go runChapters(cs, wip, pb)
 
 	// Fetch images in parallel
@@ -47,10 +47,10 @@ func FetchChapters(cs mangadex.ChapterList, pb *Bar) (mangadex.ImageList, error)
 
 func FetchCovers(cs mangadex.PathList, pb *Bar) (mangadex.ImageList, error) {
 	pb.AddTotal(int64(len(cs)))
-	in := make(chan unitem)
+	in := make(chan pathOrErr)
 	go func() {
 		for _, path := range cs {
-			in <- unitem{page: path}
+			in <- pathOrErr{page: path}
 		}
 		close(in)
 	}()
@@ -58,7 +58,7 @@ func FetchCovers(cs mangadex.PathList, pb *Bar) (mangadex.ImageList, error) {
 	return fetchImages(in, pb)
 }
 
-func fetchImages(in <-chan unitem, pb *Bar) (mangadex.ImageList, error) {
+func fetchImages(in <-chan pathOrErr, pb *Bar) (mangadex.ImageList, error) {
 	result := make(mangadex.ImageList, 0)
 	for it := range runImages(in, pb) {
 		if it.err != nil {
@@ -69,7 +69,7 @@ func fetchImages(in <-chan unitem, pb *Bar) (mangadex.ImageList, error) {
 	return result, nil
 }
 
-func runChapters(chaps []mangadex.ChapterInfo, out chan unitem, pb *Bar) {
+func runChapters(chaps []mangadex.ChapterInfo, out chan pathOrErr, pb *Bar) {
 	in := make(chan mangadex.ChapterInfo)
 	wg := new(sync.WaitGroup)
 
@@ -81,11 +81,11 @@ func runChapters(chaps []mangadex.ChapterInfo, out chan unitem, pb *Bar) {
 				pb.Increment()
 				pb.AddTotal(int64(len(paths)))
 				for _, path := range paths {
-					out <- unitem{page: path}
+					out <- pathOrErr{page: path}
 				}
 
 				if err != nil {
-					out <- unitem{err: err}
+					out <- pathOrErr{err: err}
 				}
 			}
 			wg.Done()
@@ -105,8 +105,8 @@ func runChapters(chaps []mangadex.ChapterInfo, out chan unitem, pb *Bar) {
 	}()
 }
 
-func runImages(in <-chan unitem, pb *Bar) chan item {
-	out := make(chan item, 100)
+func runImages(in <-chan pathOrErr, pb *Bar) chan imageOrErr {
+	out := make(chan imageOrErr, 100)
 	wg := new(sync.WaitGroup)
 
 	for i := 0; i < limitArg; i++ {
@@ -114,7 +114,7 @@ func runImages(in <-chan unitem, pb *Bar) chan item {
 		go func() {
 			for it := range in {
 				if it.err != nil {
-					out <- item{err: it.err}
+					out <- imageOrErr{err: it.err}
 					return
 				}
 
@@ -122,9 +122,9 @@ func runImages(in <-chan unitem, pb *Bar) chan item {
 				pb.Increment()
 
 				if err != nil {
-					out <- item{err: err}
+					out <- imageOrErr{err: err}
 				} else {
-					out <- item{page: it.page.WithImage(img)}
+					out <- imageOrErr{page: it.page.WithImage(img)}
 				}
 			}
 			wg.Done()
