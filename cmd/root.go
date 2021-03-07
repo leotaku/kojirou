@@ -6,12 +6,15 @@ import (
 	"strconv"
 
 	"github.com/leotaku/manki/cmd/util"
+	"github.com/leotaku/manki/mangadex"
 	"github.com/spf13/cobra"
 )
 
 var (
+	languageArg         string
+	rankArg             string
 	kindleFolderModeArg bool
-	langArg             string
+	dryRunArg           bool
 	outArg              string
 )
 
@@ -30,41 +33,18 @@ var rootCmd = &cobra.Command{
 		util.InitCleanup()
 		defer util.RunCleanup()
 
-		down, err := downloadMetaFor(int(id), nil)
+		manga, err := downloadMetaFor(int(id), filterFromFlags)
 		if err != nil {
 			return err
 		}
 
-		// Variables
-		title := down.Info.Title
-
 		// Write
-		if !kindleFolderModeArg {
-			if len(outArg) == 0 {
-				outArg = title
-			}
-
-			// Setup directories
-			err := util.SetupDirectories(outArg)
-			if err != nil {
-				return err
-			}
-
-			return downloadWriteVolumes(*down, outArg, nil)
+		if dryRunArg {
+			return nil
+		} else if !kindleFolderModeArg {
+			return runInNormalMode(*manga)
 		} else {
-			if len(outArg) == 0 {
-				outArg = "kindle"
-			}
-			root := path.Join(outArg, "documents", title)
-			thumbRoot := path.Join(outArg, "system", "thumbnails")
-
-			// Setup directories
-			err := util.SetupDirectories(root, thumbRoot)
-			if err != nil {
-				return err
-			}
-
-			return downloadWriteVolumes(*down, root, &thumbRoot)
+			return runInKindleMode(*manga)
 		}
 	},
 	DisableFlagsInUseLine: true,
@@ -76,11 +56,66 @@ func Execute() {
 	}
 }
 
+func filterFromFlags(cl mangadex.ChapterList) mangadex.ChapterList {
+	lang := util.MatchLang(languageArg)
+	cl = filterLang(cl, lang)
+
+	switch rankArg {
+	case "newest":
+		cl = rankNewest(cl)
+	case "newest-total":
+		cl = rankTotalNewest(cl)
+	case "views":
+		cl = rankViews(cl)
+	case "views-total":
+		cl = rankTotalViews(cl)
+	case "most":
+		cl = rankMost(cl)
+	default:
+		cl = make(mangadex.ChapterList, 0)
+	}
+
+	return doRank(cl)
+}
+
+func runInNormalMode(m mangadex.Manga) error {
+	if outArg == "" {
+		outArg = m.Info.Title
+	}
+
+	// Setup directories
+	err := util.SetupDirectories(outArg)
+	if err != nil {
+		return err
+	}
+
+	return downloadAndWrite(m, outArg, nil)
+}
+
+func runInKindleMode(m mangadex.Manga) error {
+	if outArg == "" {
+		outArg = "kindle"
+	}
+	root := path.Join(outArg, "documents", m.Info.Title)
+	thumbRoot := path.Join(outArg, "system", "thumbnails")
+
+	// Setup directories
+	err := util.SetupDirectories(root, thumbRoot)
+	if err != nil {
+		return err
+	}
+
+	return downloadAndWrite(m, root, &thumbRoot)
+}
+
 func init() {
-	rootCmd.Flags().StringVarP(&langArg, "language", "l", "en", "language for MangaDex download")
+	rootCmd.Flags().StringVarP(&languageArg, "language", "l", "en", "language for chapter downloads")
+	rootCmd.Flags().StringVarP(&rankArg, "rank", "r", "newest-total", "chapter ranking method to use")
 	rootCmd.Flags().BoolVarP(&kindleFolderModeArg, "kindle-folder-mode", "k", false, "generate folder structure for Kindle devices")
+	rootCmd.Flags().BoolVarP(&dryRunArg, "dry-run", "d", false, "disable writing of any files")
 	rootCmd.Flags().StringVarP(&outArg, "out", "o", "", "output directory")
 	rootCmd.Flags().SortFlags = false
+	rootCmd.MarkFlagRequired("language")
 	rootCmd.SetHelpFunc(help)
 	rootCmd.SetUsageFunc(usage)
 }
