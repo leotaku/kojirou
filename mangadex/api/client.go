@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-const APIBaseURL = `https://mangadex.org/api/v2/`
+const APIBaseURL = `https://api.mangadex.org/v2/`
 
 type Client struct {
 	Inner   http.Client
