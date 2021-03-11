@@ -64,7 +64,7 @@ var rootCmd = &cobra.Command{
 }
 
 var helpRankingCmd = &cobra.Command{
-	Use: "ranking",
+	Use:   "ranking",
 	Short: "Help topic for chapter ranking",
 	Long: `Help for chapter ranking
 
@@ -100,7 +100,7 @@ Prefer chapters by groups with the most uploaded chapters.`,
 }
 
 var helpFilterCmd = &cobra.Command{
-	Use: "filter",
+	Use:   "filter",
 	Short: "Help topic for chapter filtering",
 	Long: `Help for chapter filtering
 
