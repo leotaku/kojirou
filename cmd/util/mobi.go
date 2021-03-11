@@ -2,8 +2,10 @@ package util
 
 import (
 	"fmt"
+	"html/template"
 	"image"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/leotaku/manki/mangadex"
@@ -12,16 +14,22 @@ import (
 	"golang.org/x/text/language"
 )
 
-const htmlTag = `<div style="display: none">.</div><img src="kindle:embed:%v?mime=image/jpeg">`
+const (
+	pageTemplateString = `<div>.</div><img src="kindle:embed:{{ . }}?mime=image/jpeg">`
+	basePageCSS        = `
+div {
+    display: none
+}
 
-const baseCSS = `
-.image {
+img {
     display: block;
     vertical-align: baseline;
     margin: 0;
     padding: 0;
-}
-`
+}`
+)
+
+var pageTemplate = template.Must(template.New("page").Parse(pageTemplateString))
 
 func VolumesToMobi(manga mangadex.Manga) mobi.Book {
 	chapters := make([]mobi.Chapter, 0)
@@ -36,7 +44,7 @@ func VolumesToMobi(manga mangadex.Manga) mobi.Book {
 			pages := make([]string, 0)
 			for _, img := range chap.Sorted() {
 				images = append(images, img)
-				pages = append(pages, fmt.Sprintf(htmlTag, records.To32(id)))
+				pages = append(pages, executeTemplate(pageTemplate, records.To32(id)))
 				id++
 			}
 			title := chap.Info.Title
@@ -110,4 +118,13 @@ func unifyStrings(this []string, other ...string) []string {
 	}
 
 	return result
+}
+
+func executeTemplate(tpl *template.Template, data interface{}) string {
+	b := new(strings.Builder)
+	if err := tpl.Execute(b, data); err != nil {
+		panic(err)
+	}
+
+	return b.String()
 }
