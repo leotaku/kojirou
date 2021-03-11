@@ -40,7 +40,9 @@ var rootCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			pprof.StartCPUProfile(f)
+			if err := pprof.StartCPUProfile(f); err != nil {
+				return err
+			}
 			defer pprof.StopCPUProfile()
 		}
 		util.InitCleanup()

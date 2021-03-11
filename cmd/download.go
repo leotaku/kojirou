@@ -143,8 +143,8 @@ func printGroupMapping(cl mangadex.ChapterList) {
 
 func simpleColorPrint(ss ...string) {
 	for n := 0; n < len(ss); n += 2 {
-		fmt.Print(ss[n])
-		color.New(color.Underline).Print(ss[n+1])
+		underlined := color.New(color.Underline).Sprint(ss[n+1])
+		fmt.Printf("%v%v", ss[n], underlined)
 	}
 	fmt.Println()
 }
