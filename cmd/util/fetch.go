@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/leotaku/manki/mangadex"
+	"github.com/leotaku/kojirou/mangadex"
 )
 
 const (

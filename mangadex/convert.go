@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/leotaku/manki/mangadex/api"
+	"github.com/leotaku/kojirou/mangadex/api"
 	"golang.org/x/text/language"
 )
 

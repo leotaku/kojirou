@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/leotaku/manki/cmd/util"
-	"github.com/leotaku/manki/mangadex"
+	"github.com/leotaku/kojirou/cmd/util"
+	"github.com/leotaku/kojirou/mangadex"
 	"github.com/leotaku/mobi"
 )
 

@@ -7,8 +7,8 @@ import (
 	"runtime/pprof"
 	"strconv"
 
-	"github.com/leotaku/manki/cmd/util"
-	"github.com/leotaku/manki/mangadex"
+	"github.com/leotaku/kojirou/cmd/util"
+	"github.com/leotaku/kojirou/mangadex"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +24,7 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:     "manki [flags..] <identifier>",
+	Use:     "kojirou [flags..] <identifier>",
 	Short:   "Generate Kindle-compatible EBooks from MangaDex",
 	Version: "0.1",
 	Args:    cobra.ExactArgs(1),
@@ -64,6 +64,8 @@ var rootCmd = &cobra.Command{
 }
 
 var helpRankingCmd = &cobra.Command{
+	Use: "ranking",
+	Short: "Help topic for chapter ranking",
 	Long: `Help for chapter ranking
 
 As you might already know manga on MangaDex are scanned,
@@ -72,7 +74,7 @@ generally referred to as "scantlators".  Because of the
 lack of any monetary incentive, it is rare for a project
 to be scantlated from beginning to end by a single group.
 
-To make the best out of this situation, Manki provides a
+To make the best out of this situation, Kojirou provides a
 rudimentary ranking system in order to select the highest
 quality scantlations.
 
@@ -81,7 +83,7 @@ ranking algorithms without downloading chapters or images.
 If you are happy with the resulting list of chapters, just
 remove the "--dry-run" switch to download the manga.
 
-  $ manki --language LANG --rank ALGORITHM --dry-run
+  $ kojirou --language LANG --rank ALGORITHM --dry-run
 
 Here is a short explanation for each of the available rankings.
 
@@ -98,6 +100,8 @@ Prefer chapters by groups with the most uploaded chapters.`,
 }
 
 var helpFilterCmd = &cobra.Command{
+	Use: "filter",
+	Short: "Help topic for chapter filtering",
 	Long: `Help for chapter filtering
 
 The filtering system is not yet implemented.`,

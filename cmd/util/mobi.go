@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leotaku/manki/mangadex"
+	"github.com/leotaku/kojirou/mangadex"
 	"github.com/leotaku/mobi"
 	"github.com/leotaku/mobi/records"
 	"golang.org/x/text/language"

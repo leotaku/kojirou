@@ -1,4 +1,4 @@
-module github.com/leotaku/manki
+module github.com/leotaku/kojirou
 
 go 1.15
 
