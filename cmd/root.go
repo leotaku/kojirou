@@ -81,7 +81,7 @@ ranking algorithms without downloading chapters or images.
 If you are happy with the resulting list of chapters, just
 remove the "--dry-run" switch to download the manga.
 
-  $ manki --rank ALGORITHM --dry-run
+  $ manki --language LANG --rank ALGORITHM --dry-run
 
 Here is a short explanation for each of the available rankings.
 
