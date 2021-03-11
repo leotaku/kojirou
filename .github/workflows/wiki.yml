@@ -21,5 +21,9 @@ jobs:
         go run *.go --help         > wiki/Home.mediawiki
         go run *.go --help-ranking > wiki/Ranking.mediawiki
         go run *.go --help-filter  > wiki/Filtering.mediawiki
+    - run: |
         cd wiki
-        git diff --quiet && git commit -am "Add changes" && git push
+        git config --global user.name  "actions-user"
+        git config --global user.email "actions@github.com"
+        git add . && git diff-index --quiet HEAD && exit 0
+        git commit -m "Add changes" && git push
