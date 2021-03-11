@@ -15,5 +15,3 @@ require (
 	golang.org/x/sys v0.0.0-20210305230114-8fe3ee5dd75b // indirect
 	golang.org/x/text v0.3.5
 )
-
-replace github.com/leotaku/mobi => ../mobi
