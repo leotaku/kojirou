@@ -3,11 +3,14 @@
 <h1>
   <span>Manki</span>
   <a href="https://goreportcard.com/report/github.com/leotaku/manki">
-    <img src="https://goreportcard.com/badge/github.com/leotaku/manki" alt="Go Report Card">
+    <img src="https://goreportcard.com/badge/github.com/leotaku/manki?style=flat-square" alt="Go Report Card">
   </a>
   <a href="https://github.com/leotaku/manki/actions">
-    <img src="https://github.com/leotaku/manki/workflows/check/badge.svg" alt="Github Actions CI">
+    <img src="https://img.shields.io/github/workflow/status/leotaku/manki/check?label=check&logo=github&logoColor=white&style=flat-square" alt="Github CI Status">
   </a>
+  <a href="https://github.com/leotaku/manki/wiki/Home">
+    <img src="https://img.shields.io/github/workflow/status/leotaku/manki/wiki?label=wiki&color=blue&logo=gitbook&logoColor=white&style=flat-square" alt="GitHub Wiki Status">
+  <a/>
 </h1>
 
 > Generate perfectly formatted Kindle EBooks from MangaDex manga
