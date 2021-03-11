@@ -1,0 +1,25 @@
+name: wiki
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  wiki:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+      with:
+        repository: ${{ github.repository }}.wiki
+        path: wiki
+    - uses: actions/setup-go@v2
+      with:
+        go-version: ^1.15
+    - run: |
+        go run *.go --help         > wiki/Home.mediawiki
+        go run *.go --help-ranking > wiki/Ranking.mediawiki
+        go run *.go --help-filter  > wiki/Filtering.mediawiki
+        cd wiki
+        git diff --quiet && git commit -am "Add changes" && git push
