@@ -1,4 +1,4 @@
-<a href="https://mangadex.org/title/22631"><img src="./.github/header.jpg" alt="Header Image" width="75%"></a>
+<a href="https://mangadex.org/title/22631"><img src="./.github/header.jpg" alt="Header Image" width="80%"></a>
 
 <h1>
   <span>Kojirou</span>
