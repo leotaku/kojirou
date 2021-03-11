@@ -97,8 +97,8 @@ func (m Manga) WithChapters(chapters ChapterList) Manga {
 			}
 		} else {
 			vol := extractVolume(info)
-			if v, ok := m.Volumes[volID]; ok {
-				vol.Cover = v.Cover
+			if val, ok := m.Volumes[volID]; ok {
+				vol.Cover = val.Cover
 			}
 			vols[volID] = vol
 		}
@@ -137,10 +137,10 @@ func (m Manga) WithCovers(covers ImageList) Manga {
 		vol.Cover = nil
 		vols[idx] = vol
 	}
-	for _, in := range covers {
-		if val, ok := vols[in.volumeID]; ok {
-			val.Cover = in.Image
-			vols[in.volumeID] = val
+	for _, it := range covers {
+		if vol, ok := vols[it.volumeID]; ok {
+			vol.Cover = it.Image
+			vols[it.volumeID] = vol
 		}
 	}
 
