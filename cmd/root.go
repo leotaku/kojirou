@@ -111,9 +111,9 @@ The filtering system is not yet implemented.`,
 
 func Execute() {
 	if helpRankingFlag {
-		helpRankingCmd.Help()
+		helpRankingCmd.Help() //nolint:errcheck
 	} else if helpFilterFlag {
-		helpFilterCmd.Help()
+		helpFilterCmd.Help() //nolint:errcheck
 	} else if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
@@ -181,8 +181,8 @@ func init() {
 	rootCmd.Flags().BoolVarP(&helpRankingFlag, "help-ranking", "R", false, "Help for chapter ranking")
 	rootCmd.Flags().BoolVarP(&helpFilterFlag, "help-filter", "F", false, "Help for chapter filtering")
 	rootCmd.Flags().SortFlags = false
-	rootCmd.MarkFlagRequired("language")
+	rootCmd.MarkFlagRequired("language") //nolint:errcheck
 	rootCmd.SetHelpFunc(help)
 	rootCmd.SetUsageFunc(usage)
-	rootCmd.ParseFlags(os.Args)
+	rootCmd.ParseFlags(os.Args) //nolint:errcheck
 }
