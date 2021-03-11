@@ -31,6 +31,7 @@ Kojirou can also output a folder structure matching that of any modern Kindle de
 
 ``` shell
 kojirou 22631 -l en --kindle-folder-mode
+udisksctl mount -b /dev/sdb
 rsync kindle/ /run/media/user/Kindle/
 ```
 
