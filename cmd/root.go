@@ -120,7 +120,7 @@ func Execute() {
 	}
 }
 
-func filterFromFlags(cl mangadex.ChapterList) mangadex.ChapterList {
+func filterFromFlags(cl mangadex.ChapterList) (mangadex.ChapterList, error) {
 	lang := util.MatchLang(languageArg)
 	cl = filterLang(cl, lang)
 
@@ -136,10 +136,10 @@ func filterFromFlags(cl mangadex.ChapterList) mangadex.ChapterList {
 	case "most":
 		cl = rankMost(cl)
 	default:
-		cl = make(mangadex.ChapterList, 0)
+		return nil, fmt.Errorf(`not a valid rankinging algorithm: "%v"`, rankArg)
 	}
 
-	return doRank(cl)
+	return doRank(cl), nil
 }
 
 func runInNormalMode(m mangadex.Manga) error {

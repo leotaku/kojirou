@@ -9,7 +9,7 @@ import (
 	"golang.org/x/text/language"
 )
 
-type Filter = func(mangadex.ChapterList) mangadex.ChapterList
+type Filter = func(mangadex.ChapterList) (mangadex.ChapterList, error)
 
 func filterLang(cl mangadex.ChapterList, lang language.Tag) mangadex.ChapterList {
 	return cl.FilterBy(func(c mangadex.ChapterInfo) bool {

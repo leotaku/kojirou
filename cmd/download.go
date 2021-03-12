@@ -24,8 +24,10 @@ func downloadMetaFor(id int, filter Filter) (*mangadex.Manga, error) {
 		return nil, err
 	}
 
-	filtered := filter(chs)
-	if len(filtered) == 0 {
+	filtered, err := filter(chs)
+	if err != nil {
+		return nil, err
+	} else if len(filtered) == 0 {
 		return nil, fmt.Errorf("no matching scantlations found")
 	}
 
