@@ -18,6 +18,7 @@ var (
 	kindleFolderModeArg bool
 	dryRunArg           bool
 	outArg              string
+	forceArg            bool
 	cpuprofileArg       string
 	helpRankingFlag     bool
 	helpFilterFlag      bool
@@ -152,7 +153,7 @@ func runInNormalMode(m mangadex.Manga) error {
 		return err
 	}
 
-	return downloadAndWrite(m, outArg, nil)
+	return downloadAndWrite(m, outArg, nil, forceArg)
 }
 
 func runInKindleMode(m mangadex.Manga) error {
@@ -168,7 +169,7 @@ func runInKindleMode(m mangadex.Manga) error {
 		return err
 	}
 
-	return downloadAndWrite(m, root, &thumbRoot)
+	return downloadAndWrite(m, root, &thumbRoot, forceArg)
 }
 
 func init() {
@@ -177,6 +178,7 @@ func init() {
 	rootCmd.Flags().BoolVarP(&kindleFolderModeArg, "kindle-folder-mode", "k", false, "generate folder structure for Kindle devices")
 	rootCmd.Flags().BoolVarP(&dryRunArg, "dry-run", "d", false, "disable writing of any files")
 	rootCmd.Flags().StringVarP(&outArg, "out", "o", "", "output directory")
+	rootCmd.Flags().BoolVarP(&forceArg, "force", "f", false, "overwrite existing volumes")
 	rootCmd.Flags().StringVarP(&cpuprofileArg, "cpuprofile", "", "", "write CPU profile to this file")
 	rootCmd.Flags().BoolVarP(&helpRankingFlag, "help-ranking", "R", false, "Help for chapter ranking")
 	rootCmd.Flags().BoolVarP(&helpFilterFlag, "help-filter", "F", false, "Help for chapter filtering")

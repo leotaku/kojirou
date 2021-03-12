@@ -52,7 +52,7 @@ func downloadAddCovers(m mangadex.Manga) (*mangadex.Manga, error) {
 	return &result, nil
 }
 
-func downloadAndWrite(ma mangadex.Manga, root string, thumbRoot *string) error {
+func downloadAndWrite(ma mangadex.Manga, root string, thumbRoot *string, force bool) error {
 	m, err := downloadAddCovers(ma)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func downloadAndWrite(ma mangadex.Manga, root string, thumbRoot *string) error {
 		pb.AddTotal(1)
 
 		// Abort if file exists
-		if _, err := os.Stat(path); !os.IsNotExist(err) {
+		if _, err := os.Stat(path); !force && !os.IsNotExist(err) {
 			pb.Succeed("File exists").Finish()
 			continue
 		}
