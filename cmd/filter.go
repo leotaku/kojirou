@@ -11,10 +11,6 @@ import (
 
 type Filter = func(mangadex.ChapterList) mangadex.ChapterList
 
-func gid(ci mangadex.ChapterInfo) string {
-	return strings.Join(ci.GroupNames, " and ")
-}
-
 func filterLang(cl mangadex.ChapterList, lang language.Tag) mangadex.ChapterList {
 	// Filter group by language
 	return cl.FilterBy(func(c mangadex.ChapterInfo) bool {
@@ -76,4 +72,8 @@ func doRank(cl mangadex.ChapterList) mangadex.ChapterList {
 	return cl.SortBy(func(ci1, ci2 mangadex.ChapterInfo) bool {
 		return ci1.Identifier.Less(ci2.Identifier)
 	})
+}
+
+func gid(ci mangadex.ChapterInfo) string {
+	return ci.GroupNames.String()
 }
