@@ -89,7 +89,7 @@ ranking algorithms without downloading chapters or images.
 If you are happy with the resulting list of chapters, just
 remove the "--dry-run" switch to download the manga.
 
-  $ kojirou --language LANG --rank ALGORITHM --dry-run
+  $ kojirou ID --language LANG --rank ALGORITHM --dry-run
 
 Here is a short explanation for each of the available rankings.
 
