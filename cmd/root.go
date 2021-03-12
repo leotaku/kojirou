@@ -126,7 +126,7 @@ func Execute() {
 func filterFromFlags(cl mangadex.ChapterList) (mangadex.ChapterList, error) {
 	if languageArg != "" {
 		lang := util.MatchLang(languageArg)
-		cl = filterLang(cl, lang)
+		cl = filterLanguage(cl, lang)
 	}
 	if groupsFilter != "" {
 		cl = filterRegexField(cl, "GroupNames", groupsFilter)
