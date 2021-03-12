@@ -12,7 +12,6 @@ import (
 type Filter = func(mangadex.ChapterList) mangadex.ChapterList
 
 func filterLang(cl mangadex.ChapterList, lang language.Tag) mangadex.ChapterList {
-	// Filter group by language
 	return cl.FilterBy(func(c mangadex.ChapterInfo) bool {
 		return util.MatchRegion(c.Region) == lang
 	})
