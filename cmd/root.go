@@ -110,7 +110,45 @@ var helpFilterCmd = &cobra.Command{
 	Short: "Help topic for chapter filtering",
 	Long: `Help for chapter filtering
 
-The filtering system is not yet implemented.`,
+Sometimes when downloading manga from MangaDex, you might
+want to ignore chapters uploaded by scantlation groups with
+less than ideal quality standards.  Other times, you may
+only be interested a certain group of chapters or volumes.
+
+To support these situations Kojirou provides a simple typed
+filter system.  For now, it is possible to filter MangaDex
+identifier attributes (chapters and volumes) against a list
+of identifier values and other attributes (groups) against a
+regular expression.  When using multiple filters, they are
+combined using boolean AND, so all filters must match for a
+chapter to be selected for download.
+
+  $ kojirou ID --language LANG --chapters 1..10,Oneshot
+
+The previous command will download chapters one through ten
+as well as the special "Oneshot" chapter of the given manga.
+
+  $ kojirou ID --language LANG --volumes 8,9,Specials
+
+The previous command will download volumes eight, nine and
+the special "Special" volume of the given manga.  You might
+want to combine filtering for the last released volume of a
+regularly updated manga with the "--force" flag to download
+volumes that might have changed.
+
+  $ kojirou ID --language LANG --groups !REGEX
+
+The previous command will download all available chapters of
+the given manga while ignoring uploads by groups that match
+the given regular expression.  If you remove the "!" prefix
+of the regular expression, Kojirou will instead only download
+chapters by groups that match the regular expression.
+
+  $ kojirou ID --language BCP_47_LANGUAGE_TAG
+
+Technically, the "--language" option is also implemented
+as a filter, however it is non-optional and must always be
+given.  It accepts the format of BCP 47 language tags.`,
 }
 
 func Execute() {
