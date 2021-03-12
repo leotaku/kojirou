@@ -20,6 +20,9 @@ var (
 	outArg              string
 	forceArg            bool
 	cpuprofileArg       string
+	groupsFilter        string
+	chaptersFilter      string
+	volumesFilter       string
 	helpRankingFlag     bool
 	helpFilterFlag      bool
 )
@@ -121,8 +124,21 @@ func Execute() {
 }
 
 func filterFromFlags(cl mangadex.ChapterList) (mangadex.ChapterList, error) {
-	lang := util.MatchLang(languageArg)
-	cl = filterLang(cl, lang)
+	if languageArg != "" {
+		lang := util.MatchLang(languageArg)
+		cl = filterLang(cl, lang)
+	}
+	if groupsFilter != "" {
+		cl = filterRegexField(cl, "GroupNames", groupsFilter)
+	}
+	if volumesFilter != "" {
+		ranges := util.ParseRanges(volumesFilter)
+		cl = filterIdentifierField(cl, "VolumeIdentifier", ranges)
+	}
+	if chaptersFilter != "" {
+		ranges := util.ParseRanges(chaptersFilter)
+		cl = filterIdentifierField(cl, "Identifier", ranges)
+	}
 
 	switch rankArg {
 	case "newest":
@@ -180,6 +196,9 @@ func init() {
 	rootCmd.Flags().StringVarP(&outArg, "out", "o", "", "output directory")
 	rootCmd.Flags().BoolVarP(&forceArg, "force", "f", false, "overwrite existing volumes")
 	rootCmd.Flags().StringVarP(&cpuprofileArg, "cpuprofile", "", "", "write CPU profile to this file")
+	rootCmd.Flags().StringVarP(&volumesFilter, "volumes", "V", "", "volume identifiers for chapter downloads")
+	rootCmd.Flags().StringVarP(&chaptersFilter, "chapters", "C", "", "chapter identifiers for chapter downloads")
+	rootCmd.Flags().StringVarP(&groupsFilter, "groups", "G", "", "scantlation groups for chapter downloads")
 	rootCmd.Flags().BoolVarP(&helpRankingFlag, "help-ranking", "R", false, "Help for chapter ranking")
 	rootCmd.Flags().BoolVarP(&helpFilterFlag, "help-filter", "F", false, "Help for chapter filtering")
 	rootCmd.Flags().SortFlags = false

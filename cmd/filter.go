@@ -1,7 +1,8 @@
 package cmd
 
 import (
-	"strings"
+	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/leotaku/kojirou/cmd/util"
@@ -14,6 +15,32 @@ type Filter = func(mangadex.ChapterList) (mangadex.ChapterList, error)
 func filterLang(cl mangadex.ChapterList, lang language.Tag) mangadex.ChapterList {
 	return cl.FilterBy(func(c mangadex.ChapterInfo) bool {
 		return util.MatchRegion(c.Region) == lang
+	})
+}
+
+func filterRegexField(cl mangadex.ChapterList, field string, pattern string) mangadex.ChapterList {
+	return cl.FilterBy(func(ci mangadex.ChapterInfo) bool {
+		v := reflect.ValueOf(ci).FieldByName(field).Interface()
+		return util.Match(pattern, fmt.Sprint(v))
+	})
+}
+
+func filterIdentifierField(cl mangadex.ChapterList, field string, values []util.Range) mangadex.ChapterList {
+	return cl.FilterBy(func(ci mangadex.ChapterInfo) bool {
+		v := reflect.ValueOf(ci).FieldByName(field).Interface()
+		switch f := v.(type) {
+		case mangadex.Identifier:
+			for _, r := range values {
+				ok := r.Contains(f)
+				if ok {
+					return true
+				}
+			}
+		default:
+			panic("field is not identifier")
+		}
+
+		return false
 	})
 }
 
