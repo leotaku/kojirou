@@ -4,6 +4,7 @@ import (
 	"html"
 	"path"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/leotaku/kojirou/mangadex/api"
@@ -98,6 +99,12 @@ func groupCovers(co api.CoversData) coversMapping {
 		mapping[val.Volume] = val.URL
 	}
 	return mapping
+}
+
+type multiple []string
+
+func (s multiple) String() string {
+	return strings.Join(s, " and ")
 }
 
 func reverse(v interface{}) {

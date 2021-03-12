@@ -38,7 +38,7 @@ type ChapterInfo struct {
 	Title      string
 	Views      int
 	Region     language.Region
-	GroupNames []string
+	GroupNames multiple
 	Published  time.Time
 	Hash       string
 	ID         int
@@ -50,8 +50,8 @@ type ChapterInfo struct {
 
 type MangaInfo struct {
 	Title    string
-	Authors  []string
-	Artists  []string
+	Authors  multiple
+	Artists  multiple
 	IsHentai bool
 	ID       int
 }
