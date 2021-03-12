@@ -47,10 +47,7 @@ func VolumesToMobi(manga mangadex.Manga) mobi.Book {
 				pages = append(pages, executeTemplate(pageTemplate, records.To32(id)))
 				id++
 			}
-			title := chap.Info.Title
-			if len(title) == 0 {
-				title = fmt.Sprintf("Chapter %v", chap.Info.Identifier)
-			}
+			title := fmt.Sprintf("%v: %v", chap.Info.Identifier, chap.Info.Title)
 			chapters = append(chapters, mobi.Chapter{
 				Title:  title,
 				Chunks: mobi.Chunks(pages...),
