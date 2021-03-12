@@ -29,8 +29,7 @@ func downloadMetaFor(id int, filter Filter) (*mangadex.Manga, error) {
 		return nil, fmt.Errorf("no matching scantlations found")
 	}
 
-	authors := strings.Join(manga.Info.Authors, " and ")
-	simpleColorPrint("Title: ", manga.Info.Title, ", Authors: ", authors)
+	simpleColorPrint("Title: ", manga.Info.Title, ", Authors: ", manga.Info.Authors)
 	printGroupMapping(filtered)
 
 	result := manga.WithChapters(filtered)
@@ -141,7 +140,7 @@ func printGroupMapping(cl mangadex.ChapterList) {
 	fmt.Printf("Chapters: %v\n", strings.Join(ids, ", "))
 }
 
-func simpleColorPrint(ss ...string) {
+func simpleColorPrint(ss ...interface{}) {
 	for n := 0; n < len(ss); n += 2 {
 		underlined := color.New(color.Underline).Sprint(ss[n+1])
 		fmt.Printf("%v%v", ss[n], underlined)
