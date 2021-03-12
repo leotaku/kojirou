@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+// Subchapters beyond nine are not properly represented by floating
+// point numbers and will be sorted incorrectly. However, subchapter
+// numbers will rarely ever go beyond single digits so this should be
+// fine for the time being.
+
 type Identifier struct {
 	numeric  float64
 	fallback string
