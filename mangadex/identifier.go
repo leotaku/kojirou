@@ -27,6 +27,17 @@ func NewIdentifier(num string, fallback string) Identifier {
 	}
 }
 
+func (n Identifier) Equal(o Identifier) bool {
+	switch {
+	case !n.IsSpecial() && !o.IsSpecial():
+		return n.numeric == o.numeric
+	case !n.IsUnknown() && !o.IsUnknown():
+		return n.fallback == o.fallback
+	default:
+		return false
+	}
+}
+
 func (n Identifier) Less(o Identifier) bool {
 	switch {
 	case n.IsUnknown() && o.IsUnknown():
@@ -40,6 +51,10 @@ func (n Identifier) Less(o Identifier) bool {
 	default:
 		return n.numeric < o.numeric
 	}
+}
+
+func (n Identifier) LessOrEqual(o Identifier) bool {
+	return n.Equal(o) || n.Less(o)
 }
 
 func (n Identifier) IsSpecial() bool {
