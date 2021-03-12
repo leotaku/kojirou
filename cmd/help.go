@@ -17,9 +17,11 @@ func writeHelp(cmd *cobra.Command, w io.Writer) {
 		switch {
 		case f.Hidden:
 		case strings.HasPrefix(f.Name, "help") || f.Name == "version":
-			groups["Flags"] = append(groups["Flags"], *f)
+			groups["3Flags"] = append(groups["3Flags"], *f)
+		case strings.HasSuffix(f.Name, "s"):
+			groups["2Filters"] = append(groups["2Filters"], *f)
 		default:
-			groups["Options"] = append(groups["Options"], *f)
+			groups["1Options"] = append(groups["1Options"], *f)
 		}
 	})
 
@@ -29,7 +31,7 @@ func writeHelp(cmd *cobra.Command, w io.Writer) {
 			result = append(result, name)
 		}
 		sort.Slice(result, func(i, j int) bool {
-			return result[i] > result[j]
+			return result[i] < result[j]
 		})
 
 		return result
@@ -37,7 +39,7 @@ func writeHelp(cmd *cobra.Command, w io.Writer) {
 
 	fmt.Fprintf(w, "Usage:\n  %v\n", cmd.Use)
 	for _, name := range keys(groups) {
-		fmt.Fprintf(w, "\n%v:\n", name)
+		fmt.Fprintf(w, "\n%v:\n", name[1:])
 		for _, f := range groups[name] {
 			shorthand := ""
 			if len(f.Shorthand) > 0 {
