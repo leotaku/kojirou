@@ -14,9 +14,11 @@ import (
 func writeHelp(cmd *cobra.Command, w io.Writer) {
 	groups := make(map[string][]pflag.Flag)
 	cmd.Flags().VisitAll(func(f *pflag.Flag) {
-		if strings.HasPrefix(f.Name, "help") || f.Name == "version" {
+		switch {
+		case f.Hidden:
+		case strings.HasPrefix(f.Name, "help") || f.Name == "version":
 			groups["Flags"] = append(groups["Flags"], *f)
-		} else {
+		default:
 			groups["Options"] = append(groups["Options"], *f)
 		}
 	})

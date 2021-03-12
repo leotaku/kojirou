@@ -183,7 +183,8 @@ func init() {
 	rootCmd.Flags().BoolVarP(&helpRankingFlag, "help-ranking", "R", false, "Help for chapter ranking")
 	rootCmd.Flags().BoolVarP(&helpFilterFlag, "help-filter", "F", false, "Help for chapter filtering")
 	rootCmd.Flags().SortFlags = false
-	rootCmd.MarkFlagRequired("language") //nolint:errcheck
+	rootCmd.Flags().MarkHidden("cpuprofile") //nolint:errcheck
+	rootCmd.MarkFlagRequired("language")     //nolint:errcheck
 	rootCmd.SetHelpFunc(help)
 	rootCmd.SetUsageFunc(usage)
 	rootCmd.ParseFlags(os.Args) //nolint:errcheck
