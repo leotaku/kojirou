@@ -18,6 +18,8 @@ jobs:
       with:
         go-version: ^1.15
     - run: |
+        rm -rf wiki/*
+    - run: |
         go run *.go --help         > wiki/Home.mediawiki
         go run *.go --help-ranking > wiki/Ranking.mediawiki
         go run *.go --help-filter  > wiki/Filtering.mediawiki
