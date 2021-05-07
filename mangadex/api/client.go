@@ -75,7 +75,7 @@ func (c *Client) getJSON(v interface{}, url string, a ...interface{}) error {
 
 	dec := json.NewDecoder(resp.Body)
 	dec.DisallowUnknownFields()
-	if 	err := dec.Decode(v); err != nil {
+	if err := dec.Decode(v); err != nil {
 		return fmt.Errorf("decode: %w", err)
 	}
 
