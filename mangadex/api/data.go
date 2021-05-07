@@ -1,117 +1,162 @@
 package api
 
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+)
+
+type Localized map[string]string
+
+type StringID = string
+
 type Base struct {
-	Code   int
-	Status string
-	Data   BaseData
+	Result        string
+	Data          BaseData
+	Relationships Relationships
 }
 
 type BaseData struct {
-	ID           int
-	Title        string
-	AltTitles    []string
-	Description  string
-	Artist       []string
-	Author       []string
-	Tags         []int
-	LastChapter  string
-	LastVolume   string
-	IsHentai     bool
-	Links        map[string]string
-	Relations    []Relation
-	Views        int
-	Follows      int
-	Comments     int
-	LastUploaded int
-	MainCover    string
-	Publication  struct {
-		Language    string
-		Status      int
-		Demographic int
-	}
-	Rating struct {
-		Bayesian float64
-		Mean     float64
-		Users    int
+	ID         StringID
+	Type       string
+	Attributes struct {
+		Title                  Localized
+		AltTitles              []Localized
+		Description            Localized
+		IsLocked               bool
+		Links                  map[string]string
+		OriginalLanguage       string
+		LastVolume             string
+		LastChapter            string
+		PublicationDemographic string
+		Status                 string
+		Year                   int
+		ContentRating          string
+		Tags                   Relationships
+		CreatedAt              time.Time
+		UpdatedAt              time.Time
+		Version                int
 	}
 }
 
-type Relation struct {
-	ID       int
-	Title    string
-	Type     int
-	IsHentai bool
-}
-
-type Chapters struct {
-	Code   int
-	Status string
-	Data   ChaptersData
-}
-
-type ChaptersData struct {
-	Chapters []ChapterInfo
-	Groups   []GroupMapping
-}
-
-type ChapterInfo struct {
-	ID         int
-	Hash       string
-	MangaID    int
-	ThreadID   int
-	MangaTitle string
-	Volume     string
-	Chapter    string
-	Title      string
-	Language   string
-	Groups     []int
-	Uploader   int
-	Timestamp  int
-	Comments   int
-	Views      int
-}
-
-type GroupMapping struct {
-	ID   int
-	Name string
+type Feed struct {
+	Results []Chapter
+	Limit   int
+	Offset  int
+	Total   int
 }
 
 type Chapter struct {
-	Code   int
-	Status string
-	Data   ChapterData
+	Result        string
+	Data          ChapterData
+	Relationships Relationships
 }
 
 type ChapterData struct {
-	ID             int
-	Hash           string
-	MangaID        int
-	ThreadID       int
-	MangaTitle     string
-	Volume         string
-	Chapter        string
-	Title          string
-	Language       string
-	Groups         []GroupMapping
-	Uploader       int
-	Timestamp      int
-	Comments       int
-	Views          int
-	Status         string
-	Pages          []string
-	Server         string
-	ServerFallback string
+	ID         StringID
+	Type       string
+	Attributes struct {
+		Volume             int
+		Chapter            string
+		Title              string
+		TranslatedLanguage string
+		Hash               string
+		Data               []string
+		DataSaver          []string
+		PublishAt          time.Time
+		CreatedAt          time.Time
+		UpdatedAt          time.Time
+		Version            int
+	}
 }
 
-type Covers struct {
-	Code   int
-	Status string
-	Data   CoversData
+type Creator struct {
+	Result        string
+	Data          CreatorData
+	Relationships Relationships
 }
 
-type CoversData []CoversMapping
+type CreatorData struct {
+	ID         StringID
+	Type       string
+	Attributes struct {
+		Name      string
+		ImageUrl  string
+		Biography []string
+		CreatedAt time.Time
+		UpdatedAt time.Time
+		Version   int
+	}
+}
 
-type CoversMapping struct {
-	Volume string
-	URL    string
+type Group struct {
+	Result        string
+	Data          GroupData
+	Relationships Relationships
+}
+
+type GroupData struct {
+	ID         StringID
+	Type       string
+	Attributes struct {
+		Name      string
+		Leader    Relationship
+		Members   Relationships
+		CreatedAt time.Time
+		UpdatedAt time.Time
+		Version   int
+	}
+}
+
+type AtHome struct {
+	BaseURL string
+}
+
+type Relationships struct {
+	Manga      []StringID
+	Chapter    []StringID
+	Author     []StringID
+	Artist     []StringID
+	Group      []StringID
+	Tag        []StringID
+	User       []StringID
+	CustomList []StringID
+}
+
+func (rs *Relationships) UnmarshalJSON(data []byte) error {
+	parsed := make([]Relationship, 0)
+	if err := json.Unmarshal(data, &parsed); err != nil {
+		return err
+	}
+
+	for _, r := range parsed {
+		switch r.Type {
+		case "manga":
+			rs.Manga = append(rs.Manga, r.ID)
+		case "chapter":
+			rs.Chapter = append(rs.Chapter, r.ID)
+		case "author":
+			rs.Author = append(rs.Author, r.ID)
+		case "artist":
+			rs.Artist = append(rs.Artist, r.ID)
+		case "scanlation_group":
+			rs.Group = append(rs.Group, r.ID)
+		case "tag":
+			rs.Tag = append(rs.Tag, r.ID)
+		case "user":
+			rs.User = append(rs.User, r.ID)
+		case "custom_list":
+			rs.CustomList = append(rs.CustomList, r.ID)
+		default:
+			return fmt.Errorf("unsupported relationship: %v", r.Type)
+		}
+	}
+
+	return nil
+}
+
+type Relationship struct {
+	ID         StringID
+	Type       string
+	Attributes interface{}
 }
