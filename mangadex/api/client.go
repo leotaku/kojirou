@@ -30,44 +30,43 @@ func (c *Client) WithClient(http http.Client) *Client {
 	return c
 }
 
-func (c *Client) FetchBase(mangaID string) (*Base, error) {
+func (c *Client) GetBase(mangaID string) (*Base, error) {
 	v := new(Base)
-	err := c.fetchJSON(v, "%v/manga/%v", APIBaseURL, mangaID)
+	err := c.getJSON(v, "%v/manga/%v", APIBaseURL, mangaID)
 	return v, err
 }
 
-func (c *Client) FetchFeed(mangaID string) (*Feed, error) {
+func (c *Client) GetFeed(mangaID string) (*Feed, error) {
 	v := new(Feed)
-	err := c.fetchJSON(v, "%v/manga/%v/feed?limit=500", APIBaseURL, mangaID)
+	err := c.getJSON(v, "%v/manga/%v/feed?limit=500", APIBaseURL, mangaID)
 	return v, err
 }
 
-func (c *Client) FetchChapter(chapterID string) (*Chapter, error) {
+func (c *Client) GetChapter(chapterID string) (*Chapter, error) {
 	v := new(Chapter)
-	err := c.fetchJSON(v, "%v/chapter/%v", APIBaseURL, chapterID)
+	err := c.getJSON(v, "%v/chapter/%v", APIBaseURL, chapterID)
 	return v, err
 }
 
-func (c *Client) FetchCreator(creatorID string) (*Creator, error) {
+func (c *Client) GetCreator(creatorID string) (*Creator, error) {
 	v := new(Creator)
-	err := c.fetchJSON(v, "%v/author/%v", APIBaseURL, creatorID)
+	err := c.getJSON(v, "%v/author/%v", APIBaseURL, creatorID)
 	return v, err
 }
 
-func (c *Client) FetchGroup(groupID string) (*Group, error) {
+func (c *Client) GetGroup(groupID string) (*Group, error) {
 	v := new(Group)
-	err := c.fetchJSON(v, "%v/group/%v", APIBaseURL, groupID)
+	err := c.getJSON(v, "%v/group/%v", APIBaseURL, groupID)
 	return v, err
 }
 
-func (c *Client) FetchAtHome(chapterID string) (*AtHome, error) {
+func (c *Client) GetAtHome(chapterID string) (*AtHome, error) {
 	v := new(AtHome)
-	err := c.fetchJSON(v, "%v/at-home/server/%v", APIBaseURL, chapterID)
+	err := c.getJSON(v, "%v/at-home/server/%v", APIBaseURL, chapterID)
 	return v, err
 }
 
-
-func (c *Client) fetchJSON(v interface{}, url string, a ...interface{}) error {
+func (c *Client) getJSON(v interface{}, url string, a ...interface{}) error {
 	resp, err := c.Inner.Get(fmt.Sprintf(url, a...))
 	if err != nil {
 		return err
