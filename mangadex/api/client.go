@@ -30,8 +30,8 @@ func (c *Client) WithClient(http http.Client) *Client {
 	return c
 }
 
-func (c *Client) GetBase(mangaID string) (*Base, error) {
-	v := new(Base)
+func (c *Client) GetManga(mangaID string) (*Manga, error) {
+	v := new(Manga)
 	err := c.getJSON(v, "%v/manga/%v", APIBaseURL, mangaID)
 	return v, err
 }

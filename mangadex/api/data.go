@@ -10,13 +10,13 @@ type Localized map[string]string
 
 type StringID = string
 
-type Base struct {
+type Manga struct {
 	Result        string
-	Data          BaseData
+	Data          MangaData
 	Relationships Relationships
 }
 
-type BaseData struct {
+type MangaData struct {
 	ID         StringID
 	Type       string
 	Attributes struct {
