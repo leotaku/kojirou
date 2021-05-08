@@ -70,13 +70,13 @@ type ChapterData struct {
 	}
 }
 
-type Creator struct {
+type Author struct {
 	Result        string
-	Data          CreatorData
+	Data          AuthorData
 	Relationships Relationships
 }
 
-type CreatorData struct {
+type AuthorData struct {
 	ID         StringID
 	Type       string
 	Attributes struct {

@@ -48,9 +48,9 @@ func (c *Client) GetChapter(chapterID string) (*Chapter, error) {
 	return v, err
 }
 
-func (c *Client) GetCreator(creatorID string) (*Creator, error) {
-	v := new(Creator)
-	err := c.getJSON(v, "%v/author/%v", APIBaseURL, creatorID)
+func (c *Client) GetAuthor(authorID string) (*Author, error) {
+	v := new(Author)
+	err := c.getJSON(v, "%v/author/%v", APIBaseURL, authorID)
 	return v, err
 }
 
