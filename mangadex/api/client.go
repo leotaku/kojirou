@@ -36,12 +36,6 @@ func (c *Client) GetManga(mangaID string) (*Manga, error) {
 	return v, err
 }
 
-func (c *Client) GetFeed(mangaID string) (*Feed, error) {
-	v := new(Feed)
-	err := c.getJSON(v, "%v/manga/%v/feed?limit=500", APIBaseURL, mangaID)
-	return v, err
-}
-
 func (c *Client) GetChapter(chapterID string) (*Chapter, error) {
 	v := new(Chapter)
 	err := c.getJSON(v, "%v/chapter/%v", APIBaseURL, chapterID)
@@ -57,6 +51,16 @@ func (c *Client) GetAuthor(authorID string) (*Author, error) {
 func (c *Client) GetGroup(groupID string) (*Group, error) {
 	v := new(Group)
 	err := c.getJSON(v, "%v/group/%v", APIBaseURL, groupID)
+	return v, err
+}
+
+func (c *Client) GetFeed(mangaID string, limit, offset int) (*Feed, error) {
+	v := new(Feed)
+	err := c.getJSON(v, "%v/manga/%v/feed?limit=%v&offset=%v", APIBaseURL, mangaID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
 	return v, err
 }
 
