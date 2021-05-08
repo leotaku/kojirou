@@ -108,6 +108,22 @@ type GroupData struct {
 	}
 }
 
+type IDMapping struct {
+	Result        string
+	Data          IDMappingData
+	Relationships Relationships
+}
+
+type IDMappingData struct {
+	ID         StringID
+	Type       string
+	Attributes struct {
+		LegacyID int
+		NewID    StringID
+		Type     string
+	}
+}
+
 type AtHome struct {
 	BaseURL string
 }

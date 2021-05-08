@@ -70,8 +70,38 @@ func (c *Client) GetAtHome(chapterID string) (*AtHome, error) {
 	return v, err
 }
 
+func (c *Client) PostIDMapping(tp string, legacyIDs ...int) ([]IDMapping, error) {
+	v := make([]IDMapping, 0)
+	err := c.postJSON(&v, map[string]interface{}{
+		"type": tp,
+		"ids":  legacyIDs,
+	}, "%v/legacy/mapping", c.BaseURL)
+	return v, err
+}
+
 func (c *Client) getJSON(v interface{}, url string, a ...interface{}) error {
 	resp, err := c.Inner.Get(fmt.Sprintf(url, a...))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	dec := json.NewDecoder(resp.Body)
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(v); err != nil {
+		return fmt.Errorf("decode: %w", err)
+	}
+
+	return nil
+}
+
+func (c *Client) postJSON(v, payload interface{}, url string, a ...interface{}) error {
+	rw := bytes.NewBuffer(nil)
+	if err := json.NewEncoder(rw).Encode(payload); err != nil {
+		return fmt.Errorf("encode: %w", err)
+	}
+
+	resp, err := c.Inner.Post(fmt.Sprintf(url, a...), "application/json", rw)
 	if err != nil {
 		return err
 	}
