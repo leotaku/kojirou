@@ -70,7 +70,6 @@ type ChapterData struct {
 	}
 }
 
-
 type AuthorList struct {
 	Results []Author
 	Limit   int
