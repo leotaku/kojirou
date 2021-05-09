@@ -38,28 +38,7 @@ func downloadMetaFor(id int, filter Filter) (*mangadex.Manga, error) {
 	return &result, nil
 }
 
-func downloadAddCovers(m mangadex.Manga) (*mangadex.Manga, error) {
-	cos, err := util.Client.FetchCovers(m.Info.ID)
-	if err != nil {
-		return nil, err
-	}
-	pb := util.NewBar().Message("Covers")
-	covers, err := util.FetchCovers(cos, pb)
-	if err != nil {
-		return nil, err
-	}
-	pb.Finish()
-
-	result := m.WithCovers(covers)
-	return &result, nil
-}
-
-func downloadAndWrite(ma mangadex.Manga, root string, thumbRoot *string, force bool) error {
-	m, err := downloadAddCovers(ma)
-	if err != nil {
-		return err
-	}
-
+func downloadAndWrite(m mangadex.Manga, root string, thumbRoot *string, force bool) error {
 	for _, idx := range m.Keys() {
 		// Variables
 		path := fmt.Sprintf("%v/%v.azw3", root, idx)
