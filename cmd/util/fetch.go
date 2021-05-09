@@ -33,12 +33,12 @@ type imageOrErr struct {
 	err  error
 }
 
-func FetchChapters(cs mangadex.ChapterList, pb *Bar) (mangadex.ImageList, error) {
+func FetchPages(cs mangadex.ChapterList, pb *Bar) (mangadex.ImageList, error) {
 	pb.AddTotal(int64(len(cs)))
 
 	// Fetch chapters in parallel
 	wip := make(chan pathOrErr, 200)
-	go runChapters(cs, wip, pb)
+	go runLinks(cs, wip, pb)
 
 	// Fetch images in parallel
 	images, err := fetchImages(wip, pb)
@@ -73,7 +73,7 @@ func fetchImages(in <-chan pathOrErr, pb *Bar) (mangadex.ImageList, error) {
 	return result, nil
 }
 
-func runChapters(chaps []mangadex.ChapterInfo, out chan pathOrErr, pb *Bar) {
+func runLinks(chaps []mangadex.ChapterInfo, out chan pathOrErr, pb *Bar) {
 	in := make(chan mangadex.ChapterInfo)
 	wg := new(sync.WaitGroup)
 

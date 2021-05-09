@@ -55,7 +55,7 @@ func downloadAndWrite(m mangadex.Manga, root string, thumbRoot *string, force bo
 		filtered := m.Chapters().FilterBy(func(ci mangadex.ChapterInfo) bool {
 			return ci.VolumeIdentifier == idx
 		})
-		pages, err := util.FetchChapters(filtered, pb)
+		pages, err := util.FetchPages(filtered, pb)
 		if err != nil {
 			return err
 		}
