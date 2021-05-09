@@ -91,11 +91,12 @@ var groupColors = []*color.Color{
 	color.New(color.FgCyan),
 	color.New(color.FgGreen),
 	color.New(color.FgYellow),
-	color.New(color.BgRed),
-	color.New(color.BgBlue),
-	color.New(color.BgMagenta),
-	color.New(color.BgCyan),
-	color.New(color.BgGreen),
+	color.New(color.ReverseVideo, color.FgRed),
+	color.New(color.ReverseVideo, color.FgBlue),
+	color.New(color.ReverseVideo, color.FgMagenta),
+	color.New(color.ReverseVideo, color.FgCyan),
+	color.New(color.ReverseVideo, color.FgGreen),
+	color.New(color.ReverseVideo, color.FgYellow),
 }
 
 func printGroupMapping(cl mangadex.ChapterList) {
