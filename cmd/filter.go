@@ -14,7 +14,7 @@ type Filter = func(mangadex.ChapterList) (mangadex.ChapterList, error)
 
 func filterLanguage(cl mangadex.ChapterList, lang language.Tag) mangadex.ChapterList {
 	return cl.FilterBy(func(c mangadex.ChapterInfo) bool {
-		return util.MatchRegion(c.Region) == lang
+		return c.Language == lang
 	})
 }
 

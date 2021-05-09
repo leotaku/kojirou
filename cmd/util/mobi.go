@@ -85,19 +85,12 @@ func mangaToCover(manga mangadex.Manga) image.Image {
 }
 
 func mangaToLanguage(manga mangadex.Manga) language.Tag {
-	region := language.Region{}
-	for _, chap := range manga.Chapters() {
-		if region.Contains(chap.Region) {
-			region = chap.Region
-		} else {
-			panic("unsupported: multiple different languages")
-		}
+	chaps := manga.Chapters()
+	if len(chaps) != 0 {
+		return chaps[0].Language
+	} else {
+		panic("unsupported: multiple different languages")
 	}
-
-	lang, _ := language.Compose(region)
-	match, _, _ := matcher.Match(lang)
-
-	return match
 }
 
 func unifyStrings(this []string, other ...string) []string {
