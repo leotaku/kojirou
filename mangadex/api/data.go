@@ -39,7 +39,7 @@ type MangaData struct {
 	}
 }
 
-type Feed struct {
+type ChapterList struct {
 	Results []Chapter
 	Limit   int
 	Offset  int
@@ -70,6 +70,14 @@ type ChapterData struct {
 	}
 }
 
+
+type AuthorList struct {
+	Results []Author
+	Limit   int
+	Offset  int
+	Total   int
+}
+
 type Author struct {
 	Result        string
 	Data          AuthorData
@@ -87,6 +95,13 @@ type AuthorData struct {
 		UpdatedAt time.Time
 		Version   int
 	}
+}
+
+type GroupList struct {
+	Results []Group
+	Limit   int
+	Offset  int
+	Total   int
 }
 
 type Group struct {
@@ -174,5 +189,5 @@ func (rs *Relationships) UnmarshalJSON(data []byte) error {
 type Relationship struct {
 	ID         StringID
 	Type       string
-	Attributes interface{}
+	Attributes map[string]interface{}
 }

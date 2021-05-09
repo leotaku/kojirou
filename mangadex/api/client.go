@@ -1,26 +1,29 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"net/url"
 )
 
-const APIBaseURL = `https://api.mangadex.org`
+var APIBaseURL, _ = url.Parse(`https://api.mangadex.org/`)
 
 type Client struct {
 	Inner   http.Client
-	BaseURL string
+	BaseURL url.URL
 }
 
 func NewClient() *Client {
 	return &Client{
 		Inner:   *http.DefaultClient,
-		BaseURL: APIBaseURL,
+		BaseURL: *APIBaseURL,
 	}
 }
 
-func (c *Client) WithBaseURL(url string) *Client {
+func (c *Client) WithBaseURL(url url.URL) *Client {
 	c.BaseURL = url
 	return c
 }
@@ -32,31 +35,17 @@ func (c *Client) WithClient(http http.Client) *Client {
 
 func (c *Client) GetManga(mangaID string) (*Manga, error) {
 	v := new(Manga)
-	err := c.getJSON(v, "%v/manga/%v", APIBaseURL, mangaID)
+	err := c.doJSON("GET", "/manga/"+mangaID, v, nil)
 	return v, err
 }
 
-func (c *Client) GetChapter(chapterID string) (*Chapter, error) {
-	v := new(Chapter)
-	err := c.getJSON(v, "%v/chapter/%v", APIBaseURL, chapterID)
-	return v, err
-}
+// This is only implemented because the /chapter endpoint has a
+// smaller return limit compared to the /manga/{id}/feed endpoint.
 
-func (c *Client) GetAuthor(authorID string) (*Author, error) {
-	v := new(Author)
-	err := c.getJSON(v, "%v/author/%v", APIBaseURL, authorID)
-	return v, err
-}
-
-func (c *Client) GetGroup(groupID string) (*Group, error) {
-	v := new(Group)
-	err := c.getJSON(v, "%v/group/%v", APIBaseURL, groupID)
-	return v, err
-}
-
-func (c *Client) GetFeed(mangaID string, limit, offset int) (*Feed, error) {
-	v := new(Feed)
-	err := c.getJSON(v, "%v/manga/%v/feed?limit=%v&offset=%v", APIBaseURL, mangaID, limit, offset)
+func (c *Client) GetFeed(mangaID string, args QueryArgs) (*ChapterList, error) {
+	v := new(ChapterList)
+	url := fmt.Sprintf("/manga/%v/feed?%v", mangaID, args.Values().Encode())
+	err := c.doJSON("GET", url, v, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -64,52 +53,73 @@ func (c *Client) GetFeed(mangaID string, limit, offset int) (*Feed, error) {
 	return v, err
 }
 
+func (c *Client) GetChapters(args QueryArgs) (*ChapterList, error) {
+	v := new(ChapterList)
+	err := c.doJSON("GET", "/chapter?"+args.Values().Encode(), v, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return v, err
+}
+
+func (c *Client) GetAuthors(args QueryArgs) (*AuthorList, error) {
+	v := new(AuthorList)
+	err := c.doJSON("GET", "/author?"+args.Values().Encode(), v, nil)
+	return v, err
+}
+
+func (c *Client) GetGroups(args QueryArgs) (*GroupList, error) {
+	v := new(GroupList)
+	err := c.doJSON("GET", "/group?"+args.Values().Encode(), v, nil)
+	return v, err
+}
+
 func (c *Client) GetAtHome(chapterID string) (*AtHome, error) {
 	v := new(AtHome)
-	err := c.getJSON(v, "%v/at-home/server/%v", APIBaseURL, chapterID)
+	err := c.doJSON("GET", "/at-home/server/"+chapterID, v, nil)
 	return v, err
 }
 
 func (c *Client) PostIDMapping(tp string, legacyIDs ...int) ([]IDMapping, error) {
 	v := make([]IDMapping, 0)
-	err := c.postJSON(&v, map[string]interface{}{
-		"type": tp,
+	err := c.doJSON("POST", "/legacy/mapping", &v, map[string]interface{}{
 		"ids":  legacyIDs,
-	}, "%v/legacy/mapping", c.BaseURL)
+		"type": tp,
+	})
+
 	return v, err
 }
 
-func (c *Client) getJSON(v interface{}, url string, a ...interface{}) error {
-	resp, err := c.Inner.Get(fmt.Sprintf(url, a...))
+func (c *Client) doJSON(method, ref string, result, body interface{}) error {
+	url, err := c.BaseURL.Parse(ref)
 	if err != nil {
-		return err
+		return fmt.Errorf("url: %w", err)
+	}
+
+	rw := io.ReadWriter(nil)
+	if body != nil {
+		rw = bytes.NewBuffer(nil)
+		if err := json.NewEncoder(rw).Encode(body); err != nil {
+			return fmt.Errorf("encode: %w", err)
+		}
+	}
+
+	req, err := http.NewRequest(method, url.String(), rw)
+	if err != nil {
+		return fmt.Errorf("prepare: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.Inner.Do(req)
+	if err != nil {
+		return fmt.Errorf("do: %w", err)
 	}
 	defer resp.Body.Close()
 
 	dec := json.NewDecoder(resp.Body)
 	dec.DisallowUnknownFields()
-	if err := dec.Decode(v); err != nil {
-		return fmt.Errorf("decode: %w", err)
-	}
-
-	return nil
-}
-
-func (c *Client) postJSON(v, payload interface{}, url string, a ...interface{}) error {
-	rw := bytes.NewBuffer(nil)
-	if err := json.NewEncoder(rw).Encode(payload); err != nil {
-		return fmt.Errorf("encode: %w", err)
-	}
-
-	resp, err := c.Inner.Post(fmt.Sprintf(url, a...), "application/json", rw)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	dec := json.NewDecoder(resp.Body)
-	dec.DisallowUnknownFields()
-	if err := dec.Decode(v); err != nil {
+	if err := dec.Decode(result); err != nil {
 		return fmt.Errorf("decode: %w", err)
 	}
 
