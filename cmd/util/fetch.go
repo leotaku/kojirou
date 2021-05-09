@@ -148,9 +148,9 @@ func fetchImage(url string, retry int) (image.Image, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	img, _, err := image.Decode(resp.Body)
-	defer resp.Body.Close()
 	if err != nil && retry > 0 {
 		return fetchImage(url, retry-1)
 	}
