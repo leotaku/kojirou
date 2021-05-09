@@ -81,7 +81,7 @@ func runChapters(chaps []mangadex.ChapterInfo, out chan pathOrErr, pb *Bar) {
 		wg.Add(1)
 		go func() {
 			for it := range in {
-				paths, err := Client.FetchChapter(it)
+				paths, err := Client.FetchPaths(&it)
 				pb.Increment()
 				pb.AddTotal(int64(len(paths)))
 				for _, path := range paths {
