@@ -13,7 +13,7 @@ import (
 	"github.com/leotaku/mobi"
 )
 
-func downloadMetaFor(id int, filter Filter) (*mangadex.Manga, error) {
+func downloadMetaFor(id string, filter Filter) (*mangadex.Manga, error) {
 	manga, err := util.Client.FetchManga(id)
 	if err != nil {
 		return nil, err

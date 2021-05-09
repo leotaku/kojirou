@@ -39,6 +39,11 @@ var rootCmd = &cobra.Command{
 		}
 		cmd.SilenceUsage = true
 
+		newID, err := util.Client.FetchLegacy("manga", int(id))
+		if err != nil {
+			return fmt.Errorf("lookup: %w", err)
+		}
+
 		if cpuprofileArg != "" {
 			f, err := os.Create(cpuprofileArg)
 			if err != nil {
@@ -52,7 +57,7 @@ var rootCmd = &cobra.Command{
 		util.InitCleanup()
 		defer util.RunCleanup()
 
-		manga, err := downloadMetaFor(int(id), filterFromFlags)
+		manga, err := downloadMetaFor(newID, filterFromFlags)
 		if err != nil {
 			return err
 		}
