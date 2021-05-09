@@ -2,53 +2,54 @@ package mangadex
 
 import (
 	"html"
-	"path"
 	"reflect"
+	"strconv"
 	"strings"
-	"time"
 
 	"github.com/leotaku/kojirou/mangadex/api"
 	"golang.org/x/text/language"
 )
 
-func convertBase(b api.BaseData) MangaInfo {
+func convertManga(b *api.Manga, authors, artists *api.AuthorList) MangaInfo {
+	authorNames := make([]string, 0)
+	for _, a := range authors.Results {
+		authorNames = append(authorNames, a.Data.Attributes.Name)
+	}
+
+	artistNames := make([]string, 0)
+	for _, a := range artists.Results {
+		artistNames = append(artistNames, a.Data.Attributes.Name)
+	}
+
 	return MangaInfo{
-		Title:    b.Title,
-		Authors:  b.Author,
-		Artists:  b.Artist,
-		IsHentai: b.IsHentai,
-		ID:       b.ID,
+		Title:   first(b.Data.Attributes.Title),
+		Authors: authorNames,
+		Artists: artistNames,
+		ID:      b.Data.ID,
 	}
 }
 
-func convertCovers(co api.CoversData) PathList {
-	result := make(PathList, 0)
-	for id, url := range groupCovers(co) {
-		result = append(result, PathItem{
-			URL:      url,
-			volumeID: NewIdentifier(id, "Special"),
-		})
-	}
-
-	return result
-}
-
-func convertChapters(ca api.ChaptersData) ChapterList {
+func convertChapters(ca []api.Chapter, groupMap map[string]api.Group) ChapterList {
 	sorted := make(ChapterList, 0)
-	groups := groupGroups(ca.Groups)
+	for _, info := range ca {
+		volume := strconv.Itoa(info.Data.Attributes.Volume)
+		lang, _ := language.Parse(info.Data.Attributes.TranslatedLanguage)
+		groups := make([]string, 0)
+		for _, id := range info.Relationships.Group {
+			groups = append(groups, html.UnescapeString(groupMap[id].Data.Attributes.Name))
+		}
 
-	for _, info := range ca.Chapters {
-		region, _ := language.ParseRegion(info.Language)
 		sorted = append(sorted, ChapterInfo{
-			Title:            info.Title,
-			Region:           region,
-			Views:            info.Views,
-			Hash:             info.Hash,
-			GroupNames:       unescape(getGroups(groups, info.Groups)),
-			Published:        time.Unix(int64(info.Timestamp), 0),
-			ID:               info.ID,
-			Identifier:       NewIdentifier(info.Chapter, info.Title),
-			VolumeIdentifier: NewIdentifier(info.Volume, "Special"),
+			Title:            info.Data.Attributes.Title,
+			Language:         lang,
+			Views:            0, // FIXME
+			Hash:             info.Data.Attributes.Hash,
+			PagePaths:        info.Data.Attributes.Data,
+			GroupNames:       groups,
+			Published:        info.Data.Attributes.PublishAt,
+			ID:               info.Data.ID,
+			Identifier:       NewIdentifier(info.Data.Attributes.Chapter, info.Data.Attributes.Title),
+			VolumeIdentifier: NewIdentifier(volume, "Special"),
 		})
 	}
 
@@ -56,49 +57,19 @@ func convertChapters(ca api.ChaptersData) ChapterList {
 	return sorted
 }
 
-func convertChapter(c api.ChapterData, chapterID Identifier, volumeID Identifier) PathList {
+func convertChapter(baseURL string, ci *ChapterInfo) PathList {
 	result := make(PathList, 0)
-	for i, filename := range c.Pages {
-		url := c.Server + path.Join(c.Hash, filename)
+	for i, filename := range ci.PagePaths {
+		url := strings.Join([]string{baseURL, "data", ci.Hash, filename}, "/")
 		result = append(result, PathItem{
 			URL:       url,
 			imageID:   i,
-			chapterID: chapterID,
-			volumeID:  volumeID,
+			chapterID: ci.Identifier,
+			volumeID:  ci.VolumeIdentifier,
 		})
 	}
 
 	return result
-}
-
-type groupsMapping = map[int]string
-
-func groupGroups(gs []api.GroupMapping) groupsMapping {
-	mapping := make(groupsMapping)
-	for _, val := range gs {
-		mapping[val.ID] = val.Name
-	}
-	return mapping
-}
-
-func getGroups(gs groupsMapping, ids []int) []string {
-	result := make([]string, 0)
-	for _, id := range ids {
-		if name, ok := gs[id]; ok {
-			result = append(result, name)
-		}
-	}
-	return result
-}
-
-type coversMapping = map[string]string
-
-func groupCovers(co api.CoversData) coversMapping {
-	mapping := make(coversMapping)
-	for _, val := range co {
-		mapping[val.Volume] = val.URL
-	}
-	return mapping
 }
 
 type multiple []string
@@ -120,11 +91,10 @@ func reverse(v interface{}) {
 	}
 }
 
-func unescape(ss []string) []string {
-	result := make([]string, 0)
-	for _, it := range ss {
-		result = append(result, html.UnescapeString(it))
+func first(m map[string]string) string {
+	for _, val := range m {
+		return val
 	}
 
-	return result
+	panic("empty map")
 }

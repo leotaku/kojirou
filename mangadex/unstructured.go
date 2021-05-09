@@ -37,11 +37,12 @@ func (i PathItem) WithImage(img image.Image) ImageItem {
 type ChapterInfo struct {
 	Title      string
 	Views      int
-	Region     language.Region
+	Language   language.Tag
 	GroupNames multiple
+	PagePaths  []string
 	Published  time.Time
 	Hash       string
-	ID         int
+	ID         string
 
 	// hidden
 	Identifier       Identifier
@@ -49,9 +50,8 @@ type ChapterInfo struct {
 }
 
 type MangaInfo struct {
-	Title    string
-	Authors  multiple
-	Artists  multiple
-	IsHentai bool
-	ID       int
+	Title   string
+	Authors multiple
+	Artists multiple
+	ID      string
 }
