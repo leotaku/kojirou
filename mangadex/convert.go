@@ -3,7 +3,6 @@ package mangadex
 import (
 	"html"
 	"reflect"
-	"strconv"
 	"strings"
 
 	"github.com/leotaku/kojirou/mangadex/api"
@@ -32,7 +31,6 @@ func convertManga(b *api.Manga, authors, artists *api.AuthorList) MangaInfo {
 func convertChapters(ca []api.Chapter, groupMap map[string]api.Group) ChapterList {
 	sorted := make(ChapterList, 0)
 	for _, info := range ca {
-		volume := strconv.Itoa(info.Data.Attributes.Volume)
 		lang, _ := language.Parse(info.Data.Attributes.TranslatedLanguage)
 		groups := make([]string, 0)
 		for _, id := range info.Relationships.Group {
@@ -49,7 +47,7 @@ func convertChapters(ca []api.Chapter, groupMap map[string]api.Group) ChapterLis
 			Published:        info.Data.Attributes.PublishAt,
 			ID:               info.Data.ID,
 			Identifier:       NewIdentifier(info.Data.Attributes.Chapter, info.Data.Attributes.Title),
-			VolumeIdentifier: NewIdentifier(volume, "Special"),
+			VolumeIdentifier: NewIdentifier(info.Data.Attributes.Volume, "Special"),
 		})
 	}
 

@@ -56,7 +56,7 @@ type ChapterData struct {
 	ID         StringID
 	Type       string
 	Attributes struct {
-		Volume             int
+		Volume             string
 		Chapter            string
 		Title              string
 		TranslatedLanguage string
