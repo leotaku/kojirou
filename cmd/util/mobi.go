@@ -2,9 +2,9 @@ package util
 
 import (
 	"fmt"
+	"hash/fnv"
 	"html/template"
 	"image"
-	"math/rand"
 	"strings"
 	"time"
 
@@ -66,8 +66,18 @@ func VolumesToMobi(manga mangadex.Manga) mobi.Book {
 		Images:       images,
 		Chapters:     chapters,
 		CSSFlows:     []string{basePageCSS},
-		UniqueID:     rand.Uint32(),
+		UniqueID:     mangaToUniqueID(manga),
 	}
+}
+
+func mangaToUniqueID(manga mangadex.Manga) uint32 {
+	hash := fnv.New32()
+	hash.Write([]byte(manga.Info.ID))
+	for _, idx := range manga.Keys() {
+		hash.Write([]byte(idx.String()))
+	}
+
+	return hash.Sum32()
 }
 
 func mangaToTitle(manga mangadex.Manga) string {
