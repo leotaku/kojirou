@@ -34,7 +34,7 @@ var pageTemplate = template.Must(template.New("page").Parse(pageTemplateString))
 func VolumesToMobi(manga mangadex.Manga) mobi.Book {
 	chapters := make([]mobi.Chapter, 0)
 	images := make([]image.Image, 0)
-	id := 1
+	pageID := 1
 
 	// Pages
 	groupNames := make([]string, 0)
@@ -44,8 +44,8 @@ func VolumesToMobi(manga mangadex.Manga) mobi.Book {
 			pages := make([]string, 0)
 			for _, img := range chap.Sorted() {
 				images = append(images, img)
-				pages = append(pages, executeTemplate(pageTemplate, records.To32(id)))
-				id++
+				pages = append(pages, executeTemplate(pageTemplate, records.To32(pageID)))
+				pageID++
 			}
 			title := fmt.Sprintf("%v: %v", chap.Info.Identifier, chap.Info.Title)
 			chapters = append(chapters, mobi.Chapter{
