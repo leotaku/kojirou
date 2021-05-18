@@ -25,7 +25,7 @@ func (c *Client) WithHTTPClient(http http.Client) *Client {
 func (c *Client) FetchLegacy(tp string, legacyID int) (api.StringID, error) {
 	ids, err := c.base.PostIDMapping(tp, legacyID)
 	if err != nil {
-		return "", fmt.Errorf("fetch id: %w", err)
+		return "", fmt.Errorf("post mapping: %w", err)
 	}
 
 	if len(ids) != 1 {
@@ -38,7 +38,7 @@ func (c *Client) FetchLegacy(tp string, legacyID int) (api.StringID, error) {
 func (c *Client) FetchManga(mangaID string) (*Manga, error) {
 	b, err := c.base.GetManga(mangaID)
 	if err != nil {
-		return nil, fmt.Errorf("fetch manga: %w", err)
+		return nil, fmt.Errorf("get manga: %w", err)
 	}
 
 	// Only retrieves at most 100 authors
@@ -47,7 +47,7 @@ func (c *Client) FetchManga(mangaID string) (*Manga, error) {
 		Limit: 100,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("fetch authors: %w", err)
+		return nil, fmt.Errorf("get authors: %w", err)
 	}
 
 	// Only retrieves at most 100 artists
@@ -56,7 +56,7 @@ func (c *Client) FetchManga(mangaID string) (*Manga, error) {
 		Limit: 100,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("fetch artists: %w", err)
+		return nil, fmt.Errorf("get artists: %w", err)
 	}
 
 	return &Manga{
@@ -75,7 +75,7 @@ func (c *Client) FetchChapters(mangaID string) (ChapterList, error) {
 			Offset: offset,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("fetch chapters: %w", err)
+			return nil, fmt.Errorf("get chapters: %w", err)
 		} else {
 			chapters = append(chapters, fd.Results...)
 		}
@@ -87,7 +87,7 @@ func (c *Client) FetchChapters(mangaID string) (ChapterList, error) {
 
 	groupMap, err := c.fetchGroupMap(chapters)
 	if err != nil {
-		return nil, fmt.Errorf("fetch groups: %w", err)
+		return nil, fmt.Errorf("get groups: %w", err)
 	}
 
 	return convertChapters(chapters, groupMap), nil
@@ -96,7 +96,7 @@ func (c *Client) FetchChapters(mangaID string) (ChapterList, error) {
 func (c *Client) FetchPaths(chapter *ChapterInfo) (PathList, error) {
 	ah, err := c.base.GetAtHome(chapter.ID)
 	if err != nil {
-		return nil, fmt.Errorf("fetch at home: %w", err)
+		return nil, fmt.Errorf("get at home: %w", err)
 	}
 
 	// FIXME: flaky MD@Home workaround
