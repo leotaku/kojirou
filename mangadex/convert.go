@@ -1,7 +1,6 @@
 package mangadex
 
 import (
-	"html"
 	"reflect"
 	"strings"
 
@@ -34,7 +33,7 @@ func convertChapters(ca []api.Chapter, groupMap map[string]api.Group) ChapterLis
 		lang, _ := language.Parse(info.Data.Attributes.TranslatedLanguage)
 		groups := make([]string, 0)
 		for _, id := range info.Relationships.Group {
-			groups = append(groups, html.UnescapeString(groupMap[id].Data.Attributes.Name))
+			groups = append(groups, groupMap[id].Data.Attributes.Name)
 		}
 
 		sorted = append(sorted, ChapterInfo{
