@@ -45,20 +45,12 @@ func (c *Client) GetFeed(mangaID string, args QueryArgs) (*ChapterList, error) {
 	v := new(ChapterList)
 	url := fmt.Sprintf("/manga/%v/feed?%v", mangaID, args.Values().Encode())
 	err := c.doJSON("GET", url, v, nil)
-	if err != nil {
-		return nil, err
-	}
-
 	return v, err
 }
 
 func (c *Client) GetChapters(args QueryArgs) (*ChapterList, error) {
 	v := new(ChapterList)
 	err := c.doJSON("GET", "/chapter?"+args.Values().Encode(), v, nil)
-	if err != nil {
-		return nil, err
-	}
-
 	return v, err
 }
 
