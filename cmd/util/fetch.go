@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	maxChapterJobs   = 8
-	maxImageJobs     = 16
+	maxChapterJobs = 8
+	maxImageJobs   = 16
 )
 
 var (
