@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
@@ -149,8 +150,13 @@ func fetchImage(url string) (image.Image, error) {
 	}
 	defer resp.Body.Close()
 
-	img, _, err := image.Decode(resp.Body)
-	return img, err
+	if resp.StatusCode < 200 && resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("status: %v", resp.StatusCode)
+	} else if img, _, err := image.Decode(resp.Body); err != nil {
+		return img, nil
+	} else {
+		return nil, fmt.Errorf("decode: %w", err)
+	}
 }
 
 func init() {
