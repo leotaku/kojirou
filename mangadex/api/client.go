@@ -41,7 +41,6 @@ func (c *Client) GetManga(mangaID string) (*Manga, error) {
 
 // This is only implemented because the /chapter endpoint has a
 // smaller return limit compared to the /manga/{id}/feed endpoint.
-
 func (c *Client) GetFeed(mangaID string, args QueryArgs) (*ChapterList, error) {
 	v := new(ChapterList)
 	url := fmt.Sprintf("/manga/%v/feed?%v", mangaID, args.Values().Encode())
