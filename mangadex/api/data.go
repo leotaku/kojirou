@@ -193,3 +193,16 @@ type Relationship struct {
 	Type       string
 	Attributes map[string]interface{}
 }
+
+type Errors struct {
+	Errors []ErrorData
+	Result string
+}
+
+type ErrorData struct {
+	Context string
+	Detail  string
+	ID      string
+	Status  int
+	Title   string
+}
