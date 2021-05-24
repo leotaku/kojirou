@@ -43,7 +43,7 @@ func FetchPages(cs mangadex.ChapterList, pb *Bar) (mangadex.ImageList, error) {
 	// Fetch images in parallel
 	images, err := fetchImages(wip, pb)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("pages: %w", err)
 	}
 
 	return images, nil
@@ -59,7 +59,12 @@ func FetchCovers(ps mangadex.PathList, pb *Bar) (mangadex.ImageList, error) {
 		close(in)
 	}()
 
-	return fetchImages(in, pb)
+	images, err := fetchImages(in, pb)
+	if err != nil {
+		return nil, fmt.Errorf("covers: %w", err)
+	}
+
+	return images, nil
 }
 
 func fetchImages(in <-chan pathOrErr, pb *Bar) (mangadex.ImageList, error) {
