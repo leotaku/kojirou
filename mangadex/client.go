@@ -111,7 +111,7 @@ func (c *Client) FetchCovers(mangaID string) (PathList, error) {
 			Offset: offset,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("get chapters: %w", err)
+			return nil, fmt.Errorf("get covers: %w", err)
 		} else {
 			covers = append(covers, feed.Results...)
 		}
