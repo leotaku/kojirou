@@ -33,16 +33,14 @@ var rootCmd = &cobra.Command{
 	Version: "0.1",
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		id, err := strconv.ParseInt(args[0], 10, 32)
-		if err != nil {
-			return fmt.Errorf(`parsing "%v": not a valid identifier`, args[0])
+		numeric, err := strconv.ParseInt(args[0], 10, 32)
+		if err == nil {
+			args[0], err = util.Client.FetchLegacy("manga", int(numeric))
+			if err != nil {
+				return fmt.Errorf("lookup: %w", err)
+			}
 		}
 		cmd.SilenceUsage = true
-
-		newID, err := util.Client.FetchLegacy("manga", int(id))
-		if err != nil {
-			return fmt.Errorf("lookup: %w", err)
-		}
 
 		if cpuprofileArg != "" {
 			f, err := os.Create(cpuprofileArg)
@@ -57,7 +55,7 @@ var rootCmd = &cobra.Command{
 		util.InitCleanup()
 		defer util.RunCleanup()
 
-		manga, err := downloadMetaFor(newID, filterFromFlags)
+		manga, err := downloadMetaFor(args[0], filterFromFlags)
 		if err != nil {
 			return err
 		}
