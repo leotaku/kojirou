@@ -4,13 +4,16 @@ import (
 	"fmt"
 	"net/url"
 	"reflect"
+
+	"golang.org/x/text/language"
 )
 
 type QueryArgs struct {
-	IDs     []string `url:"ids[]"`
-	MangaID string   `url:"manga"`
-	Limit   int      `url:"limit"`
-	Offset  int      `url:"offset"`
+	IDs       []string       `url:"ids[]"`
+	Languages []language.Tag `url:"translatedLanguage[]"`
+	Mangas    []string       `url:"manga[]"`
+	Limit     int            `url:"limit"`
+	Offset    int            `url:"offset"`
 }
 
 func (a QueryArgs) Values() url.Values {
