@@ -3,18 +3,23 @@ package mangadex
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/leotaku/kojirou/mangadex/api"
 )
 
+var CoverBaseURL, _ = url.Parse("https://uploads.mangadex.org/covers/")
+
 type Client struct {
-	base api.Client
+	base         api.Client
+	coverBaseURL url.URL
 }
 
 func NewClient() *Client {
 	return &Client{
-		base: *api.NewClient(),
+		base:         *api.NewClient(),
+		coverBaseURL: *CoverBaseURL,
 	}
 }
 
@@ -94,6 +99,31 @@ func (c *Client) FetchChapters(mangaID string) (ChapterList, error) {
 	}
 
 	return convertChapters(chapters, groupMap), nil
+}
+
+func (c *Client) FetchCovers(mangaID string) (PathList, error) {
+	covers := make([]api.Cover, 0)
+	limit := 100
+	for offset := 0; ; offset += limit {
+		feed, err := c.base.GetCovers(api.QueryArgs{
+			Mangas: []string{mangaID},
+			Limit:  limit,
+			Offset: offset,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("get chapters: %w", err)
+		} else {
+			covers = append(covers, feed.Results...)
+		}
+
+		if offset+limit >= feed.Total {
+			break
+		} else {
+			fmt.Fprintln(os.Stderr, "WARNING: Pagination is broken and can lead to unreliable results")
+		}
+	}
+
+	return convertCovers(c.coverBaseURL.String(), mangaID, covers), nil
 }
 
 func (c *Client) FetchPaths(chapter *ChapterInfo) (PathList, error) {
