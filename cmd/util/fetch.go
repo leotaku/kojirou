@@ -150,12 +150,12 @@ func fetchImage(url string) (image.Image, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode < 200 && resp.StatusCode >= 300 {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, fmt.Errorf("status: %v", resp.StatusCode)
 	} else if img, _, err := image.Decode(resp.Body); err != nil {
-		return img, nil
+		return nil, fmt.Errorf("decode: %v", err)
 	} else {
-		return nil, fmt.Errorf("decode: %w", err)
+		return img, nil
 	}
 }
 
