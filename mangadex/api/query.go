@@ -20,13 +20,14 @@ func (a QueryArgs) Values() url.Values {
 
 	for i := 0; i < t.NumField(); i++ {
 		key := t.Field(i).Tag.Get("url")
-		switch f := v.Field(i).Interface().(type) {
-		case []string:
-			result[key] = f
-		default:
-			val := fmt.Sprint(f)
-			if val != "" {
-				result.Add(key, val)
+		val := v.Field(i)
+		if !val.IsZero() {
+			if val.Kind() == reflect.Slice {
+				for i := 0; i < val.Len(); i++ {
+					result.Add(key, fmt.Sprint(val.Index(i)))
+				}
+			} else {
+				result.Add(key, fmt.Sprint(val))
 			}
 		}
 	}
