@@ -151,6 +151,7 @@ type Relationships struct {
 	Tag        []StringID
 	User       []StringID
 	CustomList []StringID
+	CoverArt   []StringID
 }
 
 func (rs *Relationships) UnmarshalJSON(data []byte) error {
@@ -177,6 +178,8 @@ func (rs *Relationships) UnmarshalJSON(data []byte) error {
 			rs.User = append(rs.User, r.ID)
 		case "custom_list":
 			rs.CustomList = append(rs.CustomList, r.ID)
+		case "cover_art":
+			rs.CoverArt = append(rs.CoverArt, r.ID)
 		default:
 			return fmt.Errorf("unsupported relationship: %v", r.Type)
 		}
