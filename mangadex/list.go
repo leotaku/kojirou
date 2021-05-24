@@ -1,9 +1,6 @@
 package mangadex
 
-import (
-	"encoding/json"
-	"sort"
-)
+import "sort"
 
 type ChapterList []ChapterInfo
 
@@ -50,6 +47,3 @@ func (m ChapterList) SortBy(f func(ChapterInfo, ChapterInfo) bool) ChapterList {
 	return sorted
 }
 
-func (m ChapterList) MarshalJSON() ([]byte, error) {
-	return json.Marshal([]ChapterInfo(m))
-}
