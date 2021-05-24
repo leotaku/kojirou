@@ -54,6 +54,12 @@ func (c *Client) GetChapters(args QueryArgs) (*ChapterList, error) {
 	return v, err
 }
 
+func (c *Client) GetCovers(args QueryArgs) (*CoverList, error) {
+	v := new(CoverList)
+	err := c.doJSON("GET", "/cover?"+args.Values().Encode(), v, nil)
+	return v, err
+}
+
 func (c *Client) GetAuthors(args QueryArgs) (*AuthorList, error) {
 	v := new(AuthorList)
 	err := c.doJSON("GET", "/author?"+args.Values().Encode(), v, nil)

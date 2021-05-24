@@ -70,6 +70,32 @@ type ChapterData struct {
 	}
 }
 
+type CoverList struct {
+	Results []Cover
+	Limit   int
+	Offset  int
+	Total   int
+}
+
+type Cover struct {
+	Result        string
+	Data          CoverData
+	Relationships Relationships
+}
+
+type CoverData struct {
+	ID         StringID
+	Type       string
+	Attributes struct {
+		Description string
+		Volume      string
+		FileName    string
+		CreatedAt   string
+		UpdatedAt   string
+		Version     int
+	}
+}
+
 type AuthorList struct {
 	Results []Author
 	Limit   int
