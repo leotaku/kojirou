@@ -13,7 +13,13 @@ import (
 	"github.com/leotaku/mobi"
 )
 
-func downloadMetaFor(id string, filter Filter) (*mangadex.Manga, error) {
+type outputConfig struct {
+	root      string
+	thumbRoot *string
+	force     bool
+}
+
+func prepareEmptyManga(id string, filter Filter) (*mangadex.Manga, error) {
 	manga, err := util.Client.FetchManga(id)
 	if err != nil {
 		return nil, err
@@ -38,49 +44,70 @@ func downloadMetaFor(id string, filter Filter) (*mangadex.Manga, error) {
 	return &result, nil
 }
 
-func downloadAndWrite(m mangadex.Manga, root string, thumbRoot *string, force bool) error {
-	for _, idx := range m.Keys() {
-		// Variables
-		path := fmt.Sprintf("%v/%v.azw3", root, idx)
-		pb := util.NewBar().Message(fmt.Sprintf("Volume %v", idx))
-		pb.AddTotal(1)
-
-		// Abort if file exists
-		if _, err := os.Stat(path); !force && !os.IsNotExist(err) {
-			pb.Succeed("File exists").Finish()
-			continue
-		}
-
-		// Fetch volume images
-		filtered := m.Chapters().FilterBy(func(ci mangadex.ChapterInfo) bool {
-			return ci.VolumeIdentifier == idx
-		})
-		pages, err := util.FetchPages(filtered, pb)
-		if err != nil {
-			return err
-		}
-
-		// Write book and thumbnail
-		manga := m.WithChapters(filtered).WithPages(pages)
-		mobi := util.VolumesToMobi(manga)
-		err = writeBook(mobi, path)
-		if err != nil {
-			util.Cleanup(func() { os.Remove(path) })
-			return err
-		}
-
-		if thumbRoot != nil {
-			err := writeThumb(mobi, *thumbRoot)
-			if err != nil {
-				return err
-			}
-		}
-
-		// Done
-		pb.Increment()
-		pb.Finish()
+func outputAllVolumes(m mangadex.Manga, cfg outputConfig) error {
+	covers, err := util.Client.FetchCovers(m.Info.ID)
+	if err != nil {
+		return err
 	}
 
+	for _, idx := range m.Keys() {
+		err := outputOneVolume(m, idx, covers, cfg)
+		if err != nil {
+			return fmt.Errorf("volume %v: %w", idx, err)
+		}
+	}
+
+	return nil
+}
+
+func outputOneVolume(m mangadex.Manga, idx mangadex.Identifier, covers mangadex.PathList, cfg outputConfig) error {
+	// Variables
+	path := fmt.Sprintf("%v/%v.azw3", cfg.root, idx)
+	pb := util.NewBar().Message(fmt.Sprintf("Volume %v", idx))
+	pb.AddTotal(1)
+
+	// Abort if file exists
+	if _, err := os.Stat(path); !cfg.force && !os.IsNotExist(err) {
+		pb.Succeed("File exists").Finish()
+		return nil
+	}
+
+	// Fetch volume cover
+	covers = covers.FilterBy(func(pi mangadex.PathItem) bool {
+		return pi.VolumeIdentifier.Equal(idx)
+	})
+	coverImages, err := util.FetchCovers(covers, pb)
+	if err != nil {
+		return err
+	}
+
+	// Fetch volume images
+	filtered := m.Chapters().FilterBy(func(ci mangadex.ChapterInfo) bool {
+		return ci.VolumeIdentifier.Equal(idx)
+	})
+	pages, err := util.FetchPages(filtered, pb)
+	if err != nil {
+		return err
+	}
+
+	// Write book and thumbnail
+	manga := m.WithChapters(filtered).WithPages(pages).WithCovers(coverImages)
+	mobi := util.VolumesToMobi(manga)
+	err = writeBook(mobi, path)
+	if err != nil {
+		util.Cleanup(func() { os.Remove(path) })
+		return err
+	}
+	if cfg.thumbRoot != nil {
+		err := writeThumb(mobi, *cfg.thumbRoot)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Done
+	pb.Increment()
+	pb.Finish()
 	return nil
 }
 

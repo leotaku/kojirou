@@ -55,7 +55,7 @@ var rootCmd = &cobra.Command{
 		util.InitCleanup()
 		defer util.RunCleanup()
 
-		manga, err := downloadMetaFor(args[0], filterFromFlags)
+		manga, err := prepareEmptyManga(args[0], filterFromFlags)
 		if err != nil {
 			return err
 		}
@@ -210,7 +210,11 @@ func runInNormalMode(m mangadex.Manga) error {
 		return err
 	}
 
-	return downloadAndWrite(m, outArg, nil, forceArg)
+	return outputAllVolumes(m, outputConfig{
+		root:      outArg,
+		thumbRoot: nil,
+		force:     forceArg,
+	})
 }
 
 func runInKindleMode(m mangadex.Manga) error {
@@ -226,7 +230,11 @@ func runInKindleMode(m mangadex.Manga) error {
 		return err
 	}
 
-	return downloadAndWrite(m, root, &thumbRoot, forceArg)
+	return outputAllVolumes(m, outputConfig{
+		root:      root,
+		thumbRoot: &thumbRoot,
+		force:     forceArg,
+	})
 }
 
 func init() {
