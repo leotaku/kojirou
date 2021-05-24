@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 
 	"github.com/leotaku/kojirou/mangadex/api"
 )
@@ -88,8 +87,6 @@ func (c *Client) FetchChapters(mangaID string) (ChapterList, error) {
 
 		if offset+limit >= feed.Total {
 			break
-		} else {
-			fmt.Fprintln(os.Stderr, "WARNING: Pagination is broken and can lead to unreliable results")
 		}
 	}
 
@@ -118,8 +115,6 @@ func (c *Client) FetchCovers(mangaID string) (PathList, error) {
 
 		if offset+limit >= feed.Total {
 			break
-		} else {
-			fmt.Fprintln(os.Stderr, "WARNING: Pagination is broken and can lead to unreliable results")
 		}
 	}
 
