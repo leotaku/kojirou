@@ -47,3 +47,13 @@ func (m ChapterList) SortBy(f func(ChapterInfo, ChapterInfo) bool) ChapterList {
 	return sorted
 }
 
+func (m PathList) FilterBy(f func(PathItem) bool) PathList {
+	sorted := make([]PathItem, 0)
+	for _, val := range m {
+		if f(val) {
+			sorted = append(sorted, val)
+		}
+	}
+
+	return sorted
+}
