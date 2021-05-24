@@ -10,7 +10,7 @@ import (
 type ImageItem struct {
 	Image image.Image
 
-	// hidden
+	// identifiers
 	ImageIdentifier   int
 	ChapterIdentifier Identifier
 	VolumeIdentifier  Identifier
@@ -19,7 +19,7 @@ type ImageItem struct {
 type PathItem struct {
 	URL string
 
-	// hidden
+	// identifiers
 	ImageIdentifier   int
 	ChapterIdentifier Identifier
 	VolumeIdentifier  Identifier
@@ -44,7 +44,7 @@ type ChapterInfo struct {
 	Hash       string
 	ID         string
 
-	// hidden
+	// identifiers
 	Identifier       Identifier
 	VolumeIdentifier Identifier
 }
