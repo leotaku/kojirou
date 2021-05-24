@@ -7,6 +7,28 @@ import (
 	"golang.org/x/text/language"
 )
 
+type MangaInfo struct {
+	Title   string
+	Authors multiple
+	Artists multiple
+	ID      string
+}
+
+type ChapterInfo struct {
+	Title      string
+	Views      int
+	Language   language.Tag
+	GroupNames multiple
+	PagePaths  []string
+	Published  time.Time
+	Hash       string
+	ID         string
+
+	// identifiers
+	Identifier       Identifier
+	VolumeIdentifier Identifier
+}
+
 type ImageItem struct {
 	Image image.Image
 
@@ -32,26 +54,4 @@ func (i PathItem) WithImage(img image.Image) ImageItem {
 		VolumeIdentifier:  i.VolumeIdentifier,
 		ImageIdentifier:   i.ImageIdentifier,
 	}
-}
-
-type ChapterInfo struct {
-	Title      string
-	Views      int
-	Language   language.Tag
-	GroupNames multiple
-	PagePaths  []string
-	Published  time.Time
-	Hash       string
-	ID         string
-
-	// identifiers
-	Identifier       Identifier
-	VolumeIdentifier Identifier
-}
-
-type MangaInfo struct {
-	Title   string
-	Authors multiple
-	Artists multiple
-	ID      string
 }
