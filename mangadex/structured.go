@@ -120,8 +120,8 @@ func (m Manga) WithPages(pages ImageList) Manga {
 		}
 	}
 	for _, it := range pages {
-		if _, ok := vols[it.volumeID].Chapters[it.chapterID]; ok {
-			vols[it.volumeID].Chapters[it.chapterID].Pages[it.imageID] = it.Image
+		if _, ok := vols[it.VolumeIdentifier].Chapters[it.ChapterIdentifier]; ok {
+			vols[it.VolumeIdentifier].Chapters[it.ChapterIdentifier].Pages[it.ImageIdentifier] = it.Image
 		}
 	}
 
@@ -138,9 +138,9 @@ func (m Manga) WithCovers(covers ImageList) Manga {
 		vols[idx] = vol
 	}
 	for _, it := range covers {
-		if vol, ok := vols[it.volumeID]; ok {
+		if vol, ok := vols[it.VolumeIdentifier]; ok {
 			vol.Cover = it.Image
-			vols[it.volumeID] = vol
+			vols[it.VolumeIdentifier] = vol
 		}
 	}
 

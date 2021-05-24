@@ -11,26 +11,26 @@ type ImageItem struct {
 	Image image.Image
 
 	// hidden
-	imageID   int
-	chapterID Identifier
-	volumeID  Identifier
+	ImageIdentifier   int
+	ChapterIdentifier Identifier
+	VolumeIdentifier  Identifier
 }
 
 type PathItem struct {
 	URL string
 
 	// hidden
-	imageID   int
-	chapterID Identifier
-	volumeID  Identifier
+	ImageIdentifier   int
+	ChapterIdentifier Identifier
+	VolumeIdentifier  Identifier
 }
 
 func (i PathItem) WithImage(img image.Image) ImageItem {
 	return ImageItem{
-		Image:     img,
-		chapterID: i.chapterID,
-		volumeID:  i.volumeID,
-		imageID:   i.imageID,
+		Image:             img,
+		ChapterIdentifier: i.ChapterIdentifier,
+		VolumeIdentifier:  i.VolumeIdentifier,
+		ImageIdentifier:   i.ImageIdentifier,
 	}
 }
 

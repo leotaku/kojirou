@@ -59,10 +59,10 @@ func convertCovers(coverBaseURL string, mangaID string, co []api.Cover) PathList
 	for _, info := range co {
 		url := strings.Join([]string{coverBaseURL, mangaID, info.Data.Attributes.FileName}, "/")
 		result = append(result, PathItem{
-			URL:       url,
-			imageID:   0,
-			chapterID: NewIdentifier("0", "Unreachable"),
-			volumeID:  NewIdentifier(info.Data.Attributes.Volume, "Special"),
+			URL:               url,
+			ImageIdentifier:   0,
+			ChapterIdentifier: NewIdentifier("0", "Unreachable"),
+			VolumeIdentifier:  NewIdentifier(info.Data.Attributes.Volume, "Special"),
 		})
 	}
 
@@ -74,10 +74,10 @@ func convertChapter(baseURL string, ci *ChapterInfo) PathList {
 	for i, filename := range ci.PagePaths {
 		url := strings.Join([]string{baseURL, "data", ci.Hash, filename}, "/")
 		result = append(result, PathItem{
-			URL:       url,
-			imageID:   i,
-			chapterID: ci.Identifier,
-			volumeID:  ci.VolumeIdentifier,
+			URL:               url,
+			ImageIdentifier:   i,
+			ChapterIdentifier: ci.Identifier,
+			VolumeIdentifier:  ci.VolumeIdentifier,
 		})
 	}
 
