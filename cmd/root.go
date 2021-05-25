@@ -96,16 +96,16 @@ remove the "--dry-run" switch to download the manga.
 
 Here is a short explanation for each of the available rankings.
 
-  newest-total (default):
+  most (default):
+Prefer chapters by groups with the most uploaded chapters.
+  newest-total:
 Prefer chapters by groups with the newest upload.
   newest:
 Prefer chapters that have been uploaded most recently.
   views-total:
 Prefer chapters by groups with the most total views.
   views:
-Prefer chapters with the most views.
-  most:
-Prefer chapters by groups with the most uploaded chapters.`,
+Prefer chapters with the most views.`,
 }
 
 var helpFilterCmd = &cobra.Command{
@@ -239,7 +239,7 @@ func runInKindleMode(m mangadex.Manga) error {
 
 func init() {
 	rootCmd.Flags().StringVarP(&languageArg, "language", "l", "en", "language for chapter downloads")
-	rootCmd.Flags().StringVarP(&rankArg, "rank", "r", "newest-total", "chapter ranking method to use")
+	rootCmd.Flags().StringVarP(&rankArg, "rank", "r", "most", "chapter ranking method to use")
 	rootCmd.Flags().BoolVarP(&kindleFolderModeArg, "kindle-folder-mode", "k", false, "generate folder structure for Kindle devices")
 	rootCmd.Flags().BoolVarP(&dryRunArg, "dry-run", "d", false, "disable writing of any files")
 	rootCmd.Flags().StringVarP(&outArg, "out", "o", "", "output directory")
