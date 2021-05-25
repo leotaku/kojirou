@@ -122,12 +122,8 @@ func (c *Client) FetchCovers(mangaID string) (PathList, error) {
 }
 
 func (c *Client) FetchPaths(chapter *ChapterInfo) (PathList, error) {
-	ah, err := c.base.GetAtHome(chapter.ID)
-	if err != nil {
-		return nil, fmt.Errorf("get at home: %w", err)
-	}
-
 	// FIXME: flaky MD@Home workaround
+	ah := new(api.AtHome)
 	ah.BaseURL = "https://s2.mangadex.org/"
 
 	return convertChapter(ah.BaseURL, chapter), nil
