@@ -26,7 +26,7 @@ type MangaData struct {
 		IsLocked               bool
 		Links                  map[string]string
 		OriginalLanguage       string
-		LastVolume             int
+		LastVolume             string
 		LastChapter            string
 		PublicationDemographic string
 		Status                 string
