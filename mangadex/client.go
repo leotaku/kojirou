@@ -76,8 +76,8 @@ func (c *Client) FetchChapters(mangaID string) (ChapterList, error) {
 	limit := 500
 	for offset := 0; ; offset += limit {
 		feed, err := c.base.GetFeed(mangaID, api.QueryArgs{
-			Limit:     limit,
-			Offset:    offset,
+			Limit:  limit,
+			Offset: offset,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("get chapters: %w", err)
