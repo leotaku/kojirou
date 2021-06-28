@@ -22,7 +22,7 @@
 Kojirou will automatically download the series for the specified ID and language while outputting a folder with all the downloaded volumes.
 
 ``` shell
-kojirou 22631 -l en
+kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en
 ```
 
 ### Generate Kindle folder structure for easy synchronization
@@ -30,7 +30,7 @@ kojirou 22631 -l en
 Kojirou can also output a folder structure matching that of any modern Kindle devices to allow for easy synchronization using e.g. rsync.
 
 ``` shell
-kojirou 22631 -l en --kindle-folder-mode
+kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --kindle-folder-mode
 udisksctl mount -b /dev/sdb
 rsync kindle/ /run/media/user/Kindle/
 ```
@@ -41,8 +41,8 @@ Kojirou has the ability to use different [ranking algorithms](https://github.com
 You can preview what would be downloaded by running in dry-run mode.
 
 ``` shell
-kojirou 22631 -l en --rank views --dry-run
-kojirou 22631 -l en --rank most
+kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rank views --dry-run
+kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rank most
 ```
 
 ## License
