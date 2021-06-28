@@ -59,7 +59,7 @@ func VolumesToMobi(manga mangadex.Manga) mobi.Book {
 		Title:        mangaToTitle(manga),
 		Authors:      manga.Info.Authors,
 		Contributors: groupNames,
-		CreatedDate:  time.Now(),
+		CreatedDate:  time.Unix(0, 0),
 		Language:     mangaToLanguage(manga),
 		FixedLayout:  true,
 		CoverImage:   mangaToCover(manga),
