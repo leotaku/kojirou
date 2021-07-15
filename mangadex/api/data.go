@@ -139,12 +139,19 @@ type GroupData struct {
 	ID         StringID
 	Type       string
 	Attributes struct {
-		Name      string
-		Leader    Relationship
-		Members   Relationships
-		CreatedAt time.Time
-		UpdatedAt time.Time
-		Version   int
+		Name         string
+		Description  string
+		Leader       Relationship
+		Members      Relationships
+		CreatedAt    time.Time
+		UpdatedAt    time.Time
+		Website      string
+		IRCServer    string
+		IRCChannel   string
+		Discord      string
+		ContactEmail string
+		Version      int
+		Locked       bool
 	}
 }
 
