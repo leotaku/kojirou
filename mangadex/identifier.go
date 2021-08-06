@@ -32,6 +32,20 @@ func NewIdentifier(num string, fallback string) Identifier {
 	}
 }
 
+func WholeIdentifier(n int) Identifier {
+	return Identifier{
+		numeric:  float64(n),
+		fallback: "",
+	}
+}
+
+func UnknownIdentifier() Identifier {
+	return Identifier{
+		numeric:  math.Inf(1),
+		fallback: "",
+	}
+}
+
 func (n Identifier) Equal(o Identifier) bool {
 	switch {
 	case !n.IsSpecial() && !o.IsSpecial():
@@ -70,6 +84,14 @@ func (n Identifier) IsUnknown() bool {
 	return n.IsSpecial() && len(n.fallback) == 0
 }
 
+func (n Identifier) IsNext(o Identifier) bool {
+	if n.IsSpecial() || o.IsSpecial() {
+		return true
+	}
+
+	return o.numeric <= math.Trunc(n.numeric)+1
+}
+
 func (n Identifier) String() string {
 	switch {
 	case n.IsUnknown():
@@ -90,6 +112,12 @@ func (n Identifier) MarshalJSON() ([]byte, error) {
 	default:
 		return json.Marshal(n.numeric)
 	}
+}
+
+func (n *Identifier) UnmarshalJSON(data []byte) error {
+	s := strings.Trim(string(data), `"`)
+	*n = NewIdentifier(s, s)
+	return nil
 }
 
 func (n Identifier) MarshalText() ([]byte, error) {
