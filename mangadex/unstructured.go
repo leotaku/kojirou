@@ -23,7 +23,6 @@ type ChapterInfo struct {
 	Views      int
 	Language   language.Tag
 	GroupNames multiple
-	PagePaths  []string
 	Published  time.Time
 	Hash       string
 	ID         string

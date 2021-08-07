@@ -20,6 +20,7 @@ type Chapter struct {
 	Info       ChapterInfo
 	Identifier Identifier
 	Pages      map[int]image.Image
+	PagePaths []string
 }
 
 func (m Manga) Sorted() []Volume {
