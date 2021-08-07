@@ -11,14 +11,14 @@ type Manga struct {
 }
 
 type Volume struct {
-	Cover      image.Image
-	Chapters   map[Identifier]Chapter
 	Info     VolumeInfo
+	Chapters map[Identifier]Chapter
+	Cover    image.Image
 }
 
 type Chapter struct {
-	Info       ChapterInfo
-	Pages      map[int]image.Image
+	Info      ChapterInfo
+	Pages     map[int]image.Image
 	PagePaths []string
 }
 
