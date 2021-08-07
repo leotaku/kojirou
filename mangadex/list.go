@@ -4,9 +4,9 @@ import "sort"
 
 type ChapterList []Chapter
 
-type PathList []PathItem
+type PathList []Path
 
-type ImageList []ImageItem
+type ImageList []Image
 
 func (m ChapterList) CollapseBy(f func(ChapterInfo) interface{}) ChapterList {
 	keys := make([]interface{}, 0)
@@ -47,8 +47,8 @@ func (m ChapterList) SortBy(f func(ChapterInfo, ChapterInfo) bool) ChapterList {
 	return sorted
 }
 
-func (m PathList) FilterBy(f func(PathItem) bool) PathList {
-	sorted := make([]PathItem, 0)
+func (m PathList) FilterBy(f func(Path) bool) PathList {
+	sorted := make([]Path, 0)
 	for _, val := range m {
 		if f(val) {
 			sorted = append(sorted, val)

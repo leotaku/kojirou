@@ -32,7 +32,7 @@ type ChapterInfo struct {
 	VolumeIdentifier Identifier
 }
 
-type ImageItem struct {
+type Image struct {
 	Image image.Image
 
 	// identifiers
@@ -41,7 +41,7 @@ type ImageItem struct {
 	VolumeIdentifier  Identifier
 }
 
-type PathItem struct {
+type Path struct {
 	URL string
 
 	// identifiers
@@ -50,8 +50,8 @@ type PathItem struct {
 	VolumeIdentifier  Identifier
 }
 
-func (i PathItem) WithImage(img image.Image) ImageItem {
-	return ImageItem{
+func (i Path) WithImage(img image.Image) Image {
+	return Image{
 		Image:             img,
 		ChapterIdentifier: i.ChapterIdentifier,
 		VolumeIdentifier:  i.VolumeIdentifier,
