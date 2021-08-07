@@ -144,11 +144,16 @@ func (c *Client) fetchGroupMap(chapters []api.Chapter) (map[string]api.Group, er
 
 	result := make(map[string]api.Group)
 	limit := 100
-	for offset := 0; ; offset += limit {
+	for offset := 0; offset < len(groupIDs); offset += limit {
+		// Always send at most `limit` IDs
+		end := len(groupIDs)
+		if end > offset+limit {
+			end = offset + limit
+		}
+
 		gs, err := c.base.GetGroups(api.QueryArgs{
-			IDs:    groupIDs,
-			Limit:  limit,
-			Offset: offset,
+			IDs:   groupIDs[offset:end],
+			Limit: limit,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("get groups: %w", err)
@@ -156,10 +161,6 @@ func (c *Client) fetchGroupMap(chapters []api.Chapter) (map[string]api.Group, er
 			for _, group := range gs.Results {
 				result[group.Data.ID] = group
 			}
-		}
-
-		if offset+limit >= gs.Total {
-			break
 		}
 	}
 
