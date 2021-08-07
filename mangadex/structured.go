@@ -18,7 +18,6 @@ type Volume struct {
 
 type Chapter struct {
 	Info       ChapterInfo
-	Identifier Identifier
 	Pages      map[int]image.Image
 	PagePaths []string
 }
