@@ -14,6 +14,10 @@ type MangaInfo struct {
 	ID      string
 }
 
+type VolumeInfo struct {
+	Identifier Identifier
+}
+
 type ChapterInfo struct {
 	Title      string
 	Views      int

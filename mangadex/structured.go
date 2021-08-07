@@ -12,8 +12,8 @@ type Manga struct {
 
 type Volume struct {
 	Cover      image.Image
-	Identifier Identifier
 	Chapters   map[Identifier]Chapter
+	Info     VolumeInfo
 }
 
 type Chapter struct {
