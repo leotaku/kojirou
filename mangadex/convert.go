@@ -91,6 +91,10 @@ func convertChapter(baseURL string, ch *Chapter) PathList {
 type multiple []string
 
 func (s multiple) String() string {
+	if len(s) == 0 {
+		return "Unknown"
+	}
+
 	return strings.Join(s, " and ")
 }
 
