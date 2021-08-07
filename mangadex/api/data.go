@@ -8,8 +8,6 @@ import (
 
 type Localized map[string]string
 
-type StringID = string
-
 type Manga struct {
 	Result        string
 	Data          MangaData
@@ -17,7 +15,7 @@ type Manga struct {
 }
 
 type MangaData struct {
-	ID         StringID
+	ID         string
 	Type       string
 	Attributes struct {
 		Title                  Localized
@@ -53,7 +51,7 @@ type Chapter struct {
 }
 
 type ChapterData struct {
-	ID         StringID
+	ID         string
 	Type       string
 	Attributes struct {
 		Volume             string
@@ -84,7 +82,7 @@ type Cover struct {
 }
 
 type CoverData struct {
-	ID         StringID
+	ID         string
 	Type       string
 	Attributes struct {
 		Description string
@@ -110,7 +108,7 @@ type Author struct {
 }
 
 type AuthorData struct {
-	ID         StringID
+	ID         string
 	Type       string
 	Attributes struct {
 		Name      string
@@ -136,7 +134,7 @@ type Group struct {
 }
 
 type GroupData struct {
-	ID         StringID
+	ID         string
 	Type       string
 	Attributes struct {
 		Name         string
@@ -162,11 +160,11 @@ type IDMapping struct {
 }
 
 type IDMappingData struct {
-	ID         StringID
+	ID         string
 	Type       string
 	Attributes struct {
 		LegacyID int
-		NewID    StringID
+		NewID    string
 		Type     string
 	}
 }
@@ -176,17 +174,17 @@ type AtHome struct {
 }
 
 type Relationships struct {
-	Manga      []StringID
-	Chapter    []StringID
-	Author     []StringID
-	Artist     []StringID
-	Group      []StringID
-	Tag        []StringID
-	User       []StringID
-	CustomList []StringID
-	CoverArt   []StringID
-	Leader     []StringID
-	Member     []StringID
+	Manga      []string
+	Chapter    []string
+	Author     []string
+	Artist     []string
+	Group      []string
+	Tag        []string
+	User       []string
+	CustomList []string
+	CoverArt   []string
+	Leader     []string
+	Member     []string
 }
 
 func (rs *Relationships) UnmarshalJSON(data []byte) error {
@@ -228,7 +226,7 @@ func (rs *Relationships) UnmarshalJSON(data []byte) error {
 }
 
 type Relationship struct {
-	ID         StringID
+	ID         string
 	Type       string
 	Attributes map[string]interface{}
 }

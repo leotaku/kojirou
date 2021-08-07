@@ -27,7 +27,7 @@ func (c *Client) WithHTTPClient(http *http.Client) *Client {
 	return c
 }
 
-func (c *Client) FetchLegacy(tp string, legacyID int) (api.StringID, error) {
+func (c *Client) FetchLegacy(tp string, legacyID int) (string, error) {
 	ids, err := c.base.PostIDMapping(tp, legacyID)
 	if err != nil {
 		return "", fmt.Errorf("post mapping: %w", err)
