@@ -1,6 +1,7 @@
 package mangadex
 
 import (
+	"image"
 	"reflect"
 	"strings"
 
@@ -36,17 +37,20 @@ func convertChapters(ca []api.Chapter, groupMap map[string]api.Group) ChapterLis
 			groups = append(groups, groupMap[id].Data.Attributes.Name)
 		}
 
-		sorted = append(sorted, ChapterInfo{
-			Title:            info.Data.Attributes.Title,
-			Language:         lang,
-			Views:            0, // FIXME
-			Hash:             info.Data.Attributes.Hash,
-			PagePaths:        info.Data.Attributes.Data,
-			GroupNames:       groups,
-			Published:        info.Data.Attributes.PublishAt,
-			ID:               info.Data.ID,
-			Identifier:       NewIdentifier(info.Data.Attributes.Chapter, info.Data.Attributes.Title),
-			VolumeIdentifier: NewIdentifier(info.Data.Attributes.Volume, "Special"),
+		sorted = append(sorted, Chapter{
+			Info: ChapterInfo{
+				Title:            info.Data.Attributes.Title,
+				Language:         lang,
+				Views:            0, // FIXME
+				Hash:             info.Data.Attributes.Hash,
+				GroupNames:       groups,
+				Published:        info.Data.Attributes.PublishAt,
+				ID:               info.Data.ID,
+				Identifier:       NewWithFallback(info.Data.Attributes.Chapter, info.Data.Attributes.Title),
+				VolumeIdentifier: NewWithFallback(info.Data.Attributes.Volume, "Special"),
+			},
+			PagePaths: info.Data.Attributes.Data,
+			Pages:     make(map[int]image.Image),
 		})
 	}
 
@@ -69,15 +73,15 @@ func convertCovers(coverBaseURL string, mangaID string, co []api.Cover) PathList
 	return result
 }
 
-func convertChapter(baseURL string, ci *ChapterInfo) PathList {
+func convertChapter(baseURL string, ch *Chapter) PathList {
 	result := make(PathList, 0)
-	for i, filename := range ci.PagePaths {
-		url := strings.Join([]string{baseURL, "data", ci.Hash, filename}, "/")
+	for i, filename := range ch.PagePaths {
+		url := strings.Join([]string{baseURL, "data", ch.Info.Hash, filename}, "/")
 		result = append(result, PathItem{
 			URL:               url,
 			ImageIdentifier:   i,
-			ChapterIdentifier: ci.Identifier,
-			VolumeIdentifier:  ci.VolumeIdentifier,
+			ChapterIdentifier: ch.Info.Identifier,
+			VolumeIdentifier:  ch.Info.VolumeIdentifier,
 		})
 	}
 

@@ -121,7 +121,7 @@ func (c *Client) FetchCovers(mangaID string) (PathList, error) {
 	return convertCovers(c.coverBaseURL.String(), mangaID, covers), nil
 }
 
-func (c *Client) FetchPaths(chapter *ChapterInfo) (PathList, error) {
+func (c *Client) FetchPaths(chapter *Chapter) (PathList, error) {
 	ah, err := c.base.GetAtHome(chapter.Info.ID)
 	if err != nil {
 		return nil, fmt.Errorf("get at home: %w", err)
