@@ -11,19 +11,19 @@ import (
 var CoverBaseURL, _ = url.Parse("https://uploads.mangadex.org/covers/")
 
 type Client struct {
-	base         api.Client
+	base         *api.Client
 	coverBaseURL url.URL
 }
 
 func NewClient() *Client {
 	return &Client{
-		base:         *api.NewClient(),
+		base:         api.NewClient(),
 		coverBaseURL: *CoverBaseURL,
 	}
 }
 
-func (c *Client) WithHTTPClient(http http.Client) *Client {
-	c.base.WithClient(http)
+func (c *Client) WithHTTPClient(http *http.Client) *Client {
+	c.base.WithHTTPClient(http)
 	return c
 }
 
