@@ -65,8 +65,8 @@ func convertCovers(coverBaseURL string, mangaID string, co []api.Cover) PathList
 		result = append(result, PathItem{
 			URL:               url,
 			ImageIdentifier:   0,
-			ChapterIdentifier: NewIdentifier("0", "Unreachable"),
-			VolumeIdentifier:  NewIdentifier(info.Data.Attributes.Volume, "Special"),
+			ChapterIdentifier: NewIdentifier("0"),
+			VolumeIdentifier:  NewWithFallback(info.Data.Attributes.Volume, "Special"),
 		})
 	}
 
