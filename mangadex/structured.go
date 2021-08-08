@@ -77,10 +77,23 @@ func (v Volume) Keys() []Identifier {
 	return result
 }
 
+func (c Chapter) Keys() []int {
+	result := make([]int, 0)
+	for key := range c.Pages {
+		result = append(result, key)
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i] < result[j]
+	})
+
+	return result
+}
+
 func (c Chapter) Sorted() []image.Image {
-	result := make([]image.Image, len(c.Pages))
-	for key, val := range c.Pages {
-		result[key] = val
+	result := make([]image.Image, 0)
+	for _, key := range c.Keys() {
+		result = append(result, c.Pages[key])
 	}
 
 	return result
