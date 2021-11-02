@@ -9,9 +9,9 @@ import (
 type Localized map[string]string
 
 type Manga struct {
-	Result        string
-	Data          MangaData
-	Relationships Relationships
+	Result   string
+	Response string
+	Data     MangaData
 }
 
 type MangaData struct {
@@ -31,23 +31,27 @@ type MangaData struct {
 		Year                   int
 		ContentRating          string
 		Tags                   Relationships
+		State                  string
 		CreatedAt              time.Time
 		UpdatedAt              time.Time
 		Version                int
 	}
+	Relationships Relationships
 }
 
 type ChapterList struct {
-	Results []Chapter
-	Limit   int
-	Offset  int
-	Total   int
+	Result   string
+	Response string
+	Data     []ChapterData
+	Limit    int
+	Offset   int
+	Total    int
 }
 
 type Chapter struct {
-	Result        string
-	Data          ChapterData
-	Relationships Relationships
+	Result   string
+	Response string
+	Data     ChapterData
 }
 
 type ChapterData struct {
@@ -61,11 +65,14 @@ type ChapterData struct {
 		Hash               string
 		Data               []string
 		DataSaver          []string
+		Uploader           string
+		ExternalURL        string
 		PublishAt          time.Time
 		CreatedAt          time.Time
 		UpdatedAt          time.Time
 		Version            int
 	}
+	Relationships Relationships
 }
 
 type CoverList struct {
@@ -95,16 +102,12 @@ type CoverData struct {
 }
 
 type AuthorList struct {
-	Results []Author
-	Limit   int
-	Offset  int
-	Total   int
-}
-
-type Author struct {
-	Result        string
-	Data          AuthorData
-	Relationships Relationships
+	Result   string
+	Response string
+	Data     []AuthorData
+	Limit    int
+	Offset   int
+	Total    int
 }
 
 type AuthorData struct {
@@ -116,47 +119,67 @@ type AuthorData struct {
 		Biography []string
 		CreatedAt time.Time
 		UpdatedAt time.Time
+		Twitter   string
+		Pixiv     string
+		MelonBook string
+		FanBox    string
+		Booth     string
+		NicoVideo string
+		Skeb      string
+		Fantia    string
+		Tumblr    string
+		Youtube   string
+		Website   string
 		Version   int
 	}
+	Relationships Relationships
 }
 
 type GroupList struct {
-	Results []Group
-	Limit   int
-	Offset  int
-	Total   int
+	Result   string
+	Response string
+	Data     []GroupData
+	Limit    int
+	Offset   int
+	Total    int
 }
 
 type Group struct {
-	Result        string
-	Data          GroupData
-	Relationships Relationships
+	Result   string
+	Response string
+	Data     GroupData
 }
 
 type GroupData struct {
 	ID         string
 	Type       string
 	Attributes struct {
-		Name         string
-		Description  string
-		Leader       Relationship
-		Members      Relationships
-		CreatedAt    time.Time
-		UpdatedAt    time.Time
-		Website      string
-		IRCServer    string
-		IRCChannel   string
-		Discord      string
-		ContactEmail string
-		Version      int
-		Locked       bool
+		Name             string
+		AltNames         []Localized
+		Description      string
+		Leader           Relationship
+		Members          Relationships
+		FocusedLanguages []string
+		CreatedAt        time.Time
+		UpdatedAt        time.Time
+		Website          string
+		IRCServer        string
+		IRCChannel       string
+		Discord          string
+		ContactEmail     string
+		Twitter          string
+		Locked           bool
+		Verified         bool
+		Official         bool
+		Version          int
 	}
+	Relationships Relationships
 }
 
 type IDMapping struct {
-	Result        string
-	Data          IDMappingData
-	Relationships Relationships
+	Result   string
+	Response string
+	Data     IDMappingData
 }
 
 type IDMappingData struct {
@@ -167,9 +190,11 @@ type IDMappingData struct {
 		NewID    string
 		Type     string
 	}
+	Relationships Relationships
 }
 
 type AtHome struct {
+	Result  string
 	BaseURL string
 }
 

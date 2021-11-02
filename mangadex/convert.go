@@ -11,13 +11,13 @@ import (
 
 func convertManga(b *api.Manga, authors, artists *api.AuthorList) MangaInfo {
 	authorNames := make([]string, 0)
-	for _, a := range authors.Results {
-		authorNames = append(authorNames, a.Data.Attributes.Name)
+	for _, a := range authors.Data {
+		authorNames = append(authorNames, a.Attributes.Name)
 	}
 
 	artistNames := make([]string, 0)
-	for _, a := range artists.Results {
-		artistNames = append(artistNames, a.Data.Attributes.Name)
+	for _, a := range artists.Data {
+		artistNames = append(artistNames, a.Attributes.Name)
 	}
 
 	return MangaInfo{
@@ -28,28 +28,28 @@ func convertManga(b *api.Manga, authors, artists *api.AuthorList) MangaInfo {
 	}
 }
 
-func convertChapters(ca []api.Chapter, groupMap map[string]api.Group) ChapterList {
+func convertChapters(ca []api.ChapterData, groupMap map[string]api.GroupData) ChapterList {
 	sorted := make(ChapterList, 0)
 	for _, info := range ca {
-		lang, _ := language.Parse(info.Data.Attributes.TranslatedLanguage)
+		lang, _ := language.Parse(info.Attributes.TranslatedLanguage)
 		groups := make([]string, 0)
 		for _, id := range info.Relationships.Group {
-			groups = append(groups, groupMap[id].Data.Attributes.Name)
+			groups = append(groups, groupMap[id].Attributes.Name)
 		}
 
 		sorted = append(sorted, Chapter{
 			Info: ChapterInfo{
-				Title:            info.Data.Attributes.Title,
+				Title:            info.Attributes.Title,
 				Language:         lang,
 				Views:            0, // FIXME
-				Hash:             info.Data.Attributes.Hash,
+				Hash:             info.Attributes.Hash,
 				GroupNames:       groups,
-				Published:        info.Data.Attributes.PublishAt,
-				ID:               info.Data.ID,
-				Identifier:       NewWithFallback(info.Data.Attributes.Chapter, info.Data.Attributes.Title),
-				VolumeIdentifier: NewWithFallback(info.Data.Attributes.Volume, "Special"),
+				Published:        info.Attributes.PublishAt,
+				ID:               info.ID,
+				Identifier:       NewWithFallback(info.Attributes.Chapter, info.Attributes.Title),
+				VolumeIdentifier: NewWithFallback(info.Attributes.Volume, "Special"),
 			},
-			PagePaths: info.Data.Attributes.Data,
+			PagePaths: info.Attributes.Data,
 			Pages:     make(map[int]image.Image),
 		})
 	}

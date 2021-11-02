@@ -106,7 +106,7 @@ func (m Manga) WithChapters(chapters ChapterList) Manga {
 		volID := chapter.Info.VolumeIdentifier
 		if vol, ok := vols[volID]; ok {
 			if _, ok := vol.Chapters[chapID]; !ok {
-				vols[volID].Chapters[chapID] = cleanChapter(chapter)
+				vols[volID].Chapters[chapID] = cleanChapter(chapter) // Fooo
 			}
 		} else {
 			vol := cleanVolume(chapter)
@@ -175,9 +175,14 @@ func cleanVolume(old Chapter) Volume {
 }
 
 func cleanChapter(old Chapter) Chapter {
+	pages := make(map[int]image.Image)
+	for key, value := range old.Pages {
+		pages[key] = value
+	}
+
 	return Chapter{
 		Info:      old.Info,
-		Pages:     make(map[int]image.Image),
+		Pages:     pages,
 		PagePaths: old.PagePaths,
 	}
 }

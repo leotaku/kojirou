@@ -48,7 +48,7 @@ func (c *Client) FetchManga(mangaID string) (*Manga, error) {
 
 	// Only retrieves at most 100 authors
 	authors, err := c.base.GetAuthors(api.QueryArgs{
-		IDs:   b.Relationships.Author,
+		IDs:   b.Data.Relationships.Author,
 		Limit: 100,
 	})
 	if err != nil {
@@ -57,7 +57,7 @@ func (c *Client) FetchManga(mangaID string) (*Manga, error) {
 
 	// Only retrieves at most 100 artists
 	artists, err := c.base.GetAuthors(api.QueryArgs{
-		IDs:   b.Relationships.Artist,
+		IDs:   b.Data.Relationships.Artist,
 		Limit: 100,
 	})
 	if err != nil {
@@ -71,7 +71,7 @@ func (c *Client) FetchManga(mangaID string) (*Manga, error) {
 }
 
 func (c *Client) FetchChapters(mangaID string) (ChapterList, error) {
-	chapters := make([]api.Chapter, 0)
+	chapters := make([]api.ChapterData, 0)
 
 	limit := 500
 	for offset := 0; ; offset += limit {
@@ -82,7 +82,7 @@ func (c *Client) FetchChapters(mangaID string) (ChapterList, error) {
 		if err != nil {
 			return nil, fmt.Errorf("get chapters: %w", err)
 		} else {
-			chapters = append(chapters, feed.Results...)
+			chapters = append(chapters, feed.Data...)
 		}
 
 		if offset+limit >= feed.Total {
@@ -130,7 +130,7 @@ func (c *Client) FetchPaths(chapter *Chapter) (PathList, error) {
 	return convertChapter(ah.BaseURL, chapter), nil
 }
 
-func (c *Client) fetchGroupMap(chapters []api.Chapter) (map[string]api.Group, error) {
+func (c *Client) fetchGroupMap(chapters []api.ChapterData) (map[string]api.GroupData, error) {
 	dedup := make(map[string]struct{})
 	groupIDs := make([]string, 0)
 	for _, chap := range chapters {
@@ -142,7 +142,7 @@ func (c *Client) fetchGroupMap(chapters []api.Chapter) (map[string]api.Group, er
 		}
 	}
 
-	result := make(map[string]api.Group)
+	result := make(map[string]api.GroupData)
 	limit := 100
 	for offset := 0; offset < len(groupIDs); offset += limit {
 		// Always send at most `limit` IDs
@@ -158,8 +158,8 @@ func (c *Client) fetchGroupMap(chapters []api.Chapter) (map[string]api.Group, er
 		if err != nil {
 			return nil, fmt.Errorf("get groups: %w", err)
 		} else {
-			for _, group := range gs.Results {
-				result[group.Data.ID] = group
+			for _, group := range gs.Data {
+				result[group.ID] = group
 			}
 		}
 	}
