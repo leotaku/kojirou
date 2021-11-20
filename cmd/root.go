@@ -3,12 +3,8 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path"
 	"runtime/pprof"
-	"strconv"
 
-	"github.com/leotaku/kojirou/cmd/util"
-	"github.com/leotaku/kojirou/mangadex"
 	"github.com/spf13/cobra"
 )
 
@@ -33,13 +29,6 @@ var rootCmd = &cobra.Command{
 	Version: "0.1",
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		numeric, err := strconv.ParseInt(args[0], 10, 32)
-		if err == nil {
-			args[0], err = util.Client.FetchLegacy("manga", int(numeric))
-			if err != nil {
-				return fmt.Errorf("lookup: %w", err)
-			}
-		}
 		cmd.SilenceUsage = true
 
 		if cpuprofileArg != "" {
@@ -52,22 +41,8 @@ var rootCmd = &cobra.Command{
 			}
 			defer pprof.StopCPUProfile()
 		}
-		util.InitCleanup()
-		defer util.RunCleanup()
 
-		manga, err := prepareEmptyManga(args[0], filterFromFlags)
-		if err != nil {
-			return err
-		}
-
-		// Write
-		if dryRunArg {
-			return nil
-		} else if !kindleFolderModeArg {
-			return runInNormalMode(*manga)
-		} else {
-			return runInKindleMode(*manga)
-		}
+		return fmt.Errorf("unimplemented")
 	},
 	DisableFlagsInUseLine: true,
 }
@@ -162,79 +137,6 @@ func Execute() {
 	} else if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
-}
-
-func filterFromFlags(cl mangadex.ChapterList) (mangadex.ChapterList, error) {
-	if languageArg != "" {
-		lang := util.MatchLang(languageArg)
-		cl = filterLanguage(cl, lang)
-	}
-	if groupsFilter != "" {
-		cl = filterRegexField(cl, "GroupNames", groupsFilter)
-	}
-	if volumesFilter != "" {
-		ranges := util.ParseRanges(volumesFilter)
-		cl = filterIdentifierField(cl, "VolumeIdentifier", ranges)
-	}
-	if chaptersFilter != "" {
-		ranges := util.ParseRanges(chaptersFilter)
-		cl = filterIdentifierField(cl, "Identifier", ranges)
-	}
-
-	switch rankArg {
-	case "newest":
-		cl = rankNewest(cl)
-	case "newest-total":
-		cl = rankTotalNewest(cl)
-	case "views":
-		cl = rankViews(cl)
-	case "views-total":
-		cl = rankTotalViews(cl)
-	case "most":
-		cl = rankMost(cl)
-	default:
-		return nil, fmt.Errorf(`not a valid rankinging algorithm: "%v"`, rankArg)
-	}
-
-	return doRank(cl), nil
-}
-
-func runInNormalMode(m mangadex.Manga) error {
-	if outArg == "" {
-		outArg = m.Info.Title
-	}
-
-	// Setup directories
-	err := util.SetupDirectories(outArg)
-	if err != nil {
-		return err
-	}
-
-	return outputAllVolumes(m, outputConfig{
-		root:      outArg,
-		thumbRoot: nil,
-		force:     forceArg,
-	})
-}
-
-func runInKindleMode(m mangadex.Manga) error {
-	if outArg == "" {
-		outArg = "kindle"
-	}
-	root := path.Join(outArg, "documents", m.Info.Title)
-	thumbRoot := path.Join(outArg, "system", "thumbnails")
-
-	// Setup directories
-	err := util.SetupDirectories(root, thumbRoot)
-	if err != nil {
-		return err
-	}
-
-	return outputAllVolumes(m, outputConfig{
-		root:      root,
-		thumbRoot: &thumbRoot,
-		force:     forceArg,
-	})
 }
 
 func init() {
