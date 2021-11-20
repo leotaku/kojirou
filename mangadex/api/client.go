@@ -23,7 +23,6 @@ func NewClient() *Client {
 	}
 }
 
-
 func (c *Client) WithBaseURL(url url.URL) *Client {
 	c.baseURL = url
 	return c
