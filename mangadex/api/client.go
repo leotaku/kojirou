@@ -110,8 +110,10 @@ func (c *Client) doJSON(method, ref string, result, body interface{}) error {
 	dec.DisallowUnknownFields()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		errs := new(Errors)
-		if dec.Decode(errs); len(errs.Errors) != 0 {
-			return fmt.Errorf(errs.Errors[0].Detail)
+		if err := dec.Decode(errs); err != nil {
+			return fmt.Errorf("error decode: %w", err)
+		} else if len(errs.Errors) != 0 {
+			return fmt.Errorf("detail: %s", errs.Errors[0].Detail)
 		} else {
 			return fmt.Errorf("status: %v", resp.Status)
 		}
