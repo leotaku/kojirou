@@ -174,7 +174,7 @@ func spinUp(ctx context.Context, concurrency int, f func() error, cleanup func()
 		eg.Go(f)
 	}
 	go func() {
-		eg.Wait()
+		eg.Wait() //nolint:errcheck
 		cleanup()
 	}()
 
