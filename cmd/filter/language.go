@@ -1,4 +1,4 @@
-package util
+package filter
 
 import (
 	"github.com/leotaku/mobi"

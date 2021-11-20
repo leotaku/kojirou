@@ -1,10 +1,11 @@
-package util
+package formats
 
 import (
 	"fmt"
 	"hash/fnv"
 	"html/template"
 	"image"
+	"sort"
 	"strings"
 	"time"
 
@@ -31,21 +32,20 @@ img {
 
 var pageTemplate = template.Must(template.New("page").Parse(pageTemplateString))
 
-func VolumesToMobi(manga mangadex.Manga) mobi.Book {
+func WriteMOBI(manga mangadex.Manga) mobi.Book {
 	chapters := make([]mobi.Chapter, 0)
 	images := make([]image.Image, 0)
-	pageID := 1
+	pageImageIndex := 1
 
-	// Pages
 	groupNames := make([]string, 0)
 	for _, vol := range manga.Sorted() {
 		for _, chap := range vol.Sorted() {
-			groupNames = unifyStrings(groupNames, chap.Info.GroupNames...)
+			groupNames = append(groupNames, chap.Info.GroupNames...)
 			pages := make([]string, 0)
 			for _, img := range chap.Sorted() {
 				images = append(images, img)
-				pages = append(pages, executeTemplate(pageTemplate, records.To32(pageID)))
-				pageID++
+				pages = append(pages, templateToString(pageTemplate, records.To32(pageImageIndex)))
+				pageImageIndex++
 			}
 			title := fmt.Sprintf("%v: %v", chap.Info.Identifier, chap.Info.Title)
 			chapters = append(chapters, mobi.Chapter{
@@ -54,6 +54,7 @@ func VolumesToMobi(manga mangadex.Manga) mobi.Book {
 			})
 		}
 	}
+	groupNames = deduplicate(groupNames)
 
 	return mobi.Book{
 		Title:        mangaToTitle(manga),
@@ -96,35 +97,31 @@ func mangaToCover(manga mangadex.Manga) image.Image {
 
 func mangaToLanguage(manga mangadex.Manga) language.Tag {
 	chaps := manga.Chapters()
-	if len(chaps) != 0 {
-		return chaps[0].Language
+	if len(chaps) == 0 {
+		return language.Und
 	} else {
-		panic("unsupported: multiple different languages")
+		// multiple languages are not supported
+		return chaps[0].Info.Language
 	}
 }
 
-func unifyStrings(this []string, other ...string) []string {
-	mapping := make(map[string]struct{})
-	for _, s := range this {
-		mapping[s] = struct{}{}
-	}
-	for _, s := range other {
-		mapping[s] = struct{}{}
-	}
+func deduplicate(slice []string) []string {
+	sort.Stable(sort.StringSlice(slice))
+	dedup := make([]string, 0)
 
-	result := make([]string, 0)
-	for s := range mapping {
-		result = append(result, s)
+	for i, it := range slice {
+		if len(dedup) == 0 || slice[i-1] != it {
+			dedup = append(dedup, it)
+		}
 	}
-
-	return result
+	return dedup
 }
 
-func executeTemplate(tpl *template.Template, data interface{}) string {
-	b := new(strings.Builder)
-	if err := tpl.Execute(b, data); err != nil {
+func templateToString(tpl *template.Template, data interface{}) string {
+	buf := new(strings.Builder)
+	if err := tpl.Execute(buf, data); err != nil {
 		panic(err)
 	}
 
-	return b.String()
+	return buf.String()
 }

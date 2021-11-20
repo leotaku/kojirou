@@ -11,15 +11,15 @@ type Manga struct {
 }
 
 type Volume struct {
-	Cover      image.Image
-	Identifier Identifier
-	Chapters   map[Identifier]Chapter
+	Info     VolumeInfo
+	Chapters map[Identifier]Chapter
+	Cover    image.Image
 }
 
 type Chapter struct {
-	Info       ChapterInfo
-	Identifier Identifier
-	Pages      map[int]image.Image
+	Info      ChapterInfo
+	Pages     map[int]image.Image
+	PagePaths []string
 }
 
 func (m Manga) Sorted() []Volume {
@@ -35,7 +35,7 @@ func (m Manga) Chapters() ChapterList {
 	result := make(ChapterList, 0)
 	for _, vol := range m.Volumes {
 		for _, chap := range vol.Chapters {
-			result = append(result, chap.Info)
+			result = append(result, chap)
 		}
 	}
 
@@ -101,15 +101,15 @@ func (c Chapter) Sorted() []image.Image {
 
 func (m Manga) WithChapters(chapters ChapterList) Manga {
 	vols := make(map[Identifier]Volume)
-	for _, info := range chapters {
-		chapID := info.Identifier
-		volID := info.VolumeIdentifier
+	for _, chapter := range chapters {
+		chapID := chapter.Info.Identifier
+		volID := chapter.Info.VolumeIdentifier
 		if vol, ok := vols[volID]; ok {
 			if _, ok := vol.Chapters[chapID]; !ok {
-				vols[volID].Chapters[chapID] = extractChapter(info)
+				vols[volID].Chapters[chapID] = cleanChapter(chapter) // Fooo
 			}
 		} else {
-			vol := extractVolume(info)
+			vol := cleanVolume(chapter)
 			if val, ok := m.Volumes[volID]; ok {
 				vol.Cover = val.Cover
 			}
@@ -163,19 +163,26 @@ func (m Manga) WithCovers(covers ImageList) Manga {
 	}
 }
 
-func extractVolume(info ChapterInfo) Volume {
+func cleanVolume(old Chapter) Volume {
 	chapters := make(map[Identifier]Chapter)
-	chapters[info.Identifier] = extractChapter(info)
+	chapters[old.Info.Identifier] = cleanChapter(old)
 	return Volume{
-		Chapters:   chapters,
-		Identifier: info.VolumeIdentifier,
+		Info: VolumeInfo{
+			Identifier: old.Info.VolumeIdentifier,
+		},
+		Chapters: chapters,
 	}
 }
 
-func extractChapter(info ChapterInfo) Chapter {
+func cleanChapter(old Chapter) Chapter {
+	pages := make(map[int]image.Image)
+	for key, value := range old.Pages {
+		pages[key] = value
+	}
+
 	return Chapter{
-		Info:       info,
-		Identifier: info.Identifier,
-		Pages:      make(map[int]image.Image),
+		Info:      old.Info,
+		Pages:     pages,
+		PagePaths: old.PagePaths,
 	}
 }

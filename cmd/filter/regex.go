@@ -1,11 +1,11 @@
-package util
+package filter
 
 import (
 	"regexp"
 	"strings"
 )
 
-func Match(pattern, s string) bool {
+func MatchPattern(pattern, s string) bool {
 	negate := strings.HasPrefix(pattern, "!")
 	if negate {
 		matched, _ := regexp.MatchString(pattern[1:], s)

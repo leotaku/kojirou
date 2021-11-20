@@ -11,23 +11,23 @@ import (
 var CoverBaseURL, _ = url.Parse("https://uploads.mangadex.org/covers/")
 
 type Client struct {
-	base         api.Client
+	base         *api.Client
 	coverBaseURL url.URL
 }
 
 func NewClient() *Client {
 	return &Client{
-		base:         *api.NewClient(),
+		base:         api.NewClient(),
 		coverBaseURL: *CoverBaseURL,
 	}
 }
 
-func (c *Client) WithHTTPClient(http http.Client) *Client {
-	c.base.WithClient(http)
+func (c *Client) WithHTTPClient(http *http.Client) *Client {
+	c.base.WithHTTPClient(http)
 	return c
 }
 
-func (c *Client) FetchLegacy(tp string, legacyID int) (api.StringID, error) {
+func (c *Client) FetchLegacy(tp string, legacyID int) (string, error) {
 	ids, err := c.base.PostIDMapping(tp, legacyID)
 	if err != nil {
 		return "", fmt.Errorf("post mapping: %w", err)
@@ -48,7 +48,7 @@ func (c *Client) FetchManga(mangaID string) (*Manga, error) {
 
 	// Only retrieves at most 100 authors
 	authors, err := c.base.GetAuthors(api.QueryArgs{
-		IDs:   b.Relationships.Author,
+		IDs:   b.Data.Relationships.Author,
 		Limit: 100,
 	})
 	if err != nil {
@@ -57,7 +57,7 @@ func (c *Client) FetchManga(mangaID string) (*Manga, error) {
 
 	// Only retrieves at most 100 artists
 	artists, err := c.base.GetAuthors(api.QueryArgs{
-		IDs:   b.Relationships.Artist,
+		IDs:   b.Data.Relationships.Artist,
 		Limit: 100,
 	})
 	if err != nil {
@@ -71,7 +71,7 @@ func (c *Client) FetchManga(mangaID string) (*Manga, error) {
 }
 
 func (c *Client) FetchChapters(mangaID string) (ChapterList, error) {
-	chapters := make([]api.Chapter, 0)
+	chapters := make([]api.ChapterData, 0)
 
 	limit := 500
 	for offset := 0; ; offset += limit {
@@ -82,7 +82,7 @@ func (c *Client) FetchChapters(mangaID string) (ChapterList, error) {
 		if err != nil {
 			return nil, fmt.Errorf("get chapters: %w", err)
 		} else {
-			chapters = append(chapters, feed.Results...)
+			chapters = append(chapters, feed.Data...)
 		}
 
 		if offset+limit >= feed.Total {
@@ -121,8 +121,8 @@ func (c *Client) FetchCovers(mangaID string) (PathList, error) {
 	return convertCovers(c.coverBaseURL.String(), mangaID, covers), nil
 }
 
-func (c *Client) FetchPaths(chapter *ChapterInfo) (PathList, error) {
-	ah, err := c.base.GetAtHome(chapter.ID)
+func (c *Client) FetchPaths(chapter *Chapter) (PathList, error) {
+	ah, err := c.base.GetAtHome(chapter.Info.ID)
 	if err != nil {
 		return nil, fmt.Errorf("get at home: %w", err)
 	}
@@ -130,7 +130,7 @@ func (c *Client) FetchPaths(chapter *ChapterInfo) (PathList, error) {
 	return convertChapter(ah.BaseURL, chapter), nil
 }
 
-func (c *Client) fetchGroupMap(chapters []api.Chapter) (map[string]api.Group, error) {
+func (c *Client) fetchGroupMap(chapters []api.ChapterData) (map[string]api.GroupData, error) {
 	dedup := make(map[string]struct{})
 	groupIDs := make([]string, 0)
 	for _, chap := range chapters {
@@ -142,24 +142,25 @@ func (c *Client) fetchGroupMap(chapters []api.Chapter) (map[string]api.Group, er
 		}
 	}
 
-	result := make(map[string]api.Group)
+	result := make(map[string]api.GroupData)
 	limit := 100
-	for offset := 0; ; offset += limit {
-		gs, err := c.base.GetGroups(api.QueryArgs{
-			IDs:    groupIDs,
-			Limit:  limit,
-			Offset: offset,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("fetch chapters: %w", err)
-		} else {
-			for _, group := range gs.Results {
-				result[group.Data.ID] = group
-			}
+	for offset := 0; offset < len(groupIDs); offset += limit {
+		// Always send at most `limit` IDs
+		end := len(groupIDs)
+		if end > offset+limit {
+			end = offset + limit
 		}
 
-		if offset+limit >= gs.Total {
-			break
+		gs, err := c.base.GetGroups(api.QueryArgs{
+			IDs:   groupIDs[offset:end],
+			Limit: limit,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("get groups: %w", err)
+		} else {
+			for _, group := range gs.Data {
+				result[group.ID] = group
+			}
 		}
 	}
 

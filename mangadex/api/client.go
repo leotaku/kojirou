@@ -12,24 +12,24 @@ import (
 var APIBaseURL, _ = url.Parse(`https://api.mangadex.org/`)
 
 type Client struct {
-	Inner   http.Client
-	BaseURL url.URL
+	http    *http.Client
+	baseURL url.URL
 }
 
 func NewClient() *Client {
 	return &Client{
-		Inner:   *http.DefaultClient,
-		BaseURL: *APIBaseURL,
+		http:    http.DefaultClient,
+		baseURL: *APIBaseURL,
 	}
 }
 
 func (c *Client) WithBaseURL(url url.URL) *Client {
-	c.BaseURL = url
+	c.baseURL = url
 	return c
 }
 
-func (c *Client) WithClient(http http.Client) *Client {
-	c.Inner = http
+func (c *Client) WithHTTPClient(http *http.Client) *Client {
+	c.http = http
 	return c
 }
 
@@ -81,7 +81,7 @@ func (c *Client) PostIDMapping(tp string, legacyIDs ...int) ([]IDMapping, error)
 }
 
 func (c *Client) doJSON(method, ref string, result, body interface{}) error {
-	url, err := c.BaseURL.Parse(ref)
+	url, err := c.baseURL.Parse(ref)
 	if err != nil {
 		return fmt.Errorf("url: %w", err)
 	}
@@ -100,7 +100,7 @@ func (c *Client) doJSON(method, ref string, result, body interface{}) error {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := c.Inner.Do(req)
+	resp, err := c.http.Do(req)
 	if err != nil {
 		return fmt.Errorf("do: %w", err)
 	}
@@ -110,10 +110,12 @@ func (c *Client) doJSON(method, ref string, result, body interface{}) error {
 	dec.DisallowUnknownFields()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		errs := new(Errors)
-		if err := dec.Decode(err); len(errs.Errors) != 0 {
-			return fmt.Errorf(errs.Errors[0].Detail)
+		if err := dec.Decode(errs); err != nil {
+			return fmt.Errorf("error decode: %w", err)
+		} else if len(errs.Errors) != 0 {
+			return fmt.Errorf("detail: %s", errs.Errors[0].Detail)
 		} else {
-			return fmt.Errorf("decode error: %w", err)
+			return fmt.Errorf("status: %v", resp.Status)
 		}
 	} else if err := dec.Decode(result); err != nil {
 		return fmt.Errorf("decode: %w", err)
