@@ -67,7 +67,7 @@ func (n Identifier) StringFilled(before, after int, forceAfter bool) string {
 func (n Identifier) Equal(o Identifier) bool {
 	switch {
 	case !n.IsSpecial() && !o.IsSpecial():
-		return n.before == o.before && n.after == n.after
+		return n.before == o.before && n.after == o.after
 	case !n.IsUnknown() && !o.IsUnknown():
 		return n.fallback == o.fallback
 	default:
