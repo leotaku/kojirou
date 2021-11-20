@@ -54,7 +54,7 @@ func WriteMOBI(manga mangadex.Manga) mobi.Book {
 			})
 		}
 	}
-	deduplicate(groupNames)
+	groupNames = deduplicate(groupNames)
 
 	return mobi.Book{
 		Title:        mangaToTitle(manga),
@@ -105,7 +105,7 @@ func mangaToLanguage(manga mangadex.Manga) language.Tag {
 	}
 }
 
-func deduplicate(slice []string) {
+func deduplicate(slice []string) []string {
 	sort.Stable(sort.StringSlice(slice))
 	dedup := make([]string, 0)
 
@@ -114,7 +114,7 @@ func deduplicate(slice []string) {
 			dedup = append(dedup, it)
 		}
 	}
-	slice = dedup
+	return dedup
 }
 
 func templateToString(tpl *template.Template, data interface{}) string {
