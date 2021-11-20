@@ -5,6 +5,8 @@ import (
 	"os"
 	"runtime/pprof"
 
+	"github.com/leotaku/kojirou/cmd/filter"
+	md "github.com/leotaku/kojirou/mangadex"
 	"github.com/spf13/cobra"
 )
 
@@ -42,7 +44,7 @@ var rootCmd = &cobra.Command{
 			defer pprof.StopCPUProfile()
 		}
 
-		return fmt.Errorf("unimplemented")
+		return runBusinessLogic(args[0])
 	},
 	DisableFlagsInUseLine: true,
 }
@@ -137,6 +139,41 @@ func Execute() {
 	} else if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
+}
+
+func filterFromFlags(cl md.ChapterList) (md.ChapterList, error) {
+	if languageArg != "" {
+		lang := filter.MatchLang(languageArg)
+		cl = filter.FilterByLanguage(cl, lang)
+	}
+	if groupsFilter != "" {
+		cl = filter.FilterByRegex(cl, "GroupNames", groupsFilter)
+	}
+	if volumesFilter != "" {
+		ranges := filter.ParseRanges(volumesFilter)
+		cl = filter.FilterByIdentifier(cl, "VolumeIdentifier", ranges)
+	}
+	if chaptersFilter != "" {
+		ranges := filter.ParseRanges(chaptersFilter)
+		cl = filter.FilterByIdentifier(cl, "Identifier", ranges)
+	}
+
+	switch rankArg {
+	case "newest":
+		cl = filter.SortByNewest(cl)
+	case "newest-total":
+		cl = filter.SortByNewestGroup(cl)
+	case "views":
+		cl = filter.SortByViews(cl)
+	case "views-total":
+		cl = filter.SortByGroupViews(cl)
+	case "most":
+		cl = filter.SortByMost(cl)
+	default:
+		return nil, fmt.Errorf(`not a valid rankinging algorithm: "%v"`, rankArg)
+	}
+
+	return filter.RemoveDuplicates(cl), nil
 }
 
 func init() {
