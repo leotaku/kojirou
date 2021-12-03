@@ -172,6 +172,8 @@ type GroupData struct {
 		Verified         bool
 		Official         bool
 		Version          int
+		PublishDelay     int
+		Inactive         bool
 	}
 	Relationships Relationships
 }
