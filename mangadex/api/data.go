@@ -201,7 +201,7 @@ type AtHome struct {
 }
 
 type Relationships struct {
-  Manga      []string
+	Manga      []string
 	Chapter    []string
 	Author     []string
 	Artist     []string
