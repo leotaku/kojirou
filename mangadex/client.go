@@ -99,7 +99,7 @@ func (c *Client) FetchChapters(mangaID string) (ChapterList, error) {
 }
 
 func (c *Client) FetchCovers(mangaID string) (PathList, error) {
-	covers := make([]api.Cover, 0)
+	covers := make([]api.CoverData, 0)
 	limit := 100
 	for offset := 0; ; offset += limit {
 		feed, err := c.base.GetCovers(api.QueryArgs{
@@ -110,7 +110,7 @@ func (c *Client) FetchCovers(mangaID string) (PathList, error) {
 		if err != nil {
 			return nil, fmt.Errorf("get covers: %w", err)
 		} else {
-			covers = append(covers, feed.Results...)
+			covers = append(covers, feed.Data...)
 		}
 
 		if offset+limit >= feed.Total {

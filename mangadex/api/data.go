@@ -76,16 +76,18 @@ type ChapterData struct {
 }
 
 type CoverList struct {
-	Results []Cover
-	Limit   int
-	Offset  int
-	Total   int
+	Result   string
+	Response string
+	Data     []CoverData
+	Limit    int
+	Offset   int
+	Total    int
 }
 
 type Cover struct {
-	Result        string
-	Data          CoverData
-	Relationships Relationships
+	Result   string
+	Response string
+	Data     CoverData
 }
 
 type CoverData struct {
@@ -99,6 +101,7 @@ type CoverData struct {
 		UpdatedAt   string
 		Version     int
 	}
+	Relationships Relationships
 }
 
 type AuthorList struct {
