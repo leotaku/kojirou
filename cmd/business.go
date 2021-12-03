@@ -44,8 +44,6 @@ func runBusinessLogic(mangaID string) error {
 		}
 		bar.Finish()
 
-		fmt.Println(pages)
-
 		bar = pb.New(0).SetTemplate(progressTemplate)
 		bar.Set("prefix", "Writing...")
 		bar.Set(pb.CleanOnFinish, true)
