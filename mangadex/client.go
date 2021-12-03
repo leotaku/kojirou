@@ -156,7 +156,7 @@ func (c *Client) fetchGroupMap(chapters []api.ChapterData) (map[string]api.Group
 			Limit: limit,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("get groups: %w", err)
+			return nil, err
 		} else {
 			for _, group := range gs.Data {
 				result[group.ID] = group
