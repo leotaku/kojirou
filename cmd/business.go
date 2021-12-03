@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/hashicorp/go-retryablehttp"
@@ -51,7 +52,8 @@ func runBusinessLogic(mangaID string) error {
 		bar.Set(pb.CleanOnFinish, true)
 
 		bar.Start()
-		f, err := os.Create(volume.Info.Identifier.StringFilled(4, 2, false) + ".azw3")
+		p := filepath.FromSlash(outArg)
+		f, err := os.Create(filepath.Clean(p) + "/" + volume.Info.Identifier.StringFilled(4, 2, false) + ".azw3")
 		if err != nil {
 			return fmt.Errorf("create volume %s: %w", volume.Info.Identifier, err)
 		}
