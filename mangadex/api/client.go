@@ -107,7 +107,6 @@ func (c *Client) doJSON(method, ref string, result, body interface{}) error {
 	defer resp.Body.Close()
 
 	dec := json.NewDecoder(resp.Body)
-	dec.DisallowUnknownFields()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		errs := new(Errors)
 		if err := dec.Decode(errs); err != nil {
