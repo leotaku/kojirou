@@ -15,6 +15,6 @@ require (
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/ratelimit v0.2.0
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20211205182925-97ca703d548d // indirect
+	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
 	golang.org/x/text v0.3.7
 )
