@@ -39,7 +39,7 @@ func runBusinessLogic(mangaID string) error {
 	}
 
 	bar := pb.New(0).SetTemplate(progressTemplate)
-	bar.Set("prefix", fmt.Sprintf("Covers"))
+	bar.Set("prefix", "Covers")
 	bar.Set(pb.CleanOnFinish, true)
 	bar.Start()
 	dl := formats.NewMangadexDownloader(client, http, progress(bar))
