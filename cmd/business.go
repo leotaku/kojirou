@@ -50,7 +50,7 @@ func runBusinessLogic(mangaID string) error {
 	*manga = manga.WithCovers(covers)
 	bar.Finish()
 
-	bookDirectory := "."
+	bookDirectory := "." //nolint:ineffassign
 	thumbnailDirectory := new(string)
 	switch {
 	case kindleFolderModeArg && outArg != "":
