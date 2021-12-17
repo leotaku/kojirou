@@ -51,14 +51,14 @@ func runBusinessLogic(mangaID string) error {
 	bar.Finish()
 
 	bookDirectory := "." //nolint:ineffassign
-	thumbnailDirectory := new(string)
+	thumbnailDirectory := "/dev/null"
 	switch {
 	case kindleFolderModeArg && outArg != "":
 		bookDirectory = path.Join(outArg, "documents", manga.Info.Title)
-		*thumbnailDirectory = path.Join(outArg, "system", "thumbnails")
+		thumbnailDirectory = path.Join(outArg, "system", "thumbnails")
 	case kindleFolderModeArg:
 		bookDirectory = path.Join("kindle", "documents", manga.Info.Title)
-		*thumbnailDirectory = path.Join("kindle", "system", "thumbnails")
+		thumbnailDirectory = path.Join("kindle", "system", "thumbnails")
 	case outArg != "":
 		bookDirectory = outArg
 	default:
@@ -97,7 +97,7 @@ func runBusinessLogic(mangaID string) error {
 	return nil
 }
 
-func businessWriteBook(manga md.Manga, bookFilename string, thumbnailDirectory *string) error {
+func businessWriteBook(manga md.Manga, bookFilename string, thumbnailDirectory string) error {
 	mobi := formats.WriteMOBI(manga)
 	bar := pb.New(0).SetTemplate(progressTemplate)
 	bar.Set("prefix", "Writing...")
@@ -113,11 +113,11 @@ func businessWriteBook(manga md.Manga, bookFilename string, thumbnailDirectory *
 		return err
 	}
 
-	if thumbnailDirectory == nil || mobi.CoverImage == nil {
+	if thumbnailDirectory == "/dev/null" || mobi.CoverImage == nil {
 		return nil
-	} else if err := os.MkdirAll(*thumbnailDirectory, os.ModePerm); err != nil {
+	} else if err := os.MkdirAll(thumbnailDirectory, os.ModePerm); err != nil {
 		return err
-	} else if t, err := os.Create(path.Join(*thumbnailDirectory, mobi.GetThumbFilename())); err != nil {
+	} else if t, err := os.Create(path.Join(thumbnailDirectory, mobi.GetThumbFilename())); err != nil {
 		return err
 	} else if err := jpeg.Encode(t, mobi.CoverImage, nil); err != nil {
 		return err
