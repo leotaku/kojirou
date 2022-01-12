@@ -19,7 +19,6 @@ type Volume struct {
 type Chapter struct {
 	Info      ChapterInfo
 	Pages     map[int]image.Image
-	PagePaths []string
 }
 
 func (m Manga) Sorted() []Volume {
@@ -183,6 +182,5 @@ func cleanChapter(old Chapter) Chapter {
 	return Chapter{
 		Info:      old.Info,
 		Pages:     pages,
-		PagePaths: old.PagePaths,
 	}
 }

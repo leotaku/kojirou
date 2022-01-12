@@ -127,7 +127,7 @@ func (c *Client) FetchPaths(chapter *Chapter) (PathList, error) {
 		return nil, fmt.Errorf("get at home: %w", err)
 	}
 
-	return convertChapter(ah.BaseURL, chapter), nil
+	return convertChapter(chapter, ah), nil
 }
 
 func (c *Client) fetchGroupMap(chapters []api.ChapterData) (map[string]api.GroupData, error) {

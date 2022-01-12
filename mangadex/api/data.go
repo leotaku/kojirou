@@ -62,9 +62,6 @@ type ChapterData struct {
 		Chapter            string
 		Title              string
 		TranslatedLanguage string
-		Hash               string
-		Data               []string
-		DataSaver          []string
 		Uploader           string
 		ExternalURL        string
 		PublishAt          time.Time
@@ -201,6 +198,11 @@ type IDMappingData struct {
 type AtHome struct {
 	Result  string
 	BaseURL string
+	Chapter struct {
+		Hash      string
+		Data      []string
+		DataSaver []string
+	}
 }
 
 type Relationships struct {

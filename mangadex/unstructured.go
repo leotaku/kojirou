@@ -24,7 +24,6 @@ type ChapterInfo struct {
 	Language   language.Tag
 	GroupNames multiple
 	Published  time.Time
-	Hash       string
 	ID         string
 
 	// identifiers
