@@ -115,7 +115,7 @@ func (dl *MangadexDownloader) chaptersToPaths(
 				atHomeLimiter.Take()
 				paths, err := dl.client.FetchPaths(&chapter)
 				if err != nil {
-					return fmt.Errorf("paths: %w", err)
+					return fmt.Errorf("chapter %v: paths: %w", chapter.Info.Identifier, err)
 				}
 
 				dl.reporter(len(paths) - 1)
@@ -143,7 +143,7 @@ func (dl *MangadexDownloader) pathsToImages(
 
 				img, err := getImage(dl.http, path.URL)
 				if err != nil {
-					return fmt.Errorf("image: %w", err)
+					return fmt.Errorf("chapter %v: image %v: %w", path.ChapterIdentifier, path.ImageIdentifier, err)
 				}
 
 				dl.reporter(-1)
