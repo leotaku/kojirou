@@ -128,7 +128,7 @@ type AuthorData struct {
 	Attributes struct {
 		Name      string
 		ImageUrl  string
-		Biography []string
+		Biography Localized
 		CreatedAt time.Time
 		UpdatedAt time.Time
 		Twitter   string
