@@ -9,11 +9,12 @@ import (
 )
 
 type QueryArgs struct {
-	IDs       []string       `url:"ids[]"`
-	Languages []language.Tag `url:"translatedLanguage[]"`
-	Mangas    []string       `url:"manga[]"`
-	Limit     int            `url:"limit"`
-	Offset    int            `url:"offset"`
+	IDs       []string          `url:"ids"`
+	Languages []language.Tag    `url:"translatedLanguage"`
+	Mangas    []string          `url:"manga"`
+	Order     map[string]string `url:"order"`
+	Limit     int               `url:"limit"`
+	Offset    int               `url:"offset"`
 }
 
 func (a QueryArgs) Values() url.Values {
@@ -27,7 +28,11 @@ func (a QueryArgs) Values() url.Values {
 		if !val.IsZero() {
 			if val.Kind() == reflect.Slice {
 				for i := 0; i < val.Len(); i++ {
-					result.Add(key, fmt.Sprint(val.Index(i)))
+					result.Add(key+"[]", fmt.Sprint(val.Index(i)))
+				}
+			} else if val.Kind() == reflect.Map {
+				for _, subkey := range val.MapKeys() {
+					result.Add(key+"["+fmt.Sprint(subkey)+"]", fmt.Sprint(val.MapIndex(subkey)))
 				}
 			} else {
 				result.Add(key, fmt.Sprint(val))
