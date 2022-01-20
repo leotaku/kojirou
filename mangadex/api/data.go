@@ -8,6 +8,18 @@ import (
 
 type Localized map[string]string
 
+func (l *Localized) UnmarshalJSON(data []byte) error {
+	err := json.Unmarshal(data, (*map[string]string)(l))
+	if err != nil {
+		slice := make([]string, 0)
+		if err := json.Unmarshal(data, &slice); err == nil && len(slice) == 0 {
+			return nil
+		}
+	}
+
+	return err
+}
+
 type Manga struct {
 	Result   string
 	Response string
