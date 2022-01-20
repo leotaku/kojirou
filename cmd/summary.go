@@ -70,7 +70,7 @@ func formatDiscontinuities(chapters md.ChapterList) (discontinuities []string) {
 			continue
 		}
 
-		if !last.IsNext(this) {
+		if !last.Equal(this) && !last.IsNext(this) {
 			discontinuities = append(discontinuities, fmt.Sprintf("%v..%v", last, this))
 		}
 		last = this
