@@ -5,6 +5,8 @@ import (
 	"image/jpeg"
 	"os"
 	"path"
+	"runtime"
+	"strings"
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/hashicorp/go-retryablehttp"
@@ -50,19 +52,17 @@ func runBusinessLogic(mangaID string) error {
 	*manga = manga.WithCovers(covers)
 	bar.Finish()
 
-	bookDirectory := "." //nolint:ineffassign
+	bookDirectory := pathnameFromTitle(manga.Info.Title)
 	thumbnailDirectory := "/dev/null"
 	switch {
 	case kindleFolderModeArg && outArg != "":
-		bookDirectory = path.Join(outArg, "documents", manga.Info.Title)
+		bookDirectory = path.Join(outArg, "documents", bookDirectory)
 		thumbnailDirectory = path.Join(outArg, "system", "thumbnails")
 	case kindleFolderModeArg:
-		bookDirectory = path.Join("kindle", "documents", manga.Info.Title)
+		bookDirectory = path.Join("kindle", "documents", bookDirectory)
 		thumbnailDirectory = path.Join("kindle", "system", "thumbnails")
 	case outArg != "":
 		bookDirectory = outArg
-	default:
-		bookDirectory = manga.Info.Title
 	}
 
 	for _, volume := range manga.Sorted() {
@@ -143,6 +143,25 @@ func businessDownloadManga(client *md.Client, mangaID string) (*md.Manga, error)
 
 	result := manga.WithChapters(chapters)
 	return &result, nil
+}
+
+func pathnameFromTitle(filename string) string {
+	switch runtime.GOOS {
+	case "windows":
+		filename = strings.ReplaceAll(filename, "\"", "＂")
+		filename = strings.ReplaceAll(filename, "\\", "＼")
+		filename = strings.ReplaceAll(filename, "<", "＜")
+		filename = strings.ReplaceAll(filename, ">", "＞")
+		filename = strings.ReplaceAll(filename, ":", "：")
+		filename = strings.ReplaceAll(filename, "|", "｜")
+		filename = strings.ReplaceAll(filename, "?", "？")
+		filename = strings.ReplaceAll(filename, "*", "＊")
+		filename = strings.TrimRight(filename, ". ")
+	case "darwin":
+		filename = strings.ReplaceAll(filename, ":", "：")
+	}
+
+	return strings.ReplaceAll(filename, "/", "／")
 }
 
 func progress(bar *pb.ProgressBar) formats.Reporter {
