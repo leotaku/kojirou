@@ -24,6 +24,7 @@ func ParseRanges(s string) []Range {
 		} else {
 			result = append(result, Range{
 				start: md.NewIdentifier(it),
+				end:   nil,
 			})
 		}
 	}
