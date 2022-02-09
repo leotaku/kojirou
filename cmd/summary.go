@@ -23,7 +23,7 @@ var groupColors = []*color.Color{
 	color.New(color.ReverseVideo, color.FgYellow),
 }
 
-func printMangaSummary(manga md.Manga) {
+func printMangaSummary(manga *md.Manga) {
 	sorted := manga.Chapters().SortBy(func(a md.ChapterInfo, b md.ChapterInfo) bool {
 		return a.Identifier.Less(b.Identifier)
 	})
