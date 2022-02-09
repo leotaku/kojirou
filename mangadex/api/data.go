@@ -42,12 +42,12 @@ type MangaData struct {
 		Status                         string
 		Year                           int
 		ContentRating                  string
+		ChapterNumbersResetOnNewVolume bool
 		Tags                           Relationships
 		State                          string
-		ChapterNumbersResetOnNewVolume bool
+		Version                        int
 		CreatedAt                      time.Time
 		UpdatedAt                      time.Time
-		Version                        int
 	}
 	Relationships Relationships
 }
@@ -71,18 +71,18 @@ type ChapterData struct {
 	ID         string
 	Type       string
 	Attributes struct {
+		Title              string
 		Volume             string
 		Chapter            string
-		Title              string
+		Pages              int
 		TranslatedLanguage string
 		Uploader           string
 		ExternalURL        string
-		PublishAt          time.Time
-		ReadableAt         time.Time
+		Version            int
 		CreatedAt          time.Time
 		UpdatedAt          time.Time
-		Pages              int
-		Version            int
+		PublishAt          time.Time
+		ReadableAt         time.Time
 	}
 	Relationships Relationships
 }
@@ -106,12 +106,13 @@ type CoverData struct {
 	ID         string
 	Type       string
 	Attributes struct {
-		Description string
 		Volume      string
 		FileName    string
+		Description string
+		Locale      string
+		Version     int
 		CreatedAt   string
 		UpdatedAt   string
-		Version     int
 	}
 	Relationships Relationships
 }
@@ -132,8 +133,6 @@ type AuthorData struct {
 		Name      string
 		ImageUrl  string
 		Biography Localized
-		CreatedAt time.Time
-		UpdatedAt time.Time
 		Twitter   string
 		Pixiv     string
 		MelonBook string
@@ -148,6 +147,8 @@ type AuthorData struct {
 		Naver     string
 		Website   string
 		Version   int
+		CreatedAt time.Time
+		UpdatedAt time.Time
 	}
 	Relationships Relationships
 }
@@ -173,25 +174,25 @@ type GroupData struct {
 	Attributes struct {
 		Name             string
 		AltNames         []Localized
-		Description      string
-		Leader           Relationship
-		Members          Relationships
-		FocusedLanguages []string
-		CreatedAt        time.Time
-		UpdatedAt        time.Time
 		Website          string
 		IRCServer        string
 		IRCChannel       string
 		Discord          string
 		ContactEmail     string
+		Description      string
 		Twitter          string
 		MangaUpdates     string
+		FocusedLanguages []string
 		Locked           bool
-		Verified         bool
 		Official         bool
-		Version          int
-		PublishDelay     int
 		Inactive         bool
+		Verified         bool
+		PublishDelay     int
+		Leader           Relationship
+		Members          Relationships
+		Version          int
+		CreatedAt        time.Time
+		UpdatedAt        time.Time
 	}
 	Relationships Relationships
 }
