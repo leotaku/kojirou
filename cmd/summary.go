@@ -70,6 +70,10 @@ func formatChapterMapping(chapters md.ChapterList) (groups, numbers []string) {
 
 func formatDiscontinuities(chapters md.ChapterList) (discontinuities []string) {
 	last := md.NewIdentifier("0")
+	if len(chapters) > 0 {
+		last = chapters[0].Info.Identifier
+	}
+
 	for i := range chapters {
 		this := chapters[i].Info.Identifier
 		if this.IsSpecial() || last.IsSpecial() {
