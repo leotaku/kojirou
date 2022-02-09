@@ -41,14 +41,14 @@ func (c *Client) FetchLegacy(tp string, legacyID int) (string, error) {
 }
 
 func (c *Client) FetchManga(mangaID string) (*Manga, error) {
-	b, err := c.base.GetManga(mangaID)
+	base, err := c.base.GetManga(mangaID)
 	if err != nil {
 		return nil, fmt.Errorf("get manga: %w", err)
 	}
 
 	// Only retrieves at most 100 authors
 	authors, err := c.base.GetAuthors(api.QueryArgs{
-		IDs:   b.Data.Relationships.Author,
+		IDs:   base.Data.Relationships.Author,
 		Limit: 100,
 	})
 	if err != nil {
@@ -57,7 +57,7 @@ func (c *Client) FetchManga(mangaID string) (*Manga, error) {
 
 	// Only retrieves at most 100 artists
 	artists, err := c.base.GetAuthors(api.QueryArgs{
-		IDs:   b.Data.Relationships.Artist,
+		IDs:   base.Data.Relationships.Artist,
 		Limit: 100,
 	})
 	if err != nil {
@@ -65,7 +65,7 @@ func (c *Client) FetchManga(mangaID string) (*Manga, error) {
 	}
 
 	return &Manga{
-		Info:    convertManga(b, authors, artists),
+		Info:    convertManga(base, authors, artists),
 		Volumes: make(map[Identifier]Volume),
 	}, nil
 }
