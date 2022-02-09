@@ -35,8 +35,11 @@ func runBusinessLogic(mangaID string) error {
 	if err != nil {
 		return fmt.Errorf("download: %w", err)
 	}
+
 	printMangaSummary(*manga)
-	if dryRunArg {
+	if len(manga.Volumes) == 0 {
+		return fmt.Errorf("no matching chapters")
+	} else if dryRunArg {
 		return nil
 	}
 

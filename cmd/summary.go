@@ -32,8 +32,10 @@ func printMangaSummary(manga md.Manga) {
 
 	printValue("Title", manga.Info.Title)
 	printValue("Author", manga.Info.Authors)
-	printValue("Groups", strings.Join(groups, ", "))
-	printValue("Chapters", strings.Join(numbers, ", "))
+	if len(numbers) > 0 {
+		printValue("Groups", strings.Join(groups, ", "))
+		printValue("Chapters", strings.Join(numbers, ", "))
+	}
 	if len(discontinuities) > 0 {
 		printValue("Discontinuities", strings.Join(discontinuities, ", "))
 	}
