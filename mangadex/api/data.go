@@ -196,10 +196,13 @@ type GroupData struct {
 	Relationships Relationships
 }
 
-type IDMapping struct {
+type IDMappingList struct {
 	Result   string
 	Response string
-	Data     IDMappingData
+	Data     []IDMappingData
+	Limit    int
+	Offset   int
+	Total    int
 }
 
 type IDMappingData struct {

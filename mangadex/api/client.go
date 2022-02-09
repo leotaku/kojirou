@@ -70,8 +70,8 @@ func (c *Client) GetAtHome(chapterID string) (*AtHome, error) {
 	return v, err
 }
 
-func (c *Client) PostIDMapping(tp string, legacyIDs ...int) ([]IDMapping, error) {
-	v := make([]IDMapping, 0)
+func (c *Client) PostIDMapping(tp string, legacyIDs ...int) (*IDMappingList, error) {
+	v := new(IDMappingList)
 	err := c.doJSON("POST", "/legacy/mapping", &v, map[string]interface{}{
 		"ids":  legacyIDs,
 		"type": tp,

@@ -28,16 +28,16 @@ func (c *Client) WithHTTPClient(http *http.Client) *Client {
 }
 
 func (c *Client) FetchLegacy(tp string, legacyID int) (string, error) {
-	ids, err := c.base.PostIDMapping(tp, legacyID)
+	mapping, err := c.base.PostIDMapping(tp, legacyID)
 	if err != nil {
 		return "", fmt.Errorf("post mapping: %w", err)
 	}
 
-	if len(ids) != 1 {
+	if len(mapping.Data) != 1 {
 		return "", fmt.Errorf("%v not found: %v", tp, legacyID)
 	}
 
-	return ids[0].Data.Attributes.NewID, nil
+	return mapping.Data[0].Attributes.NewID, nil
 }
 
 func (c *Client) FetchManga(mangaID string) (*Manga, error) {
