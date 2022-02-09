@@ -45,7 +45,7 @@ func runBusinessLogic(mangaID string) error {
 	bar.Set(pb.CleanOnFinish, true)
 	bar.Start()
 	dl := formats.NewMangadexDownloader(client, http, progress(bar))
-	covers, err := formats.MangadexCovers(dl, manga.Info.ID)
+	covers, err := formats.MangadexCovers(dl, manga)
 	if err != nil {
 		return err
 	}

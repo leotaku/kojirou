@@ -46,8 +46,8 @@ func NewMangadexDownloader(client *md.Client, http *http.Client, reporter Report
 	}
 }
 
-func MangadexCovers(dl *MangadexDownloader, mangaID string) (md.ImageList, error) {
-	covers, err := dl.client.FetchCovers(mangaID)
+func MangadexCovers(dl *MangadexDownloader, manga *md.Manga) (md.ImageList, error) {
+	covers, err := dl.client.FetchCovers(manga.Info.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,9 @@ func MangadexCovers(dl *MangadexDownloader, mangaID string) (md.ImageList, error
 	imageQueue := make(chan md.Image, 100)
 	go func() {
 		for _, cover := range covers {
-			pathQueue <- cover
+			if _, ok := manga.Volumes[cover.VolumeIdentifier]; ok {
+				pathQueue <- cover
+			}
 		}
 		close(pathQueue)
 	}()
