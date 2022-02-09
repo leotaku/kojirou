@@ -30,23 +30,24 @@ type MangaData struct {
 	ID         string
 	Type       string
 	Attributes struct {
-		Title                  Localized
-		AltTitles              []Localized
-		Description            Localized
-		IsLocked               bool
-		Links                  map[string]string
-		OriginalLanguage       string
-		LastVolume             string
-		LastChapter            string
-		PublicationDemographic string
-		Status                 string
-		Year                   int
-		ContentRating          string
-		Tags                   Relationships
-		State                  string
-		CreatedAt              time.Time
-		UpdatedAt              time.Time
-		Version                int
+		Title                          Localized
+		AltTitles                      []Localized
+		Description                    Localized
+		IsLocked                       bool
+		Links                          map[string]string
+		OriginalLanguage               string
+		LastVolume                     string
+		LastChapter                    string
+		PublicationDemographic         string
+		Status                         string
+		Year                           int
+		ContentRating                  string
+		Tags                           Relationships
+		State                          string
+		ChapterNumbersResetOnNewVolume bool
+		CreatedAt                      time.Time
+		UpdatedAt                      time.Time
+		Version                        int
 	}
 	Relationships Relationships
 }
@@ -77,8 +78,10 @@ type ChapterData struct {
 		Uploader           string
 		ExternalURL        string
 		PublishAt          time.Time
+		ReadableAt         time.Time
 		CreatedAt          time.Time
 		UpdatedAt          time.Time
+		Pages              int
 		Version            int
 	}
 	Relationships Relationships
@@ -141,6 +144,8 @@ type AuthorData struct {
 		Fantia    string
 		Tumblr    string
 		Youtube   string
+		Weibo     string
+		Naver     string
 		Website   string
 		Version   int
 	}
@@ -180,6 +185,7 @@ type GroupData struct {
 		Discord          string
 		ContactEmail     string
 		Twitter          string
+		MangaUpdates     string
 		Locked           bool
 		Verified         bool
 		Official         bool
