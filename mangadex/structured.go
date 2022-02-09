@@ -105,7 +105,7 @@ func (m Manga) WithChapters(chapters ChapterList) Manga {
 		volID := chapter.Info.VolumeIdentifier
 		if vol, ok := vols[volID]; ok {
 			if _, ok := vol.Chapters[chapID]; !ok {
-				vols[volID].Chapters[chapID] = cleanChapter(chapter) // Fooo
+				vols[volID].Chapters[chapID] = cleanChapter(chapter)
 			}
 		} else {
 			vol := cleanVolume(chapter)
