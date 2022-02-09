@@ -25,7 +25,11 @@ var groupColors = []*color.Color{
 
 func printMangaSummary(manga *md.Manga) {
 	sorted := manga.Chapters().SortBy(func(a md.ChapterInfo, b md.ChapterInfo) bool {
-		return a.Identifier.Less(b.Identifier)
+		if a.VolumeIdentifier.Equal(b.VolumeIdentifier) {
+			return a.Identifier.Less(b.Identifier)
+		} else {
+			return a.VolumeIdentifier.Less(b.VolumeIdentifier)
+		}
 	})
 	groups, numbers := formatChapterMapping(sorted)
 	discontinuities := formatDiscontinuities(sorted)

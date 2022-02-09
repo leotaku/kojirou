@@ -91,11 +91,14 @@ func SortByMost(cl md.ChapterList) md.ChapterList {
 }
 
 func RemoveDuplicates(cl md.ChapterList) md.ChapterList {
-	cl = cl.CollapseBy(func(c md.ChapterInfo) interface{} {
-		return c.Identifier
-	})
-	return cl.SortBy(func(ci1, ci2 md.ChapterInfo) bool {
-		return ci1.Identifier.Less(ci2.Identifier)
+	return cl.CollapseBy(func(c md.ChapterInfo) interface{} {
+		return struct {
+			chapter md.Identifier
+			volume  md.Identifier
+		}{
+			c.Identifier,
+			c.VolumeIdentifier,
+		}
 	})
 }
 
