@@ -45,6 +45,21 @@ kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rank views --dry-run
 kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rank most
 ```
 
+## Installation
+
+Kojirou can be installed easily if you already have Go installed, using the following command.
+Otherwise, follow the [Go installation instructions](https://go.dev/doc/install) for your operating system and then run the command.
+
+``` shell
+go install github.com/leotaku/kojirou@latest
+```
+
+Afterwards, verify your installation succeeded by executing the application on the command line.
+
+``` shell
+kojirou --version
+```
+
 ## License
 
 [MIT](./LICENSE) © Leo Gaskin 2020-2021
