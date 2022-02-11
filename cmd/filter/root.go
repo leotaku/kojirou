@@ -37,8 +37,8 @@ func FilterByIdentifier(cl md.ChapterList, field string, ranges Ranges) md.Chapt
 }
 
 func SortByNewest(cl md.ChapterList) md.ChapterList {
-	return cl.SortBy(func(ci1, ci2 md.ChapterInfo) bool {
-		return ci1.Published.After(ci2.Published)
+	return cl.SortBy(func(a, b md.ChapterInfo) bool {
+		return a.Published.After(b.Published)
 	})
 }
 
@@ -50,14 +50,14 @@ func SortByNewestGroup(cl md.ChapterList) md.ChapterList {
 		}
 	}
 
-	return cl.SortBy(func(ci1, ci2 md.ChapterInfo) bool {
-		return groupRanking[gid(ci1)].After(groupRanking[gid(ci2)])
+	return cl.SortBy(func(a, b md.ChapterInfo) bool {
+		return groupRanking[gid(a)].After(groupRanking[gid(b)])
 	})
 }
 
 func SortByViews(cl md.ChapterList) md.ChapterList {
-	return cl.SortBy(func(ci1, ci2 md.ChapterInfo) bool {
-		return ci1.Views > ci2.Views
+	return cl.SortBy(func(a, b md.ChapterInfo) bool {
+		return a.Views > b.Views
 	})
 }
 
@@ -67,8 +67,8 @@ func SortByGroupViews(cl md.ChapterList) md.ChapterList {
 		groupRanking[gid(ci.Info)] += ci.Info.Views
 	}
 
-	return cl.SortBy(func(ci1, ci2 md.ChapterInfo) bool {
-		return groupRanking[gid(ci1)] > groupRanking[gid(ci2)]
+	return cl.SortBy(func(a, b md.ChapterInfo) bool {
+		return groupRanking[gid(a)] > groupRanking[gid(b)]
 	})
 }
 
@@ -78,8 +78,8 @@ func SortByMost(cl md.ChapterList) md.ChapterList {
 		groupRanking[gid(ci.Info)] += 1
 	}
 
-	return cl.SortBy(func(ci1, ci2 md.ChapterInfo) bool {
-		return groupRanking[gid(ci1)] > groupRanking[gid(ci2)]
+	return cl.SortBy(func(a, b md.ChapterInfo) bool {
+		return groupRanking[gid(a)] > groupRanking[gid(b)]
 	})
 }
 
