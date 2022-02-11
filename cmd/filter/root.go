@@ -24,22 +24,15 @@ func FilterByRegex(cl md.ChapterList, field string, pattern string) md.ChapterLi
 	})
 }
 
-func FilterByIdentifier(cl md.ChapterList, field string, values []Range) md.ChapterList {
+func FilterByIdentifier(cl md.ChapterList, field string, ranges Ranges) md.ChapterList {
 	return cl.FilterBy(func(ci md.ChapterInfo) bool {
 		v := reflect.ValueOf(ci).FieldByName(field).Interface()
 		switch f := v.(type) {
 		case md.Identifier:
-			for _, r := range values {
-				ok := r.Contains(f)
-				if ok {
-					return true
-				}
-			}
+			return ranges.Contains(f)
 		default:
 			panic("field is not identifier")
 		}
-
-		return false
 	})
 }
 

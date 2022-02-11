@@ -6,33 +6,63 @@ import (
 	md "github.com/leotaku/kojirou/mangadex"
 )
 
-type Range struct {
+type Ranges struct {
+	ranges  []singleRange
+	negated bool
+}
+
+func ParseRanges(s string) Ranges {
+	if strings.HasPrefix(s, "!") {
+		return Ranges{
+			ranges:  parseRangeList(s[1:]),
+			negated: true,
+		}
+	} else {
+		return Ranges{
+			ranges:  parseRangeList(s),
+			negated: false,
+		}
+	}
+}
+
+func (rs *Ranges) Contains(id md.Identifier) bool {
+	for _, r := range rs.ranges {
+		ok := r.contains(id)
+		if ok {
+			return !rs.negated
+		}
+	}
+
+	return rs.negated
+}
+
+type singleRange struct {
 	start md.Identifier
 	end   *md.Identifier
 }
 
-func ParseRanges(s string) []Range {
-	result := make([]Range, 0)
+func parseRangeList(s string) []singleRange {
+	ranges := make([]singleRange, 0)
 	for _, it := range strings.Split(s, ",") {
 		if se := strings.Split(it, ".."); len(se) == 2 {
 			start := md.NewIdentifier(se[0])
 			end := md.NewIdentifier(se[1])
-			result = append(result, Range{
+			ranges = append(ranges, singleRange{
 				start: start,
 				end:   &end,
 			})
 		} else {
-			result = append(result, Range{
+			ranges = append(ranges, singleRange{
 				start: md.NewIdentifier(it),
 				end:   nil,
 			})
 		}
 	}
 
-	return result
+	return ranges
 }
 
-func (r *Range) Contains(id md.Identifier) bool {
+func (r *singleRange) contains(id md.Identifier) bool {
 	if r.end != nil {
 		return r.start.LessOrEqual(id) && id.LessOrEqual(*r.end)
 	} else {
