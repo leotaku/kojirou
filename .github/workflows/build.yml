@@ -34,5 +34,5 @@ jobs:
     - name: Upload executable
       uses: actions/upload-artifact@v3
       with:
-        name: dist-kojirou-${{ matrix.GOOS }}/${{ matrix.GOARCH }}
+        name: dist-kojirou-${{ matrix.GOOS }}-${{ matrix.GOARCH }}
         path: kojirou.exe
