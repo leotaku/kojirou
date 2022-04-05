@@ -60,6 +60,14 @@ Afterwards, verify your installation succeeded by executing the application on t
 kojirou --version
 ```
 
+On many systems, the Go binary directory is not added to the list of directories searched for executables by default.
+If you get a "command not found" or similar error after the previous command, run the following command and try again.
+If you are using Windows, please find out how to add directories to the lookup path yourself, as there does not seem to be any quality documentation that I could link here.
+
+``` shell
+export PATH=$PATH:$(go env GOPATH)/bin
+```
+
 ## License
 
 [MIT](./LICENSE) © Leo Gaskin 2020-2021
