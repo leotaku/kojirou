@@ -29,6 +29,7 @@ jobs:
       env:
         GOOS: ${{ matrix.GOOS }}
         GOARCH: ${{ matrix.GOARCH }}
+        CGO_ENABLED: 0
       run: |
         go build -buildmode exe -o kojirou.exe kojirou.go
     - name: Upload executable
