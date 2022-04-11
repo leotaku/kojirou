@@ -70,4 +70,4 @@ export PATH=$PATH:$(go env GOPATH)/bin
 
 ## License
 
-[MIT](./LICENSE) © Leo Gaskin 2020-2021
+[MIT](./LICENSE) © Leo Gaskin 2020-2022
