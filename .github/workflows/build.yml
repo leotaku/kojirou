@@ -16,6 +16,7 @@ jobs:
         GOOS:
           - linux
           - windows
+          - darwin
         GOARCH:
           - amd64
           - 386
