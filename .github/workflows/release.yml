@@ -1,0 +1,57 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Release Name'
+      tag:
+        description: 'Tag'
+        required: true
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        uses: actions/github-script@v6
+        id: create
+        env:
+          NAME: ${{ github.event.inputs.name }}
+          TAG: ${{ github.event.inputs.tag }}
+          BRANCH: ${{ github.event.ref }}
+        with:
+          script: |
+            return github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: process.env.TAG,
+              target_commitish: process.env.BRANCH,
+              name: process.env.NAME,
+              generate_release_notes: true,
+            })
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        id: download
+        with:
+          path: artifacts
+      - name: Upload artifacts
+        uses: actions/github-script@v6
+        env:
+          RELEASE_ID: ${{ steps.create.outputs.id }}
+          ARTIFACT_DIRECTORY: ${{ steps.download.outputs.download-path }}
+        with:
+          script: |
+            const path = require('path');
+            const fs = require('fs');
+            const globber = await glob.create(path.join(process.env.ARTIFACT_DIRECTORY, '*'));
+
+            for await (const pathname of globber.globGenerator()) {
+              octokit.rest.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: process.env.RELEASE_ID,
+                name: path.basename(pathname),
+                data: fs.readFileSync(pathname),
+              });
+            }
