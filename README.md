@@ -51,7 +51,7 @@ kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rank most
 Prebuilt binaries for Linux, Windows and MacOS on x86 and ARM processors are provided.
 Visit the [release tab](https://github.com/leotaku/kojirou/releases) to download the archive for your respective setup.
 
-On Linux and MacOS you will have to make the provided binary executable after downloading.
+On Linux and MacOS you will have to make the provided binary executable after extracting it from the archive.
 
 ``` shell
 chmod u+x ./kojirou.exe
