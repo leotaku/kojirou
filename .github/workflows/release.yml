@@ -1,0 +1,62 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Release Name'
+        required: true
+      tag:
+        description: 'Tag'
+        required: true
+      run_id:
+        description: 'Build workflow run ID'
+        required: true
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        uses: actions/github-script@v6
+        id: create
+        env:
+          BRANCH: ${{ github.event.ref }}
+          NAME: ${{ github.event.inputs.name }}
+          TAG: ${{ github.event.inputs.tag }}
+          RUN_ID: ${{ github.event.inputs.run_id }}
+        with:
+          debug: true
+          script: |
+            const release = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: process.env.TAG,
+              target_commitish: process.env.BRANCH,
+              name: process.env.NAME,
+              draft: true,
+              generate_release_notes: true,
+            });
+
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: process.env.RUN_ID,
+            });
+
+            for (const artifact of artifacts.data.artifacts) {
+              const download = await github.rest.actions.downloadArtifact({
+                 owner: context.repo.owner,
+                 repo: context.repo.repo,
+                 artifact_id: artifact.id,
+                 archive_format: 'zip',
+              });
+              await github.rest.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: release.data.id,
+                name: `${artifact.name}.zip`,
+                data: download.data,
+                origin: release.data.upload_url,
+              });
+            }
