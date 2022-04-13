@@ -45,7 +45,25 @@ kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rank views --dry-run
 kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rank most
 ```
 
-## Installation
+
+## Prebuilt binaries
+
+Prebuilt binaries for Linux, Windows and MacOS on x86 and ARM processors are provided.
+Visit the [release tab](https://github.com/leotaku/kojirou/releases) to download the archive for your respective setup.
+
+On Linux and MacOS you will have to make the provided binary executable after downloading.
+
+``` shell
+chmod u+x ./kojirou.exe
+```
+
+Afterwards, verify your installation succeeded by executing the application on the command line.
+
+``` shell
+./kojirou.exe --version
+```
+
+## Install from source
 
 Kojirou can be installed easily if you already have Go installed, using the following command.
 Otherwise, follow the [Go installation instructions](https://go.dev/doc/install) for your operating system and then run the command.
