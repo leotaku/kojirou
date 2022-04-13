@@ -19,7 +19,6 @@ jobs:
           - darwin
         GOARCH:
           - amd64
-          - 386
           - arm64
     steps:
     - uses: actions/checkout@v3
