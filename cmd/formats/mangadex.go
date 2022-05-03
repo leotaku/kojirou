@@ -178,12 +178,21 @@ func getImage(client *http.Client, url string) (image.Image, error) {
 	if err := mw.ReadImageBlob(data); err != nil {
 		return nil, err
 	}
+	if err := mw.ShaveImage(1, 1); err != nil {
+		return nil, err
+	}
+	shavedWidth := mw.GetImageWidth()
+	shavedHeight := mw.GetImageHeight()
 	if err := mw.TrimImage(10); err != nil {
 		return nil, err
 	}
-	croppedData := mw.GetImageBlob()
+	trimmedWidth := mw.GetImageWidth()
+	trimmedHeight := mw.GetImageHeight()
+	if trimmedWidth < shavedWidth || trimmedHeight < shavedHeight {
+		data = mw.GetImageBlob()
+	}
 
-	img, _, err := image.Decode(bytes.NewReader(croppedData))
+	img, _, err := image.Decode(bytes.NewReader(data))
 	return img, err
 }
 
