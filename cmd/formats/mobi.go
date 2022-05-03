@@ -63,6 +63,7 @@ func WriteMOBI(manga mangadex.Manga) mobi.Book {
 		CreatedDate:  time.Unix(0, 0),
 		Language:     mangaToLanguage(manga),
 		FixedLayout:  true,
+		RightToLeft:  true,
 		CoverImage:   mangaToCover(manga),
 		Images:       images,
 		Chapters:     chapters,
