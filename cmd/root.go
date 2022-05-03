@@ -8,6 +8,7 @@ import (
 	"github.com/leotaku/kojirou/cmd/filter"
 	md "github.com/leotaku/kojirou/mangadex"
 	"github.com/spf13/cobra"
+	"gopkg.in/gographics/imagick.v2/imagick"
 )
 
 var (
@@ -132,6 +133,8 @@ given.  It accepts the format of BCP 47 language tags.`,
 }
 
 func Execute() {
+	imagick.Initialize()
+	defer imagick.Terminate()
 	if helpRankingFlag {
 		helpRankingCmd.Help() //nolint:errcheck
 	} else if helpFilterFlag {

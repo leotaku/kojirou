@@ -1,18 +1,21 @@
 package formats
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+	"io/ioutil"
 	"net/http"
 	"time"
 
 	md "github.com/leotaku/kojirou/mangadex"
 	"go.uber.org/ratelimit"
 	"golang.org/x/sync/errgroup"
+	"gopkg.in/gographics/imagick.v2/imagick"
 )
 
 const (
@@ -166,7 +169,21 @@ func getImage(client *http.Client, url string) (image.Image, error) {
 		return nil, fmt.Errorf("status: %v", resp.Status)
 	}
 
-	img, _, err := image.Decode(resp.Body)
+	mw := imagick.NewMagickWand()
+	defer mw.Destroy()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if err := mw.ReadImageBlob(data); err != nil {
+		return nil, err
+	}
+	if err := mw.TrimImage(10); err != nil {
+		return nil, err
+	}
+	croppedData := mw.GetImageBlob()
+
+	img, _, err := image.Decode(bytes.NewReader(croppedData))
 	return img, err
 }
 
