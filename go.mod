@@ -6,6 +6,7 @@ require (
 	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/cheggaaa/pb/v3 v3.0.8
 	github.com/fatih/color v1.13.0
+	github.com/flesnuk/boundingbox v1.0.0
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.0
 	github.com/leotaku/mobi v0.0.0-20220405163106-82e29bde7964

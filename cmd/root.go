@@ -23,6 +23,7 @@ var (
 	volumesFilter       string
 	helpRankingFlag     bool
 	helpFilterFlag      bool
+	autocropFlag        bool
 )
 
 var rootCmd = &cobra.Command{
@@ -189,6 +190,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&groupsFilter, "groups", "G", "", "scantlation groups for chapter downloads")
 	rootCmd.Flags().BoolVarP(&helpRankingFlag, "help-ranking", "R", false, "Help for chapter ranking")
 	rootCmd.Flags().BoolVarP(&helpFilterFlag, "help-filter", "F", false, "Help for chapter filtering")
+	rootCmd.Flags().BoolVarP(&autocropFlag, "autocrop", "c", false, "autocrop chapter's images")
 	rootCmd.Flags().SortFlags = false
 	rootCmd.Flags().MarkHidden("cpuprofile") //nolint:errcheck
 	rootCmd.MarkFlagRequired("language")     //nolint:errcheck

@@ -2,13 +2,17 @@ package cmd
 
 import (
 	"fmt"
+	"image"
+	"image/color"
 	"image/jpeg"
+	"math"
 	"os"
 	"path"
 	"runtime"
 	"strings"
 
 	"github.com/cheggaaa/pb/v3"
+	"github.com/flesnuk/boundingbox"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/leotaku/kojirou/cmd/formats"
 	md "github.com/leotaku/kojirou/mangadex"
@@ -84,6 +88,10 @@ func runBusinessLogic(mangaID string) error {
 			chapters := volume.Sorted()
 			pages, err := formats.MangadexPages(dl, chapters)
 			bar.Finish()
+
+			if err == nil && autocropFlag {
+				autocropImages(pages)
+			}
 
 			if err != nil {
 				return fmt.Errorf("download: %w", err)
@@ -175,4 +183,56 @@ func progress(bar *pb.ProgressBar) formats.Reporter {
 			bar.Add(-n)
 		}
 	}
+}
+
+func autocropImages(images md.ImageList) {
+	bar := pb.New(0).SetTemplate(progressTemplate)
+	bar.Set("prefix", "Autocropping")
+	bar.Set(pb.CleanOnFinish, true)
+	bar.Start()
+	bar.AddTotal(int64(len(images) - 1))
+	defer bar.Finish()
+	for i := 0; i < len(images); i++ {
+		if cropped, err := autocrop(images[i].Image); err == nil {
+			images[i].Image = cropped
+		}
+		bar.Add(-1)
+	}
+}
+
+func autocrop(img image.Image) (image.Image, error) {
+	configWhite := boundingbox.NewConfigInverse(color.Gray{200})
+	configWhite.Parallel = boundingbox.ParallelAuto
+	configBlack := boundingbox.NewConfig(color.Gray{50})
+	configBlack.Parallel = boundingbox.ParallelAuto
+
+	boxBlack := boundingbox.Find(img, configBlack)
+	boxWhite := boundingbox.Find(img, configWhite)
+
+	areaBlack := float64(boxBlack.Dx() * boxBlack.Dy())
+	areaWhite := float64(boxWhite.Dx() * boxWhite.Dy())
+	diff := ((math.Max(areaBlack, areaWhite) - math.Min(areaBlack, areaWhite)) / math.Min(areaBlack, areaWhite)) * 100
+	if diff > 1 {
+		if areaWhite > areaBlack {
+			return cropImage(img, boxBlack)
+		} else {
+			return cropImage(img, boxWhite)
+		}
+	} else {
+		return img, nil
+	}
+}
+
+// cropImage takes an image and crops it to the specified rectangle.
+func cropImage(img image.Image, crop image.Rectangle) (image.Image, error) {
+	type subImager interface {
+		SubImage(r image.Rectangle) image.Image
+	}
+
+	simg, ok := img.(subImager)
+	if !ok {
+		return nil, fmt.Errorf("image does not support cropping")
+	}
+
+	return simg.SubImage(crop), nil
 }
