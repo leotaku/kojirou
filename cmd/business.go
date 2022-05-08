@@ -10,6 +10,7 @@ import (
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/leotaku/kojirou/cmd/crop"
 	"github.com/leotaku/kojirou/cmd/formats"
 	md "github.com/leotaku/kojirou/mangadex"
 )
@@ -85,6 +86,12 @@ func runBusinessLogic(mangaID string) error {
 			pages, err := formats.MangadexPages(dl, chapters)
 			bar.Finish()
 
+			if autocropArg {
+				if err := businessAutoCropPages(pages); err != nil {
+					return fmt.Errorf("autocrop: %w", err)
+				}
+			}
+
 			if err != nil {
 				return fmt.Errorf("download: %w", err)
 			} else if err := businessWriteBook(
@@ -94,6 +101,26 @@ func runBusinessLogic(mangaID string) error {
 			); err != nil {
 				return fmt.Errorf("write: %w", err)
 			}
+		}
+	}
+
+	return nil
+}
+
+func businessAutoCropPages(pages md.ImageList) error {
+	bar := pb.New(0).SetTemplate(progressTemplate)
+	bar.Set("prefix", "Cropping")
+	bar.Set(pb.CleanOnFinish, true)
+	bar.Start()
+	bar.AddTotal(int64(len(pages)))
+	defer bar.Finish()
+
+	for i, page := range pages {
+		if cropped, err := crop.Auto(pages[i].Image); err != nil {
+			return fmt.Errorf("chapter %v: page %v: %w", page.ChapterIdentifier, page.ImageIdentifier, err)
+		} else {
+			pages[i].Image = cropped
+			bar.Add(1)
 		}
 	}
 
