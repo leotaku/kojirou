@@ -8,16 +8,6 @@ import (
 
 const grayDarknessLimit = 128
 
-func Auto(img image.Image) (image.Image, error) {
-	bounds := Bounds(img)
-	cropped, err := Crop(img, bounds)
-	if err != nil {
-		return nil, err
-	}
-
-	return cropped, nil
-}
-
 func Crop(img image.Image, bounds image.Rectangle) (image.Image, error) {
 	type subImager interface {
 		SubImage(r image.Rectangle) image.Image

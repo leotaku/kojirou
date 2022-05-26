@@ -116,7 +116,7 @@ func businessAutoCropPages(pages md.ImageList) error {
 	defer bar.Finish()
 
 	for i, page := range pages {
-		if cropped, err := crop.Auto(pages[i].Image); err != nil {
+		if cropped, err := crop.Crop(pages[i].Image, crop.Bounds(pages[i].Image)); err != nil {
 			return fmt.Errorf("chapter %v: page %v: %w", page.ChapterIdentifier, page.ImageIdentifier, err)
 		} else {
 			pages[i].Image = cropped
