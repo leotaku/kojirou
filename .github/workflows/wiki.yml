@@ -20,9 +20,9 @@ jobs:
     - run: |
         rm -rf wiki/*
     - run: |
-        go run *.go --help         > wiki/Home.mediawiki
-        go run *.go --help-ranking > wiki/Ranking.mediawiki
-        go run *.go --help-filter  > wiki/Filtering.mediawiki
+        go run . --help         > wiki/Home.mediawiki
+        go run . --help-ranking > wiki/Ranking.mediawiki
+        go run . --help-filter  > wiki/Filtering.mediawiki
     - run: |
         cd wiki
         git config --global user.name  "actions-user"
