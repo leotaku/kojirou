@@ -54,6 +54,15 @@ This may be useful if your e-reader has a small screen.
 kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --autocrop
 ```
 
+### Change reading direction
+
+Kojirou, by default, generates e-books with right-to-left reading direction, as this is the default convention for most manga.
+Also note that right-to-left reading does not seem to be supported on all Kindle devices.
+
+``` shell
+kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --left-to-right
+```
+
 ## Prebuilt binaries
 
 Prebuilt binaries for Linux, Windows and MacOS on x86 and ARM processors are provided.
