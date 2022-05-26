@@ -13,6 +13,7 @@ import (
 var (
 	languageArg         string
 	rankArg             string
+	autocropArg         bool
 	kindleFolderModeArg bool
 	dryRunArg           bool
 	outArg              string
@@ -179,6 +180,7 @@ func filterFromFlags(cl md.ChapterList) (md.ChapterList, error) {
 func init() {
 	rootCmd.Flags().StringVarP(&languageArg, "language", "l", "en", "language for chapter downloads")
 	rootCmd.Flags().StringVarP(&rankArg, "rank", "r", "most", "chapter ranking method to use")
+	rootCmd.Flags().BoolVarP(&autocropArg, "autocrop", "a", false, "crop whitespace from pages automatically")
 	rootCmd.Flags().BoolVarP(&kindleFolderModeArg, "kindle-folder-mode", "k", false, "generate folder structure for Kindle devices")
 	rootCmd.Flags().BoolVarP(&dryRunArg, "dry-run", "d", false, "disable writing of any files")
 	rootCmd.Flags().StringVarP(&outArg, "out", "o", "", "output directory")

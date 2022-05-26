@@ -45,6 +45,14 @@ kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rank views --dry-run
 kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rank most
 ```
 
+### Crop whitespace from pages automatically
+
+Kojirou has the ability to crop whitespace from the borders of manga pages.
+This may be useful if your e-reader has a small screen.
+
+``` shell
+kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --autocrop
+```
 
 ## Prebuilt binaries
 
