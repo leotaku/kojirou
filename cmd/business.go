@@ -129,6 +129,8 @@ func businessAutoCropPages(pages md.ImageList) error {
 
 func businessWriteBook(manga md.Manga, bookFilename string, thumbnailDirectory string) error {
 	mobi := formats.WriteMOBI(manga)
+	mobi.RightToLeft = !leftToRightArg
+
 	bar := pb.New(0).SetTemplate(progressTemplate)
 	bar.Set("prefix", "Writing...")
 	bar.Set(pb.CleanOnFinish, true)
