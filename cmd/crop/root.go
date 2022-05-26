@@ -20,6 +20,12 @@ func Crop(img image.Image, bounds image.Rectangle) (image.Image, error) {
 	}
 }
 
+func Limited(img image.Image, limit float32) image.Rectangle {
+	bounds := img.Bounds()
+	maxPixels := float32((bounds.Dx() + bounds.Dy()) / 2) * limit
+	return Bounds(img).Union(bounds.Inset(int(maxPixels)))
+}
+
 func Bounds(img image.Image) image.Rectangle {
 	left := findBorder(img, image.Pt(1, 0))
 	right := findBorder(img, image.Pt(-1, 0))
