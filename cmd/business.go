@@ -11,12 +11,12 @@ import (
 	md "github.com/leotaku/kojirou/mangadex"
 )
 
-func run(mangaID string) error {
-	manga, err := download.MangadexSkeleton(mangaID)
+func run() error {
+	manga, err := download.MangadexSkeleton(identifierArg)
 	if err != nil {
 		return fmt.Errorf("skeleton: %w", err)
 	}
-	chapters, err := download.MangadexChapters(mangaID)
+	chapters, err := download.MangadexChapters(identifierArg)
 	if err != nil {
 		return fmt.Errorf("chapters: %w", err)
 	}
