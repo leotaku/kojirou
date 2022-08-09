@@ -35,6 +35,9 @@ var rootCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
+		return runBusinessLogic(args[0])
+	},
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if cpuprofileArg != "" {
 			f, err := os.Create(cpuprofileArg)
 			if err != nil {
@@ -43,10 +46,12 @@ var rootCmd = &cobra.Command{
 			if err := pprof.StartCPUProfile(f); err != nil {
 				return err
 			}
-			defer pprof.StopCPUProfile()
 		}
 
-		return runBusinessLogic(args[0])
+		return nil
+	},
+	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+		pprof.StopCPUProfile()
 	},
 	DisableFlagsInUseLine: true,
 }
