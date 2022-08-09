@@ -1,4 +1,4 @@
-package cmd
+package formats
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ var groupColors = []*color.Color{
 	color.New(color.ReverseVideo, color.FgYellow),
 }
 
-func printMangaSummary(manga *md.Manga) {
+func PrintSummary(manga *md.Manga) {
 	sorted := manga.Chapters().SortBy(func(a md.ChapterInfo, b md.ChapterInfo) bool {
 		if a.VolumeIdentifier.Equal(b.VolumeIdentifier) {
 			return a.Identifier.Less(b.Identifier)

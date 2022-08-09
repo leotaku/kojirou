@@ -1,4 +1,4 @@
-package formats
+package kindle
 
 import (
 	"fmt"
@@ -32,7 +32,7 @@ img {
 
 var pageTemplate = template.Must(template.New("page").Parse(pageTemplateString))
 
-func WriteMOBI(manga mangadex.Manga) mobi.Book {
+func GenerateMOBI(manga mangadex.Manga) mobi.Book {
 	chapters := make([]mobi.Chapter, 0)
 	images := make([]image.Image, 0)
 	pageImageIndex := 1
