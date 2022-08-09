@@ -17,52 +17,52 @@ const (
 		`{{ end }}` + `{{ " |" }}`
 )
 
-type Reporter interface {
+type Progress interface {
 	Increase(int)
 	Add(int)
 	NewProxyWriter(io.Writer) io.Writer
 }
 
-type BarReporter struct {
+type CliProgress struct {
 	bar       *pb.ProgressBar
 	firstCall bool
 }
 
-func (r BarReporter) Increase(n int) {
-	r.bar.AddTotal(int64(n))
+func (p CliProgress) Increase(n int) {
+	p.bar.AddTotal(int64(n))
 }
 
-func (r BarReporter) Add(n int) {
-	r.bar.Add(n)
+func (p CliProgress) Add(n int) {
+	p.bar.Add(n)
 }
 
-func (r BarReporter) NewProxyWriter(w io.Writer) io.Writer  {
-	return r.bar.NewProxyWriter(w)
+func (p CliProgress) NewProxyWriter(w io.Writer) io.Writer  {
+	return p.bar.NewProxyWriter(w)
 }
 
-func (r BarReporter) Done() {
-	r.bar.Finish()
+func (p CliProgress) Done() {
+	p.bar.Finish()
 }
 
-func (r *BarReporter) Cancel(message string) {
-	r.bar.Set("message", message)
-	r.bar.SetTotal(1).SetCurrent(1)
-	r.Done()
+func (p *CliProgress) Cancel(message string) {
+	p.bar.Set("message", message)
+	p.bar.SetTotal(1).SetCurrent(1)
+	p.Done()
 }
 
-func TitledProgress(title string) BarReporter {
+func TitledProgress(title string) CliProgress {
 	bar := pb.New(0).SetTemplate(progressTemplate)
 	bar.Set("prefix", title)
 	bar.Start()
 
-	return BarReporter{bar, true}
+	return CliProgress{bar, true}
 }
 
-func VanishingProgress(title string) BarReporter {
+func VanishingProgress(title string) CliProgress {
 	bar := pb.New(0).SetTemplate(progressTemplate)
 	bar.Set("prefix", title)
 	bar.Set(pb.CleanOnFinish, true)
 	bar.Start()
 
-	return BarReporter{bar, true}
+	return CliProgress{bar, true}
 }
