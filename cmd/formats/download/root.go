@@ -44,7 +44,7 @@ func MangadexChapters(mangaID string) (md.ChapterList, error) {
 	return mangadexClient.FetchChapters(mangaID)
 }
 
-func MangadexCovers(manga *md.Manga, r formats.Reporter) (md.ImageList, error) {
+func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 	covers, err := mangadexClient.FetchCovers(manga.Info.ID)
 	if err != nil {
 		return nil, err
@@ -61,19 +61,19 @@ func MangadexCovers(manga *md.Manga, r formats.Reporter) (md.ImageList, error) {
 		close(pathQueue)
 	}()
 
-	eg := pathsToImages(pathQueue, imageQueue, context.TODO(), r)
+	eg := pathsToImages(pathQueue, imageQueue, context.TODO(), p)
 	return collectImages(imageQueue, eg)
 }
 
-func MangadexPages(chapters md.ChapterList, r formats.Reporter) (md.ImageList, error) {
+func MangadexPages(chapters md.ChapterList, p formats.Progress) (md.ImageList, error) {
 	chapterQueue := make(chan md.Chapter, 10)
 	pathQueue := make(chan md.Path, 100)
 	pageQueue := make(chan md.Image, 100)
 
 	ctx := context.TODO()
 	eg, _ := errgroup.WithContext(ctx)
-	eg.Go(chaptersToPaths(chapterQueue, pathQueue, ctx, r).Wait)
-	eg.Go(pathsToImages(pathQueue, pageQueue, ctx, r).Wait)
+	eg.Go(chaptersToPaths(chapterQueue, pathQueue, ctx, p).Wait)
+	eg.Go(pathsToImages(pathQueue, pageQueue, ctx, p).Wait)
 
 	go func() {
 		for _, chapter := range chapters {
@@ -102,7 +102,7 @@ func chaptersToPaths(
 	chapterQueue <-chan md.Chapter,
 	pathQueue chan<- md.Path,
 	ctx context.Context,
-	reporter formats.Reporter,
+	progress formats.Progress,
 ) *errgroup.Group {
 	return spinUp(ctx, maxChapterJobs, func() error {
 		for {
@@ -114,14 +114,14 @@ func chaptersToPaths(
 					return nil
 				}
 
-				reporter.Increase(1)
+				progress.Increase(1)
 				atHomeLimiter.Take()
 				paths, err := mangadexClient.FetchPaths(&chapter)
 				if err != nil {
 					return fmt.Errorf("chapter %v: paths: %w", chapter.Info.Identifier, err)
 				}
 
-				reporter.Increase(len(paths) - 1)
+				progress.Increase(len(paths) - 1)
 				for _, path := range paths {
 					pathQueue <- path
 				}
@@ -134,7 +134,7 @@ func pathsToImages(
 	pathQueue <-chan md.Path,
 	imageQueue chan<- md.Image,
 	ctx context.Context,
-	reporter formats.Reporter,
+	progress formats.Progress,
 ) *errgroup.Group {
 	return spinUp(ctx, maxImageJobs, func() error {
 		for {
@@ -151,7 +151,7 @@ func pathsToImages(
 					return fmt.Errorf("chapter %v: image %v: %w", path.ChapterIdentifier, path.ImageIdentifier, err)
 				}
 
-				reporter.Add(1)
+				progress.Add(1)
 				imageQueue <- path.WithImage(img)
 			}
 		}
