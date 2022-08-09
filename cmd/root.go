@@ -8,6 +8,7 @@ import (
 )
 
 var (
+	identifierArg       string
 	languageArg         string
 	rankArg             string
 	autocropArg         bool
@@ -31,8 +32,9 @@ var rootCmd = &cobra.Command{
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
+		identifierArg = args[0]
 
-		return run(args[0])
+		return run()
 	},
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if cpuprofileArg != "" {
