@@ -1,12 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"runtime/pprof"
 
-	"github.com/leotaku/kojirou/cmd/filter"
-	md "github.com/leotaku/kojirou/mangadex"
 	"github.com/spf13/cobra"
 )
 
@@ -35,7 +32,7 @@ var rootCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
-		return runBusinessLogic(args[0])
+		return run(args[0])
 	},
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if cpuprofileArg != "" {
@@ -148,41 +145,6 @@ func Execute() {
 	}
 }
 
-func filterFromFlags(cl md.ChapterList) (md.ChapterList, error) {
-	if languageArg != "" {
-		lang := filter.MatchLang(languageArg)
-		cl = filter.FilterByLanguage(cl, lang)
-	}
-	if groupsFilter != "" {
-		cl = filter.FilterByRegex(cl, "GroupNames", groupsFilter)
-	}
-	if volumesFilter != "" {
-		ranges := filter.ParseRanges(volumesFilter)
-		cl = filter.FilterByIdentifier(cl, "VolumeIdentifier", ranges)
-	}
-	if chaptersFilter != "" {
-		ranges := filter.ParseRanges(chaptersFilter)
-		cl = filter.FilterByIdentifier(cl, "Identifier", ranges)
-	}
-
-	switch rankArg {
-	case "newest":
-		cl = filter.SortByNewest(cl)
-	case "newest-total":
-		cl = filter.SortByNewestGroup(cl)
-	case "views":
-		cl = filter.SortByViews(cl)
-	case "views-total":
-		cl = filter.SortByGroupViews(cl)
-	case "most":
-		cl = filter.SortByMost(cl)
-	default:
-		return nil, fmt.Errorf(`not a valid rankinging algorithm: "%v"`, rankArg)
-	}
-
-	return filter.RemoveDuplicates(cl), nil
-}
-
 func init() {
 	rootCmd.Flags().StringVarP(&languageArg, "language", "l", "en", "language for chapter downloads")
 	rootCmd.Flags().StringVarP(&rankArg, "rank", "r", "most", "chapter ranking method to use")
@@ -190,7 +152,7 @@ func init() {
 	rootCmd.Flags().BoolVarP(&kindleFolderModeArg, "kindle-folder-mode", "k", false, "generate folder structure for Kindle devices")
 	rootCmd.Flags().BoolVarP(&leftToRightArg, "left-to-right", "p", false, "make reading direction left to right")
 	rootCmd.Flags().BoolVarP(&dryRunArg, "dry-run", "d", false, "disable writing of any files")
-	rootCmd.Flags().StringVarP(&outArg, "out", "o", "", "output directory")
+	rootCmd.Flags().StringVarP(&outArg, "out", "o", ".", "output directory")
 	rootCmd.Flags().BoolVarP(&forceArg, "force", "f", false, "overwrite existing volumes")
 	rootCmd.Flags().StringVarP(&cpuprofileArg, "cpuprofile", "", "", "write CPU profile to this file")
 	rootCmd.Flags().StringVarP(&volumesFilter, "volumes", "V", "", "volume identifiers for chapter downloads")

@@ -1,4 +1,4 @@
-package formats
+package download
 
 import (
 	"context"
@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/hashicorp/go-retryablehttp"
+	"github.com/leotaku/kojirou/cmd/formats"
 	md "github.com/leotaku/kojirou/mangadex"
 	"go.uber.org/ratelimit"
 	"golang.org/x/sync/errgroup"
@@ -21,33 +23,29 @@ const (
 )
 
 var (
-	atHomeLimiter ratelimit.Limiter = ratelimit.New(40, ratelimit.Per(time.Minute))
+	atHomeLimiter  ratelimit.Limiter = ratelimit.New(40, ratelimit.Per(time.Minute))
+	httpClient     *http.Client
+	mangadexClient *md.Client
 )
 
-type Reporter func(int)
-
-type MangadexDownloader struct {
-	Context  context.Context
-	client   *md.Client
-	http     *http.Client
-	reporter Reporter
+func init() {
+	retry := retryablehttp.NewClient()
+	retry.Logger = nil
+	httpClient = retry.StandardClient()
+	mangadexClient = md.NewClient().WithHTTPClient(httpClient)
 }
 
-func NewMangadexDownloader(client *md.Client, http *http.Client, reporter Reporter) *MangadexDownloader {
-	if reporter == nil {
-		reporter = func(int) {}
-	}
+func MangadexSkeleton(mangaID string) (*md.Manga, error) {
+	return mangadexClient.FetchManga(mangaID)
 
-	return &MangadexDownloader{
-		Context:  context.TODO(),
-		client:   client,
-		http:     http,
-		reporter: reporter,
-	}
 }
 
-func MangadexCovers(dl *MangadexDownloader, manga *md.Manga) (md.ImageList, error) {
-	covers, err := dl.client.FetchCovers(manga.Info.ID)
+func MangadexChapters(mangaID string) (md.ChapterList, error) {
+	return mangadexClient.FetchChapters(mangaID)
+}
+
+func MangadexCovers(manga *md.Manga, r formats.Reporter) (md.ImageList, error) {
+	covers, err := mangadexClient.FetchCovers(manga.Info.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -63,18 +61,19 @@ func MangadexCovers(dl *MangadexDownloader, manga *md.Manga) (md.ImageList, erro
 		close(pathQueue)
 	}()
 
-	eg := dl.pathsToImages(pathQueue, imageQueue)
+	eg := pathsToImages(pathQueue, imageQueue, context.TODO(), r)
 	return collectImages(imageQueue, eg)
 }
 
-func MangadexPages(dl *MangadexDownloader, chapters md.ChapterList) (md.ImageList, error) {
+func MangadexPages(chapters md.ChapterList, r formats.Reporter) (md.ImageList, error) {
 	chapterQueue := make(chan md.Chapter, 10)
 	pathQueue := make(chan md.Path, 100)
 	pageQueue := make(chan md.Image, 100)
 
-	eg, _ := errgroup.WithContext(dl.Context)
-	eg.Go(dl.chaptersToPaths(chapterQueue, pathQueue).Wait)
-	eg.Go(dl.pathsToImages(pathQueue, pageQueue).Wait)
+	ctx := context.TODO()
+	eg, _ := errgroup.WithContext(ctx)
+	eg.Go(chaptersToPaths(chapterQueue, pathQueue, ctx, r).Wait)
+	eg.Go(pathsToImages(pathQueue, pageQueue, ctx, r).Wait)
 
 	go func() {
 		for _, chapter := range chapters {
@@ -99,28 +98,30 @@ func collectImages(imageQueue <-chan md.Image, eg *errgroup.Group) (md.ImageList
 	}
 }
 
-func (dl *MangadexDownloader) chaptersToPaths(
+func chaptersToPaths(
 	chapterQueue <-chan md.Chapter,
 	pathQueue chan<- md.Path,
+	ctx context.Context,
+	reporter formats.Reporter,
 ) *errgroup.Group {
-	return spinUp(dl.Context, maxChapterJobs, func() error {
+	return spinUp(ctx, maxChapterJobs, func() error {
 		for {
 			select {
-			case <-dl.Context.Done():
+			case <-ctx.Done():
 				return fmt.Errorf("cancelled")
 			case chapter, running := <-chapterQueue:
 				if !running {
 					return nil
 				}
 
-				dl.reporter(1)
+				reporter.Increase(1)
 				atHomeLimiter.Take()
-				paths, err := dl.client.FetchPaths(&chapter)
+				paths, err := mangadexClient.FetchPaths(&chapter)
 				if err != nil {
 					return fmt.Errorf("chapter %v: paths: %w", chapter.Info.Identifier, err)
 				}
 
-				dl.reporter(len(paths) - 1)
+				reporter.Increase(len(paths) - 1)
 				for _, path := range paths {
 					pathQueue <- path
 				}
@@ -129,26 +130,28 @@ func (dl *MangadexDownloader) chaptersToPaths(
 	}, func() { close(pathQueue) })
 }
 
-func (dl *MangadexDownloader) pathsToImages(
+func pathsToImages(
 	pathQueue <-chan md.Path,
 	imageQueue chan<- md.Image,
+	ctx context.Context,
+	reporter formats.Reporter,
 ) *errgroup.Group {
-	return spinUp(dl.Context, maxImageJobs, func() error {
+	return spinUp(ctx, maxImageJobs, func() error {
 		for {
 			select {
-			case <-dl.Context.Done():
+			case <-ctx.Done():
 				return fmt.Errorf("cancelled")
 			case path, running := <-pathQueue:
 				if !running {
 					return nil
 				}
 
-				img, err := getImage(dl.http, path.URL)
+				img, err := getImage(httpClient, path.URL)
 				if err != nil {
 					return fmt.Errorf("chapter %v: image %v: %w", path.ChapterIdentifier, path.ImageIdentifier, err)
 				}
 
-				dl.reporter(-1)
+				reporter.Add(1)
 				imageQueue <- path.WithImage(img)
 			}
 		}
