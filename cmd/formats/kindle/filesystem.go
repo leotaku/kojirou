@@ -31,7 +31,7 @@ func (n *NormalizedDirectory) Has(identifier md.Identifier) bool {
 	}
 }
 
-func (n *NormalizedDirectory) Write(part md.Manga, r formats.Reporter) error {
+func (n *NormalizedDirectory) Write(part md.Manga, p formats.Progress) error {
 	if part.Info.Title != n.title {
 		return fmt.Errorf("unsupported configuration: title changed")
 	}
@@ -49,7 +49,7 @@ func (n *NormalizedDirectory) Write(part md.Manga, r formats.Reporter) error {
 		return fmt.Errorf("create: %w", err)
 	}
 	mobi := GenerateMOBI(part)
-	if err := mobi.Realize().Write(r.NewProxyWriter(f)); err != nil {
+	if err := mobi.Realize().Write(p.NewProxyWriter(f)); err != nil {
 		f.Close()
 		return fmt.Errorf("write: %w", err)
 	}
@@ -59,7 +59,7 @@ func (n *NormalizedDirectory) Write(part md.Manga, r formats.Reporter) error {
 		if err != nil {
 			return fmt.Errorf("create: %w", err)
 		}
-		if err := jpeg.Encode(r.NewProxyWriter(f), volume.Cover, nil); err != nil {
+		if err := jpeg.Encode(p.NewProxyWriter(f), volume.Cover, nil); err != nil {
 			f.Close()
 			return fmt.Errorf("write: %w", err)
 		}

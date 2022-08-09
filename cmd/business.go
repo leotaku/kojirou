@@ -31,9 +31,9 @@ func run() error {
 		return nil
 	}
 
-	r := formats.VanishingProgress("Covers")
-	covers, err := download.MangadexCovers(manga, r)
-	r.Done()
+	p := formats.VanishingProgress("Covers")
+	covers, err := download.MangadexCovers(manga, p)
+	p.Done()
 	if err != nil {
 		return fmt.Errorf("covers: %w", err)
 	}
@@ -41,13 +41,13 @@ func run() error {
 
 	dir := kindle.NewNormalizedDirectory(outArg, manga.Info.Title, kindleFolderModeArg)
 	for _, volume := range manga.Sorted() {
-		r := formats.TitledProgress(fmt.Sprintf("Volume: %v", volume.Info.Identifier))
+		p := formats.TitledProgress(fmt.Sprintf("Volume: %v", volume.Info.Identifier))
 		if dir.Has(volume.Info.Identifier) && !forceArg {
-			r.Cancel("Skipped")
+			p.Cancel("Skipped")
 			continue
 		}
-		pages, err := download.MangadexPages(volume.Sorted(), r)
-		r.Done()
+		pages, err := download.MangadexPages(volume.Sorted(), p)
+		p.Done()
 		if err != nil {
 			return fmt.Errorf("pages: %w", err)
 		}
@@ -57,18 +57,18 @@ func run() error {
 			r.Done()
 		}
 		part := manga.WithChapters(volume.Sorted()).WithPages(pages)
-		r = formats.VanishingProgress("Writing...")
-		if err := dir.Write(part, r); err != nil {
-			r.Cancel("Failed")
+		p = formats.VanishingProgress("Writing...")
+		if err := dir.Write(part, p); err != nil {
+			p.Cancel("Failed")
 			return fmt.Errorf("write: %w", err)
 		}
-		r.Done()
+		p.Done()
 	}
 
 	return nil
 }
 
-func autoCrop(pages md.ImageList, r formats.Reporter) error {
+func autoCrop(pages md.ImageList, r formats.Progress) error {
 	for i, page := range pages {
 		if cropped, err := crop.Crop(pages[i].Image, crop.Limited(pages[i].Image, 0.1)); err != nil {
 			return fmt.Errorf("chapter %v: page %v: %w", page.ChapterIdentifier, page.ImageIdentifier, err)
