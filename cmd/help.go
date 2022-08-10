@@ -9,6 +9,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func writeHelp(cmd *cobra.Command, w io.Writer) {
@@ -62,6 +64,6 @@ func usage(cmd *cobra.Command) error {
 
 func toSentenceCase(sentence string) string {
 	words := strings.Split(sentence, " ")
-	words[0] = strings.Title(words[0])
+	words[0] = cases.Title(language.English).String(words[0])
 	return strings.Join(words, " ")
 }
