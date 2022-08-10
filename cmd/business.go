@@ -9,6 +9,7 @@ import (
 	"github.com/leotaku/kojirou/cmd/formats/download"
 	"github.com/leotaku/kojirou/cmd/formats/kindle"
 	md "github.com/leotaku/kojirou/mangadex"
+	"golang.org/x/text/language"
 )
 
 func run() error {
@@ -86,7 +87,7 @@ func autoCrop(pages md.ImageList, r formats.Progress) error {
 
 func filterFromFlags(cl md.ChapterList) (md.ChapterList, error) {
 	if languageArg != "" {
-		lang := filter.MatchLang(languageArg)
+		lang := language.Make(languageArg)
 		cl = filter.FilterByLanguage(cl, lang)
 	}
 	if groupsFilter != "" {

@@ -101,8 +101,10 @@ func mangaToLanguage(manga mangadex.Manga) language.Tag {
 	if len(chaps) == 0 {
 		return language.Und
 	} else {
+		var matcher = language.NewMatcher(mobi.SupportedLocales)
 		// multiple languages are not supported
-		return chaps[0].Info.Language
+		_, i, _ := matcher.Match(chaps[0].Info.Language)
+		return mobi.SupportedLocales[i]
 	}
 }
 
