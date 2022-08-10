@@ -52,8 +52,10 @@ func run() error {
 			return fmt.Errorf("pages: %w", err)
 		}
 		if autocropArg {
-			r := formats.VanishingProgress("Cropping")
-			autoCrop(pages, r)
+			r := formats.VanishingProgress("Cropping..")
+			if err := autoCrop(pages, r); err != nil {
+				return fmt.Errorf("autocrop: %w", err)
+			}
 			r.Done()
 		}
 		part := manga.WithChapters(volume.Sorted()).WithPages(pages)
