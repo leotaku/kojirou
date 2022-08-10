@@ -102,7 +102,7 @@ func exists(pathname string) bool {
 }
 
 func create(pathname string) (*os.File, error) {
-	if err := os.MkdirAll(path.Dir(pathname), os.ModeDir); err != nil {
+	if err := os.MkdirAll(path.Dir(pathname), os.ModePerm); err != nil {
 		return nil, fmt.Errorf("directory: %w", err)
 	}
 	if f, err := os.Create(pathname); err != nil {
