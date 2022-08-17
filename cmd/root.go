@@ -17,6 +17,7 @@ var (
 	outArg              string
 	forceArg            bool
 	leftToRightArg      bool
+	diskArg             string
 	cpuprofileArg       string
 	groupsFilter        string
 	chaptersFilter      string
@@ -156,6 +157,7 @@ func init() {
 	rootCmd.Flags().BoolVarP(&dryRunArg, "dry-run", "d", false, "disable writing of any files")
 	rootCmd.Flags().StringVarP(&outArg, "out", "o", ".", "output directory")
 	rootCmd.Flags().BoolVarP(&forceArg, "force", "f", false, "overwrite existing volumes")
+	rootCmd.Flags().StringVarP(&diskArg, "disk", "D", "", "load additional content from disk")
 	rootCmd.Flags().StringVarP(&cpuprofileArg, "cpuprofile", "", "", "write CPU profile to this file")
 	rootCmd.Flags().StringVarP(&volumesFilter, "volumes", "V", "", "volume identifiers for chapter downloads")
 	rootCmd.Flags().StringVarP(&chaptersFilter, "chapters", "C", "", "chapter identifiers for chapter downloads")
