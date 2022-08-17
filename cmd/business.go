@@ -34,10 +34,11 @@ func run() error {
 
 	p := formats.VanishingProgress("Covers")
 	covers, err := download.MangadexCovers(manga, p)
-	p.Done()
 	if err != nil {
+		p.Cancel("Error")
 		return fmt.Errorf("covers: %w", err)
 	}
+	p.Done()
 	*manga = manga.WithCovers(covers)
 
 	dir := kindle.NewNormalizedDirectory(outArg, manga.Info.Title, kindleFolderModeArg)
