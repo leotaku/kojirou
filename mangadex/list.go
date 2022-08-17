@@ -19,7 +19,7 @@ func (m ChapterList) CollapseBy(f func(ChapterInfo) interface{}) ChapterList {
 		}
 	}
 
-	sorted := make([]Chapter, 0)
+	sorted := make(ChapterList, 0)
 	for _, key := range keys {
 		sorted = append(sorted, mapped[key])
 	}
@@ -28,7 +28,7 @@ func (m ChapterList) CollapseBy(f func(ChapterInfo) interface{}) ChapterList {
 }
 
 func (m ChapterList) FilterBy(f func(ChapterInfo) bool) ChapterList {
-	sorted := make([]Chapter, 0)
+	sorted := make(ChapterList, 0)
 	for _, val := range m {
 		if f(val.Info) {
 			sorted = append(sorted, val)

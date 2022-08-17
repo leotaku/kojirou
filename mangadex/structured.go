@@ -54,8 +54,8 @@ func (m Manga) Keys() []Identifier {
 	return result
 }
 
-func (v Volume) Sorted() []Chapter {
-	result := make([]Chapter, 0)
+func (v Volume) Sorted() ChapterList {
+	result := make(ChapterList, 0)
 	for _, idx := range v.Keys() {
 		result = append(result, v.Chapters[idx])
 	}
