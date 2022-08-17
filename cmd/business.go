@@ -6,6 +6,7 @@ import (
 	"github.com/leotaku/kojirou/cmd/crop"
 	"github.com/leotaku/kojirou/cmd/filter"
 	"github.com/leotaku/kojirou/cmd/formats"
+	"github.com/leotaku/kojirou/cmd/formats/disk"
 	"github.com/leotaku/kojirou/cmd/formats/download"
 	"github.com/leotaku/kojirou/cmd/formats/kindle"
 	md "github.com/leotaku/kojirou/mangadex"
@@ -21,6 +22,18 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("chapters: %w", err)
 	}
+
+	if diskArg != "" {
+		p := formats.VanishingProgress("Disk...")
+		diskChapters, err := disk.LoadChapters(diskArg, language.Make(languageArg), p)
+		if err != nil {
+			p.Cancel("Error")
+			return fmt.Errorf("disk: %w", err)
+		}
+		p.Done()
+		chapters = append(chapters, diskChapters...)
+	}
+
 	chapters, err = filterFromFlags(chapters)
 	if err != nil {
 		return fmt.Errorf("filter: %w", err)
@@ -48,11 +61,22 @@ func run() error {
 			p.Cancel("Skipped")
 			continue
 		}
-		pages, err := download.MangadexPages(volume.Sorted(), p)
-		p.Done()
+		mangadexPages, err := download.MangadexPages(volume.Sorted().FilterBy(func(ci md.ChapterInfo) bool {
+			return ci.GroupNames.String() != "Filesystem"
+		}), p)
 		if err != nil {
+			p.Cancel("Error")
 			return fmt.Errorf("pages: %w", err)
 		}
+		diskPages, err := disk.LoadPages(volume.Sorted().FilterBy(func(ci md.ChapterInfo) bool {
+			return ci.GroupNames.String() == "Filesystem"
+		}), p)
+		if err != nil {
+			p.Cancel("Error")
+			return fmt.Errorf("pages: %w", err)
+		}
+		p.Done()
+		pages := append(mangadexPages, diskPages...)
 		if autocropArg {
 			r := formats.VanishingProgress("Cropping..")
 			if err := autoCrop(pages, r); err != nil {
