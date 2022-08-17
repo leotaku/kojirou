@@ -48,7 +48,7 @@ func convertChapters(ca []api.ChapterData, groupMap map[string]api.GroupData) Ch
 				Identifier:       NewWithFallback(info.Attributes.Chapter, info.Attributes.Title),
 				VolumeIdentifier: NewWithFallback(info.Attributes.Volume, "Special"),
 			},
-			Pages:     make(map[int]image.Image),
+			Pages: make(map[int]image.Image),
 		})
 	}
 
