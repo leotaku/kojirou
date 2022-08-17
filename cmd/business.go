@@ -52,6 +52,17 @@ func run() error {
 		return fmt.Errorf("covers: %w", err)
 	}
 	p.Done()
+
+	if diskArg != "" {
+		p := formats.VanishingProgress("Disk...")
+		diskCovers, err := disk.LoadCovers(diskArg, p)
+		if err != nil {
+			p.Cancel("Error")
+			return fmt.Errorf("disk: %w", err)
+		}
+		p.Done()
+		covers = append(covers, diskCovers...)
+	}
 	*manga = manga.WithCovers(covers)
 
 	dir := kindle.NewNormalizedDirectory(outArg, manga.Info.Title, kindleFolderModeArg)
