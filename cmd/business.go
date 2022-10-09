@@ -34,12 +34,20 @@ func run() error {
 		chapters = append(chapters, diskChapters...)
 	}
 
-	chapters, err = filterFromFlags(chapters)
+	chapters, err = sortFromFlags(chapters)
 	if err != nil {
 		return fmt.Errorf("filter: %w", err)
 	}
-	*manga = manga.WithChapters(chapters)
 
+	// Ensure chapters from disk are preferred
+	if diskArg != "" {
+		chapters.SortBy(func(a md.ChapterInfo, b md.ChapterInfo) bool {
+			return a.GroupNames.String() == "Filesystem" && b.GroupNames.String() != "Filesystem"
+		})
+	}
+
+	chapters = filter.RemoveDuplicates(chapters)
+	*manga = manga.WithChapters(chapters)
 	formats.PrintSummary(manga)
 	if dryRunArg {
 		return nil
@@ -53,6 +61,9 @@ func run() error {
 	}
 	p.Done()
 
+	// Covers from disk should automatically be preferred, because
+	// they appear later in the list and thus should override the
+	// earlier downloaded covers.
 	if diskArg != "" {
 		p := formats.VanishingProgress("Disk...")
 		diskCovers, err := disk.LoadCovers(diskArg, p)
@@ -121,7 +132,7 @@ func autoCrop(pages md.ImageList, r formats.Progress) error {
 	return nil
 }
 
-func filterFromFlags(cl md.ChapterList) (md.ChapterList, error) {
+func sortFromFlags(cl md.ChapterList) (md.ChapterList, error) {
 	if languageArg != "" {
 		lang := language.Make(languageArg)
 		cl = filter.FilterByLanguage(cl, lang)
@@ -153,5 +164,5 @@ func filterFromFlags(cl md.ChapterList) (md.ChapterList, error) {
 		return nil, fmt.Errorf(`not a valid rankinging algorithm: "%v"`, rankArg)
 	}
 
-	return filter.RemoveDuplicates(cl), nil
+	return cl, nil
 }
