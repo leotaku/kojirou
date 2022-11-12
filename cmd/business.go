@@ -118,14 +118,14 @@ func run() error {
 	return nil
 }
 
-func autoCrop(pages md.ImageList, r formats.Progress) error {
-	r.Increase(len(pages))
+func autoCrop(pages md.ImageList, p formats.Progress) error {
+	p.Increase(len(pages))
 	for i, page := range pages {
 		if cropped, err := crop.Crop(pages[i].Image, crop.Limited(pages[i].Image, 0.1)); err != nil {
 			return fmt.Errorf("chapter %v: page %v: %w", page.ChapterIdentifier, page.ImageIdentifier, err)
 		} else {
 			pages[i].Image = cropped
-			r.Add(1)
+			p.Add(1)
 		}
 	}
 
