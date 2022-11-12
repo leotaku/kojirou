@@ -31,11 +31,6 @@ func convertManga(b *api.Manga, authors, artists *api.AuthorList) MangaInfo {
 func convertChapters(ca []api.ChapterData, groupMap map[string]api.GroupData) ChapterList {
 	sorted := make(ChapterList, 0)
 	for _, info := range ca {
-		// Chapters with external URLs do not live on MangaDex
-		if info.Attributes.ExternalURL != "" {
-			continue
-		}
-
 		lang, _ := language.Parse(info.Attributes.TranslatedLanguage)
 		groups := make([]string, 0)
 		for _, id := range info.Relationships.Group {
