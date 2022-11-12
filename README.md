@@ -40,8 +40,10 @@ rsync kindle/ /run/media/user/Kindle/
 Kojirou has the ability to use different [ranking algorithms](https://github.com/leotaku/kojirou/wiki/Ranking) in order to always dowload the highest-quality scantlations.
 You can preview what would be downloaded by running in dry-run mode.
 
+**Note:** Currently, the views and views-total ranking algorithms are broken because MangaDex no longer provides the required viewcount information.
+
 ``` shell
-kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rank views --dry-run
+kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rank newest --dry-run
 kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rank most
 ```
 
