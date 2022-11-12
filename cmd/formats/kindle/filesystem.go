@@ -13,38 +13,49 @@ import (
 )
 
 type NormalizedDirectory struct {
-	target       string
-	title        string
-	kindleFolder bool
+	bookDirectory      string
+	thumbnailDirectory string
 }
 
 func NewNormalizedDirectory(target, title string, kindleFolder bool) NormalizedDirectory {
-	return NormalizedDirectory{target, title, kindleFolder}
+	switch {
+	case kindleFolder && target == "":
+		return NormalizedDirectory{
+			bookDirectory:      path.Join("kindle", "documents", pathnameFromTitle(title)),
+			thumbnailDirectory: path.Join("kindle", "system", "thumbnails"),
+		}
+	case kindleFolder:
+		return NormalizedDirectory{
+			bookDirectory:      path.Join(target, "documents", pathnameFromTitle(title)),
+			thumbnailDirectory: path.Join(target, "system", "thumbnails"),
+		}
+	case target == "":
+		return NormalizedDirectory{
+			bookDirectory: pathnameFromTitle(title),
+		}
+	default:
+		return NormalizedDirectory{
+			bookDirectory: target,
+		}
+	}
 }
 
 func (n *NormalizedDirectory) Has(identifier md.Identifier) bool {
 	filename := identifier.StringFilled(4, 2, false) + ".azw3"
-	if n.kindleFolder {
-		return exists(path.Join(n.target, "documents", pathnameFromTitle(n.title), filename))
-	} else {
-		return exists(path.Join(n.target, pathnameFromTitle(n.title), filename))
-	}
+	return exists(path.Join(n.bookDirectory, filename))
 }
 
 func (n *NormalizedDirectory) Write(part md.Manga, p formats.Progress) error {
-	if part.Info.Title != n.title {
-		return fmt.Errorf("unsupported configuration: title changed")
+	if n.bookDirectory == "" {
+		return fmt.Errorf("unsupported configuration: no book output")
 	}
 	if len(part.Volumes) != 1 {
 		return fmt.Errorf("unsupported configuration: multiple volumes")
 	}
 	volume := part.Sorted()[0]
-	pathname := path.Join(pathnameFromTitle(n.title), volume.Info.Identifier.StringFilled(4, 2, false)+".azw3")
-	if n.kindleFolder {
-		pathname = path.Join("documents", pathname)
-	}
+	filename := volume.Info.Identifier.StringFilled(4, 2, false) + ".azw3"
 
-	f, err := create(path.Join(n.target, pathname))
+	f, err := create(path.Join(n.bookDirectory, filename))
 	if err != nil {
 		return fmt.Errorf("create: %w", err)
 	}
@@ -54,8 +65,9 @@ func (n *NormalizedDirectory) Write(part md.Manga, p formats.Progress) error {
 		return fmt.Errorf("write: %w", err)
 	}
 	f.Close()
-	if n.kindleFolder && volume.Cover != nil {
-		f, err := create(path.Join(n.target, "system", "thumbnails", mobi.GetThumbFilename()))
+
+	if n.thumbnailDirectory != "" && volume.Cover != nil {
+		f, err := create(path.Join(n.thumbnailDirectory, mobi.GetThumbFilename()))
 		if err != nil {
 			return fmt.Errorf("create: %w", err)
 		}
