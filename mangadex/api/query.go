@@ -9,12 +9,15 @@ import (
 )
 
 type QueryArgs struct {
-	IDs       []string          `url:"ids"`
-	Languages []language.Tag    `url:"translatedLanguage"`
-	Mangas    []string          `url:"manga"`
-	Order     map[string]string `url:"order"`
-	Limit     int               `url:"limit"`
-	Offset    int               `url:"offset"`
+	IDs           []string          `url:"ids"`
+	Languages     []language.Tag    `url:"translatedLanguage"`
+	Mangas        []string          `url:"manga"`
+	Order         map[string]string `url:"order"`
+	Limit         int               `url:"limit"`
+	Offset        int               `url:"offset"`
+	EmptyPages    string            `url:"includeEmptyPages"`
+	FuturePublish string            `url:"includeFuturePublishAt"`
+	ExternalURL   string            `url:"includeExternalUrl"`
 }
 
 func (a QueryArgs) Values() url.Values {
