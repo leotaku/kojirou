@@ -78,42 +78,53 @@ func run() error {
 
 	dir := kindle.NewNormalizedDirectory(outArg, manga.Info.Title, kindleFolderModeArg)
 	for _, volume := range manga.Sorted() {
-		p := formats.TitledProgress(fmt.Sprintf("Volume: %v", volume.Info.Identifier))
-		if dir.Has(volume.Info.Identifier) && !forceArg {
-			p.Cancel("Skipped")
-			continue
+		if err := writeSingleVolume(*manga, volume, dir); err != nil {
+			return fmt.Errorf("volume %s: %w", volume.Info.Identifier, err)
 		}
-		mangadexPages, err := download.MangadexPages(volume.Sorted().FilterBy(func(ci md.ChapterInfo) bool {
-			return ci.GroupNames.String() != "Filesystem"
-		}), p)
-		if err != nil {
-			p.Cancel("Error")
-			return fmt.Errorf("pages: %w", err)
-		}
-		diskPages, err := disk.LoadPages(volume.Sorted().FilterBy(func(ci md.ChapterInfo) bool {
-			return ci.GroupNames.String() == "Filesystem"
-		}), p)
-		if err != nil {
-			p.Cancel("Error")
-			return fmt.Errorf("pages: %w", err)
-		}
-		p.Done()
-		pages := append(mangadexPages, diskPages...)
-		if autocropArg {
-			r := formats.VanishingProgress("Cropping..")
-			if err := autoCrop(pages, r); err != nil {
-				return fmt.Errorf("autocrop: %w", err)
-			}
-			r.Done()
-		}
-		part := manga.WithChapters(volume.Sorted()).WithPages(pages)
-		p = formats.VanishingProgress("Writing...")
-		if err := dir.Write(part, p); err != nil {
-			p.Cancel("Failed")
-			return fmt.Errorf("write: %w", err)
-		}
-		p.Done()
 	}
+
+	return nil
+}
+
+func writeSingleVolume(skeleton md.Manga, volume md.Volume, dir kindle.NormalizedDirectory) error {
+	p := formats.TitledProgress(fmt.Sprintf("Volume: %v", volume.Info.Identifier))
+	if dir.Has(volume.Info.Identifier) && !forceArg {
+		p.Cancel("Skipped")
+		return nil
+	}
+
+	mangadexPages, err := download.MangadexPages(volume.Sorted().FilterBy(func(ci md.ChapterInfo) bool {
+		return ci.GroupNames.String() != "Filesystem"
+	}), p)
+	if err != nil {
+		p.Cancel("Error")
+		return fmt.Errorf("pages: %w", err)
+	}
+	diskPages, err := disk.LoadPages(volume.Sorted().FilterBy(func(ci md.ChapterInfo) bool {
+		return ci.GroupNames.String() == "Filesystem"
+	}), p)
+	if err != nil {
+		p.Cancel("Error")
+		return fmt.Errorf("pages: %w", err)
+	}
+	p.Done()
+
+	pages := append(mangadexPages, diskPages...)
+	if autocropArg {
+		r := formats.VanishingProgress("Cropping..")
+		if err := autoCrop(pages, r); err != nil {
+			return fmt.Errorf("autocrop: %w", err)
+		}
+		r.Done()
+	}
+
+	part := skeleton.WithChapters(volume.Sorted()).WithPages(pages)
+	p = formats.VanishingProgress("Writing...")
+	if err := dir.Write(part, p); err != nil {
+		p.Cancel("Failed")
+		return fmt.Errorf("write: %w", err)
+	}
+	p.Done()
 
 	return nil
 }
