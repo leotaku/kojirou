@@ -6,10 +6,10 @@
     <img src="https://goreportcard.com/badge/github.com/leotaku/kojirou?style=flat-square" alt="Go Report Card">
   </a>
   <a href="https://github.com/leotaku/kojirou/actions">
-    <img src="https://img.shields.io/github/workflow/status/leotaku/kojirou/check?label=check&logo=github&logoColor=white&style=flat-square" alt="Github CI Status">
+    <img src="https://img.shields.io/github/actions/workflow/status/leotaku/kojirou/check.yml?branch=master&label=check&logo=github&logoColor=white&style=flat-square" alt="Github CI Status">
   </a>
   <a href="https://github.com/leotaku/kojirou/wiki/Home">
-    <img src="https://img.shields.io/github/workflow/status/leotaku/kojirou/wiki?label=wiki&color=blue&logo=gitbook&logoColor=white&style=flat-square" alt="GitHub Wiki Status">
+    <img src="https://img.shields.io/github/actions/workflow/status/leotaku/kojirou/wiki.yml?branch=master&label=wiki&color=blue&logo=gitbook&logoColor=white&style=flat-square" alt="GitHub Wiki Status">
   <a/>
 </h1>
 
