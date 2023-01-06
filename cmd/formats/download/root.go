@@ -8,12 +8,10 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"net/http"
-	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/leotaku/kojirou/cmd/formats"
 	md "github.com/leotaku/kojirou/mangadex"
-	"go.uber.org/ratelimit"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -23,7 +21,6 @@ const (
 )
 
 var (
-	atHomeLimiter  ratelimit.Limiter = ratelimit.New(40, ratelimit.Per(time.Minute))
 	httpClient     *http.Client
 	mangadexClient *md.Client
 )
@@ -115,7 +112,6 @@ func chaptersToPaths(
 				}
 
 				progress.Increase(1)
-				atHomeLimiter.Take()
 				paths, err := mangadexClient.FetchPaths(&chapter)
 				if err != nil {
 					return fmt.Errorf("chapter %v: paths: %w", chapter.Info.Identifier, err)

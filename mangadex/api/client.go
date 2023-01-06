@@ -7,6 +7,14 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
+
+	"go.uber.org/ratelimit"
+)
+
+var (
+	limitGlobal = ratelimit.New(5, ratelimit.Per(time.Second))
+	limitAtHome = ratelimit.New(40, ratelimit.Per(time.Minute))
 )
 
 var APIBaseURL, _ = url.Parse(`https://api.mangadex.org/`)
@@ -66,6 +74,7 @@ func (c *Client) GetGroups(args QueryArgs) (*GroupList, error) {
 
 func (c *Client) GetAtHome(chapterID string) (*AtHome, error) {
 	v := new(AtHome)
+	limitAtHome.Take()
 	err := c.doJSON("GET", "/at-home/server/"+chapterID, v, nil)
 	return v, err
 }
@@ -100,6 +109,7 @@ func (c *Client) doJSON(method, ref string, result, body interface{}) error {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
+	limitGlobal.Take()
 	resp, err := c.http.Do(req)
 	if err != nil {
 		return fmt.Errorf("do: %w", err)
