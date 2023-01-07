@@ -8,6 +8,7 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"net/http"
+	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/leotaku/kojirou/cmd/formats"
@@ -28,6 +29,8 @@ var (
 func init() {
 	retry := retryablehttp.NewClient()
 	retry.Logger = nil
+	retry.RetryWaitMin = time.Second * 5
+	retry.Backoff = retryablehttp.LinearJitterBackoff
 	httpClient = retry.StandardClient()
 	mangadexClient = md.NewClient().WithHTTPClient(httpClient)
 }
