@@ -17,8 +17,14 @@ import (
 )
 
 const (
-	maxChapterJobs = 8
-	maxImageJobs   = 16
+	maxJobsChapter = 8
+	maxJobsImage   = 16
+)
+
+const (
+	queueSizeChapters = 8
+	queueSizePaths    = 64
+	queueSizeImages   = 64
 )
 
 var (
@@ -50,8 +56,8 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 		return nil, err
 	}
 
-	pathQueue := make(chan md.Path, 100)
-	imageQueue := make(chan md.Image, 100)
+	pathQueue := make(chan md.Path, queueSizePaths)
+	imageQueue := make(chan md.Image, queueSizeImages)
 	go func() {
 		for _, cover := range covers {
 			if _, ok := manga.Volumes[cover.VolumeIdentifier]; ok {
@@ -66,9 +72,9 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 }
 
 func MangadexPages(chapters md.ChapterList, p formats.Progress) (md.ImageList, error) {
-	chapterQueue := make(chan md.Chapter, 10)
-	pathQueue := make(chan md.Path, 100)
-	pageQueue := make(chan md.Image, 100)
+	chapterQueue := make(chan md.Chapter, queueSizeChapters)
+	pathQueue := make(chan md.Path, queueSizePaths)
+	pageQueue := make(chan md.Image, queueSizeImages)
 
 	ctx := context.TODO()
 	eg, _ := errgroup.WithContext(ctx)
@@ -104,7 +110,7 @@ func chaptersToPaths(
 	ctx context.Context,
 	progress formats.Progress,
 ) *errgroup.Group {
-	return spinUp(ctx, maxChapterJobs, func() error {
+	return spinUp(ctx, maxJobsChapter, func() error {
 		for {
 			select {
 			case <-ctx.Done():
@@ -135,7 +141,7 @@ func pathsToImages(
 	ctx context.Context,
 	progress formats.Progress,
 ) *errgroup.Group {
-	return spinUp(ctx, maxImageJobs, func() error {
+	return spinUp(ctx, maxJobsImage, func() error {
 		for {
 			select {
 			case <-ctx.Done():
