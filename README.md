@@ -27,7 +27,7 @@ kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en
 
 ### Generate Kindle folder structure for easy synchronization
 
-Kojirou can also output a folder structure matching that of any modern Kindle devices to allow for easy synchronization using e.g. rsync.
+Kojirou can also output a folder structure matching that of any modern Kindle device to allow for easy synchronization using e.g. rsync.
 
 ``` shell
 kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --kindle-folder-mode
