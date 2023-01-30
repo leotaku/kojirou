@@ -119,8 +119,11 @@ func writeSingleVolume(skeleton md.Manga, volume md.Volume, dir kindle.Normalize
 	}
 
 	part := skeleton.WithChapters(volume.Sorted()).WithPages(pages)
+	mobi := kindle.GenerateMOBI(part)
+	mobi.RightToLeft = !leftToRightArg
+
 	p = formats.VanishingProgress("Writing...")
-	if err := dir.Write(part, p); err != nil {
+	if err := dir.Write(volume.Info.Identifier, mobi, p); err != nil {
 		p.Cancel("Failed")
 		return fmt.Errorf("write: %w", err)
 	}

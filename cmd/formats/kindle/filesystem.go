@@ -10,6 +10,7 @@ import (
 
 	"github.com/leotaku/kojirou/cmd/formats"
 	md "github.com/leotaku/kojirou/mangadex"
+	"github.com/leotaku/mobi"
 )
 
 type NormalizedDirectory struct {
@@ -45,33 +46,28 @@ func (n *NormalizedDirectory) Has(identifier md.Identifier) bool {
 	return exists(path.Join(n.bookDirectory, filename))
 }
 
-func (n *NormalizedDirectory) Write(part md.Manga, p formats.Progress) error {
+func (n *NormalizedDirectory) Write(identifier md.Identifier, mobi mobi.Book, p formats.Progress) error {
 	if n.bookDirectory == "" {
 		return fmt.Errorf("unsupported configuration: no book output")
 	}
-	if len(part.Volumes) != 1 {
-		return fmt.Errorf("unsupported configuration: multiple volumes")
-	}
-	volume := part.Sorted()[0]
-	filename := volume.Info.Identifier.StringFilled(4, 2, false) + ".azw3"
+	filename := identifier.StringFilled(4, 2, false) + ".azw3"
 
 	f, err := create(path.Join(n.bookDirectory, filename))
 	if err != nil {
 		return fmt.Errorf("create: %w", err)
 	}
-	mobi := GenerateMOBI(part)
 	if err := mobi.Realize().Write(p.NewProxyWriter(f)); err != nil {
 		f.Close()
 		return fmt.Errorf("write: %w", err)
 	}
 	f.Close()
 
-	if n.thumbnailDirectory != "" && volume.Cover != nil {
+	if n.thumbnailDirectory != "" && mobi.CoverImage != nil {
 		f, err := create(path.Join(n.thumbnailDirectory, mobi.GetThumbFilename()))
 		if err != nil {
 			return fmt.Errorf("create: %w", err)
 		}
-		if err := jpeg.Encode(p.NewProxyWriter(f), volume.Cover, nil); err != nil {
+		if err := jpeg.Encode(p.NewProxyWriter(f), mobi.CoverImage, nil); err != nil {
 			f.Close()
 			return fmt.Errorf("write: %w", err)
 		}
