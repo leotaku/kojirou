@@ -5,12 +5,10 @@ go 1.16
 require (
 	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/cheggaaa/pb/v3 v3.1.0
-	github.com/fatih/color v1.13.0
+	github.com/fatih/color v1.14.1
 	github.com/hashicorp/go-retryablehttp v0.7.2
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/leotaku/mobi v0.0.0-20230102191841-c5ca569fe345
-	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.17 // indirect
+	github.com/leotaku/mobi v0.0.0-20230129211059-6b078f4edc8a
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/spf13/cobra v1.6.1
