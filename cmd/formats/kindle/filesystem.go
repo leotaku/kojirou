@@ -1,8 +1,10 @@
 package kindle
 
 import (
+	"errors"
 	"fmt"
 	"image/jpeg"
+	"io/fs"
 	"os"
 	"path"
 	"runtime"
@@ -98,9 +100,9 @@ func pathnameFromTitle(filename string) string {
 
 func exists(pathname string) bool {
 	_, err := os.Stat(pathname)
-	if os.IsNotExist(err) {
+	if errors.Is(err, fs.ErrNotExist) {
 		return false
-	} else if os.IsExist(err) {
+	} else if errors.Is(err, fs.ErrExist) {
 		return true
 	} else if err != nil {
 		return false

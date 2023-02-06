@@ -1,11 +1,13 @@
 package disk
 
 import (
+	"errors"
 	"fmt"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+	"io/fs"
 	"os"
 	"path"
 	"strconv"
@@ -116,7 +118,7 @@ func LoadCovers(directory string, p formats.Progress) (md.ImageList, error) {
 		}
 
 		img, err := readImage(directory, volume.Name())
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			continue
 		} else if err != nil {
 			return nil, fmt.Errorf("image: %w", err)
@@ -133,7 +135,7 @@ func LoadCovers(directory string, p formats.Progress) (md.ImageList, error) {
 func readImage(directory, name string) (image.Image, error) {
 	for _, ext := range []string{".jpg", ".jpeg", ".png", ".gif"} {
 		f, err := os.Open(path.Join(directory, name+ext))
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			continue
 		} else if err != nil {
 			return nil, fmt.Errorf("open: %w", err)
