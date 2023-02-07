@@ -149,5 +149,5 @@ func readImage(directory, name string) (image.Image, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("no image found")
+	return nil, fs.ErrNotExist
 }
