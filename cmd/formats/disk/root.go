@@ -121,7 +121,7 @@ func LoadCovers(directory string, p formats.Progress) (md.ImageList, error) {
 		if errors.Is(err, fs.ErrNotExist) {
 			continue
 		} else if err != nil {
-			return nil, fmt.Errorf("image: %w", err)
+			return nil, fmt.Errorf("cover for directory '%v': %w", volume.Name(), err)
 		}
 		result = append(result, md.Image{
 			Image:            img,
