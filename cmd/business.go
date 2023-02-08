@@ -149,11 +149,11 @@ func getPages(volume md.Volume, p formats.CliProgress) (md.ImageList, error) {
 
 	pages := append(mangadexPages, diskPages...)
 	if autocropArg {
-		r := formats.VanishingProgress("Cropping..")
-		if err := autoCrop(pages, r); err != nil {
+		p := formats.VanishingProgress("Cropping..")
+		if err := autoCrop(pages, p); err != nil {
 			return nil, fmt.Errorf("autocrop: %w", err)
 		}
-		r.Done()
+		p.Done()
 	}
 
 	return pages, nil
