@@ -17,6 +17,7 @@ var (
 	outArg              string
 	forceArg            bool
 	leftToRightArg      bool
+	fillVolumeNumberArg int
 	diskArg             string
 	cpuprofileArg       string
 	groupsFilter        string
@@ -154,6 +155,7 @@ func init() {
 	rootCmd.Flags().BoolVarP(&autocropArg, "autocrop", "a", false, "crop whitespace from pages automatically")
 	rootCmd.Flags().BoolVarP(&kindleFolderModeArg, "kindle-folder-mode", "k", false, "generate folder structure for Kindle devices")
 	rootCmd.Flags().BoolVarP(&leftToRightArg, "left-to-right", "p", false, "make reading direction left to right")
+	rootCmd.Flags().IntVarP(&fillVolumeNumberArg, "fill-volume-number", "n", 0, "fill volume number with leading zeros in title")
 	rootCmd.Flags().BoolVarP(&dryRunArg, "dry-run", "d", false, "disable writing of any files")
 	rootCmd.Flags().StringVarP(&outArg, "out", "o", "", "output directory")
 	rootCmd.Flags().BoolVarP(&forceArg, "force", "f", false, "overwrite existing volumes")

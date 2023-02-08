@@ -61,6 +61,10 @@ func handleVolume(skeleton md.Manga, volume md.Volume, dir kindle.NormalizedDire
 	mangaForVolume := skeleton.WithChapters(volume.Sorted()).WithPages(pages)
 	mobi := kindle.GenerateMOBI(mangaForVolume)
 	mobi.RightToLeft = !leftToRightArg
+	mobi.Title = fmt.Sprintf("%v: %v",
+		skeleton.Info.Title,
+		volume.Info.Identifier.StringFilled(fillVolumeNumberArg, 0, false),
+	)
 
 	p = formats.VanishingProgress("Writing...")
 	if err := dir.Write(volume.Info.Identifier, mobi, p); err != nil {
