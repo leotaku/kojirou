@@ -151,6 +151,7 @@ func getPages(volume md.Volume, p formats.CliProgress) (md.ImageList, error) {
 	if autocropArg {
 		p := formats.VanishingProgress("Cropping..")
 		if err := autoCrop(pages, p); err != nil {
+			p.Cancel("Error")
 			return nil, fmt.Errorf("autocrop: %w", err)
 		}
 		p.Done()
