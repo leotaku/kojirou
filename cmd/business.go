@@ -113,7 +113,7 @@ func getCovers(manga *md.Manga) (md.ImageList, error) {
 	covers, err := download.MangadexCovers(manga, p)
 	if err != nil {
 		p.Cancel("Error")
-		return nil, fmt.Errorf("covers: %w", err)
+		return nil, fmt.Errorf("mangadex: %w", err)
 	}
 	p.Done()
 
@@ -140,14 +140,14 @@ func getPages(volume md.Volume, p formats.CliProgress) (md.ImageList, error) {
 	}), p)
 	if err != nil {
 		p.Cancel("Error")
-		return nil, fmt.Errorf("pages: %w", err)
+		return nil, fmt.Errorf("mangadex: %w", err)
 	}
 	diskPages, err := disk.LoadPages(volume.Sorted().FilterBy(func(ci md.ChapterInfo) bool {
 		return ci.GroupNames.String() == "Filesystem"
 	}), p)
 	if err != nil {
 		p.Cancel("Error")
-		return nil, fmt.Errorf("pages: %w", err)
+		return nil, fmt.Errorf("disk: %w", err)
 	}
 	p.Done()
 
