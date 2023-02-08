@@ -149,27 +149,28 @@ func getPages(volume md.Volume, p formats.CliProgress) (md.ImageList, error) {
 
 	pages := append(mangadexPages, diskPages...)
 	if autocropArg {
-		p := formats.VanishingProgress("Cropping..")
-		if err := autoCrop(pages, p); err != nil {
-			p.Cancel("Error")
+		if err := autoCrop(pages); err != nil {
 			return nil, fmt.Errorf("autocrop: %w", err)
 		}
-		p.Done()
 	}
 
 	return pages, nil
 }
 
-func autoCrop(pages md.ImageList, p formats.Progress) error {
+func autoCrop(pages md.ImageList) error {
+	p := formats.VanishingProgress("Cropping..")
 	p.Increase(len(pages))
+
 	for i, page := range pages {
 		if cropped, err := crop.Crop(pages[i].Image, crop.Limited(pages[i].Image, 0.1)); err != nil {
+			p.Cancel("Error")
 			return fmt.Errorf("chapter %v: page %v: %w", page.ChapterIdentifier, page.ImageIdentifier, err)
 		} else {
 			pages[i].Image = cropped
 			p.Add(1)
 		}
 	}
+	p.Done()
 
 	return nil
 }
