@@ -18,9 +18,64 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("skeleton: %w", err)
 	}
-	chapters, err := download.MangadexChapters(identifierArg)
+
+	chapters, err := getChapters(*manga)
 	if err != nil {
 		return fmt.Errorf("chapters: %w", err)
+	}
+	*manga = manga.WithChapters(chapters)
+
+	formats.PrintSummary(manga)
+	if dryRunArg {
+		return nil
+	}
+
+	covers, err := getCovers(manga)
+	if err != nil {
+		return fmt.Errorf("covers: %w", err)
+	}
+	*manga = manga.WithCovers(covers)
+
+	dir := kindle.NewNormalizedDirectory(outArg, manga.Info.Title, kindleFolderModeArg)
+	for _, volume := range manga.Sorted() {
+		if err := handleVolume(*manga, volume, dir); err != nil {
+			return fmt.Errorf("volume %s: %w", volume.Info.Identifier, err)
+		}
+	}
+
+	return nil
+}
+
+func handleVolume(skeleton md.Manga, volume md.Volume, dir kindle.NormalizedDirectory) error {
+	p := formats.TitledProgress(fmt.Sprintf("Volume: %v", volume.Info.Identifier))
+	if dir.Has(volume.Info.Identifier) && !forceArg {
+		p.Cancel("Skipped")
+		return nil
+	}
+
+	pages, err := getPages(volume, p)
+	if err != nil {
+		return fmt.Errorf("pages: %w", err)
+	}
+
+	mangaForVolume := skeleton.WithChapters(volume.Sorted()).WithPages(pages)
+	mobi := kindle.GenerateMOBI(mangaForVolume)
+	mobi.RightToLeft = !leftToRightArg
+
+	p = formats.VanishingProgress("Writing...")
+	if err := dir.Write(volume.Info.Identifier, mobi, p); err != nil {
+		p.Cancel("Failed")
+		return fmt.Errorf("write: %w", err)
+	}
+	p.Done()
+
+	return nil
+}
+
+func getChapters(manga md.Manga) (md.ChapterList, error) {
+	chapters, err := download.MangadexChapters(identifierArg)
+	if err != nil {
+		return nil, fmt.Errorf("mangadex: %w", err)
 	}
 
 	if diskArg != "" {
@@ -28,7 +83,7 @@ func run() error {
 		diskChapters, err := disk.LoadChapters(diskArg, language.Make(languageArg), p)
 		if err != nil {
 			p.Cancel("Error")
-			return fmt.Errorf("disk: %w", err)
+			return nil, fmt.Errorf("disk: %w", err)
 		}
 		p.Done()
 		chapters = append(chapters, diskChapters...)
@@ -36,7 +91,7 @@ func run() error {
 
 	chapters, err = sortFromFlags(chapters)
 	if err != nil {
-		return fmt.Errorf("filter: %w", err)
+		return nil, fmt.Errorf("filter: %w", err)
 	}
 
 	// Ensure chapters from disk are preferred
@@ -46,18 +101,15 @@ func run() error {
 		})
 	}
 
-	chapters = filter.RemoveDuplicates(chapters)
-	*manga = manga.WithChapters(chapters)
-	formats.PrintSummary(manga)
-	if dryRunArg {
-		return nil
-	}
+	return filter.RemoveDuplicates(chapters), nil
+}
 
+func getCovers(manga *md.Manga) (md.ImageList, error) {
 	p := formats.VanishingProgress("Covers")
 	covers, err := download.MangadexCovers(manga, p)
 	if err != nil {
 		p.Cancel("Error")
-		return fmt.Errorf("covers: %w", err)
+		return nil, fmt.Errorf("covers: %w", err)
 	}
 	p.Done()
 
@@ -69,43 +121,29 @@ func run() error {
 		diskCovers, err := disk.LoadCovers(diskArg, p)
 		if err != nil {
 			p.Cancel("Error")
-			return fmt.Errorf("disk: %w", err)
+			return nil, fmt.Errorf("disk: %w", err)
 		}
 		p.Done()
 		covers = append(covers, diskCovers...)
 	}
-	*manga = manga.WithCovers(covers)
 
-	dir := kindle.NewNormalizedDirectory(outArg, manga.Info.Title, kindleFolderModeArg)
-	for _, volume := range manga.Sorted() {
-		if err := writeSingleVolume(*manga, volume, dir); err != nil {
-			return fmt.Errorf("volume %s: %w", volume.Info.Identifier, err)
-		}
-	}
-
-	return nil
+	return covers, nil
 }
 
-func writeSingleVolume(skeleton md.Manga, volume md.Volume, dir kindle.NormalizedDirectory) error {
-	p := formats.TitledProgress(fmt.Sprintf("Volume: %v", volume.Info.Identifier))
-	if dir.Has(volume.Info.Identifier) && !forceArg {
-		p.Cancel("Skipped")
-		return nil
-	}
-
+func getPages(volume md.Volume, p formats.CliProgress) (md.ImageList, error) {
 	mangadexPages, err := download.MangadexPages(volume.Sorted().FilterBy(func(ci md.ChapterInfo) bool {
 		return ci.GroupNames.String() != "Filesystem"
 	}), p)
 	if err != nil {
 		p.Cancel("Error")
-		return fmt.Errorf("pages: %w", err)
+		return nil, fmt.Errorf("pages: %w", err)
 	}
 	diskPages, err := disk.LoadPages(volume.Sorted().FilterBy(func(ci md.ChapterInfo) bool {
 		return ci.GroupNames.String() == "Filesystem"
 	}), p)
 	if err != nil {
 		p.Cancel("Error")
-		return fmt.Errorf("pages: %w", err)
+		return nil, fmt.Errorf("pages: %w", err)
 	}
 	p.Done()
 
@@ -113,23 +151,12 @@ func writeSingleVolume(skeleton md.Manga, volume md.Volume, dir kindle.Normalize
 	if autocropArg {
 		r := formats.VanishingProgress("Cropping..")
 		if err := autoCrop(pages, r); err != nil {
-			return fmt.Errorf("autocrop: %w", err)
+			return nil, fmt.Errorf("autocrop: %w", err)
 		}
 		r.Done()
 	}
 
-	part := skeleton.WithChapters(volume.Sorted()).WithPages(pages)
-	mobi := kindle.GenerateMOBI(part)
-	mobi.RightToLeft = !leftToRightArg
-
-	p = formats.VanishingProgress("Writing...")
-	if err := dir.Write(volume.Info.Identifier, mobi, p); err != nil {
-		p.Cancel("Failed")
-		return fmt.Errorf("write: %w", err)
-	}
-	p.Done()
-
-	return nil
+	return pages, nil
 }
 
 func autoCrop(pages md.ImageList, p formats.Progress) error {
