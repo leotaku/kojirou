@@ -64,7 +64,7 @@ func handleVolume(skeleton md.Manga, volume md.Volume, dir kindle.NormalizedDire
 
 	p = formats.VanishingProgress("Writing...")
 	if err := dir.Write(volume.Info.Identifier, mobi, p); err != nil {
-		p.Cancel("Failed")
+		p.Cancel("Error")
 		return fmt.Errorf("write: %w", err)
 	}
 	p.Done()
