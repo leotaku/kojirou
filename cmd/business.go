@@ -58,6 +58,12 @@ func handleVolume(skeleton md.Manga, volume md.Volume, dir kindle.NormalizedDire
 		return fmt.Errorf("pages: %w", err)
 	}
 
+	if autocropArg {
+		if err := autoCrop(pages); err != nil {
+			return fmt.Errorf("autocrop: %w", err)
+		}
+	}
+
 	mangaForVolume := skeleton.WithChapters(volume.Sorted()).WithPages(pages)
 	mobi := kindle.GenerateMOBI(mangaForVolume)
 	mobi.RightToLeft = !leftToRightArg
@@ -151,14 +157,7 @@ func getPages(volume md.Volume, p formats.CliProgress) (md.ImageList, error) {
 	}
 	p.Done()
 
-	pages := append(mangadexPages, diskPages...)
-	if autocropArg {
-		if err := autoCrop(pages); err != nil {
-			return nil, fmt.Errorf("autocrop: %w", err)
-		}
-	}
-
-	return pages, nil
+	return append(mangadexPages, diskPages...), nil
 }
 
 func autoCrop(pages md.ImageList) error {
