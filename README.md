@@ -65,6 +65,16 @@ Also note that right-to-left reading does not seem to be supported on all Kindle
 kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --left-to-right
 ```
 
+### Fill volume number in title
+
+Kojirou has the ability to fill the volume number in e-book titles with an arbitrary number of leading zeros.
+This is useful because Kindle devices sort titles alphabetically without any special handling of numbers.
+So, for example, volume "2" would be placed before "10", while "02" would be correctly sorted.
+
+```shell
+kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --fill-volume-number 2
+```
+
 ## Prebuilt binaries
 
 Prebuilt binaries for Linux, Windows and MacOS on x86 and ARM processors are provided.
