@@ -39,7 +39,7 @@ func run() error {
 	dir := kindle.NewNormalizedDirectory(outArg, manga.Info.Title, kindleFolderModeArg)
 	for _, volume := range manga.Sorted() {
 		if err := handleVolume(*manga, volume, dir); err != nil {
-			return fmt.Errorf("volume %s: %w", volume.Info.Identifier, err)
+			return fmt.Errorf("volume %v: %w", volume.Info.Identifier, err)
 		}
 	}
 

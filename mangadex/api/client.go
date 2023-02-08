@@ -122,7 +122,7 @@ func (c *Client) doJSON(method, ref string, result, body interface{}) error {
 		if err := dec.Decode(errs); err != nil {
 			return fmt.Errorf("error decode: %w", err)
 		} else if len(errs.Errors) != 0 {
-			return fmt.Errorf("detail: %s", errs.Errors[0].Detail)
+			return fmt.Errorf("detail: %v", errs.Errors[0].Detail)
 		} else {
 			return fmt.Errorf("status: %v", resp.Status)
 		}
