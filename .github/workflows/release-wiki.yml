@@ -8,6 +8,8 @@ on:
 jobs:
   release-wiki:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
     - name: Create wiki page with download urls
@@ -40,3 +42,18 @@ jobs:
           );
     - name: Read out releases page
       run: cat Releases.md
+    - name: Checkout wiki repository
+      uses: actions/checkout@v3
+      with:
+        repository: ${{ github.repository }}.wiki
+        path: wiki
+    - name: Add releases page to wiki
+    - run: |
+        mv Releases.md wiki
+    - name: Upload changes to wiki
+    - run: |
+        cd wiki
+        git config --global user.name  "actions-user"
+        git config --global user.email "actions@github.com"
+        git add . && git diff-index --quiet HEAD && exit 0
+        git commit -m "Add changes" && git push
