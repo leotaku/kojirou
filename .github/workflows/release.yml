@@ -1,39 +1,32 @@
 name: release
 
 on:
-  workflow_dispatch:
-    inputs:
-      name:
-        description: 'Release Name'
-        required: true
-      tag:
-        description: 'Tag'
-        required: true
-      run_id:
-        description: 'Build workflow run ID'
-        required: true
+  workflow_run:
+    workflows: [build]
+    types:
+      - completed
 
 jobs:
   create-release:
     runs-on: ubuntu-latest
     steps:
-      - name: Create Release
+      - name: Create release
         uses: actions/github-script@v6
-        id: create
-        env:
-          BRANCH: ${{ github.event.ref }}
-          NAME: ${{ github.event.inputs.name }}
-          TAG: ${{ github.event.inputs.tag }}
-          RUN_ID: ${{ github.event.inputs.run_id }}
         with:
           debug: true
           script: |
+            const run = await octokit.rest.actions.getWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+            });
+
             const release = await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: process.env.TAG,
-              target_commitish: process.env.BRANCH,
-              name: process.env.NAME,
+              tag_name: "placeholder",
+              target_commitish: run.data.head_sha,
+              name: `Placeholder: ${run.data.head_branch}`,
               draft: true,
               generate_release_notes: true,
             });
@@ -41,7 +34,7 @@ jobs:
             const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              run_id: process.env.RUN_ID,
+              run_id: context.payload.workflow_run.id,
             });
 
             for (const artifact of artifacts.data.artifacts) {
