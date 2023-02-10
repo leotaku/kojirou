@@ -1,0 +1,40 @@
+name: release-wiki
+
+on:
+  workflow_run:
+    workflows: [build]
+    types: [completed]
+
+jobs:
+  release-wiki:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Create wiki page with download urls
+        uses: actions/github-script@v6
+        with:
+          debug: true
+          script: |
+            import fs from "node:fs/promises";
+
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+            });
+
+            const artifacts_markup = artifacts.artifacts
+              .map((ar) => `+ [${ar.name}.zip](${ar.archive_download_url})`)
+              .join("\n");
+
+            await fs.writeFile(
+              "Releases.md",
+              `
+            Here you can find a list of ZIP archives containing recent builds of
+            the software for various systems. For information on how to use these,
+            or how to build the software from source, please refer to the project
+            README file.
+
+            ${artifacts_markup}
+            `
+            );
