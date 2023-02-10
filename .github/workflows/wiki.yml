@@ -20,11 +20,12 @@ jobs:
       with:
         go-version: ^1.19
     - run: |
-        rm -rf wiki/*.mediawiki
+        rm -rf wiki/cli | true
     - run: |
-        go run . --help         > wiki/Home.mediawiki
-        go run . --help-ranking > wiki/Ranking.mediawiki
-        go run . --help-filter  > wiki/Filtering.mediawiki
+        mkdir -p wiki/cli
+        go run . --help         > wiki/cli/Home.mediawiki
+        go run . --help-ranking > wiki/cli/Ranking.mediawiki
+        go run . --help-filter  > wiki/cli/Filtering.mediawiki
     - run: |
         cd wiki
         git config --global user.name  "actions-user"
