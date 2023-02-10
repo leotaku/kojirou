@@ -38,3 +38,5 @@ jobs:
             ${artifacts_markup}
             `
             );
+      - name: Read out releases page
+        run: cat Releases.md
