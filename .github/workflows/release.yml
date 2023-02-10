@@ -23,6 +23,8 @@ jobs:
               run_id: context.payload.workflow_run.id,
             });
 
+            console.log(run.data);
+
             const release = await github.rest.repos.createRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -32,6 +34,8 @@ jobs:
               draft: true,
               generate_release_notes: true,
             });
+
+            console.log(release.data);
 
             const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner: context.repo.owner,
