@@ -23,7 +23,7 @@ jobs:
               run_id: context.payload.workflow_run.id,
             });
 
-            const artifacts_markup = artifacts.artifacts
+            const artifacts_markup = artifacts.data.artifacts
               .map((ar) => `+ [${ar.name}.zip](${ar.archive_download_url})`)
               .join("\n");
 
