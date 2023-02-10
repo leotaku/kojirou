@@ -15,7 +15,7 @@ jobs:
         with:
           debug: true
           script: |
-            import fs from "node:fs/promises";
+            const fs = require("node:fs/promises");
 
             const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
               owner: context.repo.owner,
