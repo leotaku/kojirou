@@ -20,7 +20,7 @@ jobs:
       with:
         go-version: ^1.19
     - run: |
-        rm -rf wiki/*
+        rm -rf wiki/*.mediawiki
     - run: |
         go run . --help         > wiki/Home.mediawiki
         go run . --help-ranking > wiki/Ranking.mediawiki
