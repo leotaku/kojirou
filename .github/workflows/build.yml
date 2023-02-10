@@ -1,11 +1,8 @@
 name: build
 
 on:
-  pull_request:
   push:
-    branches:
-      - master
-      - 'releases/*'
+    tags: ['*']
 
 jobs:
   build:
