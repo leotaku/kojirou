@@ -40,10 +40,10 @@ jobs:
 
             for (const artifact of artifacts.data.artifacts) {
               const download = await github.rest.actions.downloadArtifact({
-                 owner: context.repo.owner,
-                 repo: context.repo.repo,
-                 artifact_id: artifact.id,
-                 archive_format: 'zip',
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifact.id,
+                archive_format: "zip",
               });
               await github.rest.repos.uploadReleaseAsset({
                 owner: context.repo.owner,
