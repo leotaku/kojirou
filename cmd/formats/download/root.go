@@ -21,12 +21,6 @@ const (
 	maxJobsImage   = 16
 )
 
-const (
-	queueSizeChapters = 8
-	queueSizePaths    = 64
-	queueSizeImages   = 64
-)
-
 var (
 	httpClient     *http.Client
 	mangadexClient *md.Client
@@ -58,7 +52,7 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 
 	ctx, cancel := context.WithCancel(context.TODO())
 
-	ch := make(chan md.Path, queueSizePaths)
+	ch := make(chan md.Path)
 	go func() {
 		for _, path := range covers {
 			ch <- path
@@ -86,7 +80,7 @@ func MangadexPages(chapters md.ChapterList, p formats.Progress) (md.ImageList, e
 	ctx, cancel := context.WithCancel(context.TODO())
 	eg, ctx := errgroup.WithContext(ctx)
 
-	ch := make(chan md.Chapter, queueSizeChapters)
+	ch := make(chan md.Chapter)
 	go func() {
 		for _, chapter := range chapters {
 			ch <- chapter
@@ -121,7 +115,7 @@ func chaptersToPaths(
 	cancel context.CancelFunc,
 	p formats.Progress,
 ) (<-chan md.Path, *errgroup.Group) {
-	ch := make(chan md.Path, queueSizePaths)
+	ch := make(chan md.Path)
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.SetLimit(maxJobsChapter + 1)
 
@@ -169,7 +163,7 @@ func pathsToImages(
 	ctx context.Context,
 	cancel context.CancelFunc,
 ) (<-chan md.Image, *errgroup.Group) {
-	ch := make(chan md.Image, queueSizeImages)
+	ch := make(chan md.Image)
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.SetLimit(maxJobsImage + 1)
 
