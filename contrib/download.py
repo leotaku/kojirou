@@ -154,8 +154,8 @@ def fill_id(num: Optional[str]) -> str:
     return filename
 
 
-T = TypeVar("T")
 A = TypeVar("A")
+T = TypeVar("T")
 
 
 async def run_with_semaphore(
@@ -167,10 +167,10 @@ async def run_with_semaphore(
             return (await coroutine, context)
 
     for result in asyncio.as_completed(
-        [
+        (
             asyncio.create_task(await_with_semaphore(semaphore, coroutine, context))
             for (coroutine, context) in generator
-        ]
+        )
     ):
         yield await result
 
