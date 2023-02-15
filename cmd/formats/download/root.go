@@ -56,115 +56,164 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 		return nil, err
 	}
 
-	pathQueue := make(chan md.Path, queueSizePaths)
-	imageQueue := make(chan md.Image, queueSizeImages)
-	go func() {
-		for _, cover := range covers {
-			if _, ok := manga.Volumes[cover.VolumeIdentifier]; ok {
-				pathQueue <- cover
-			}
-		}
-		close(pathQueue)
-	}()
-
-	eg := pathsToImages(pathQueue, imageQueue, context.TODO(), p)
-	return collectImages(imageQueue, eg)
-}
-
-func MangadexPages(chapters md.ChapterList, p formats.Progress) (md.ImageList, error) {
-	chapterQueue := make(chan md.Chapter, queueSizeChapters)
-	pathQueue := make(chan md.Path, queueSizePaths)
-	pageQueue := make(chan md.Image, queueSizeImages)
-
-	ctx := context.TODO()
-	eg, _ := errgroup.WithContext(ctx)
-	eg.Go(chaptersToPaths(chapterQueue, pathQueue, ctx, p).Wait)
-	eg.Go(pathsToImages(pathQueue, pageQueue, ctx, p).Wait)
+	ch := make(chan md.Path, queueSizePaths)
+	ctx, cancel := context.WithCancel(context.TODO())
 
 	go func() {
-		for _, chapter := range chapters {
-			chapterQueue <- chapter
+		for _, path := range covers {
+			ch <- path
+			p.Increase(1)
 		}
-		close(chapterQueue)
+		close(ch)
 	}()
 
-	return collectImages(pageQueue, eg)
-}
+	coverImages, eg := pathsToImages(ch, ctx, cancel)
 
-func collectImages(imageQueue <-chan md.Image, eg *errgroup.Group) (md.ImageList, error) {
-	images := make(md.ImageList, 0)
-	for image := range imageQueue {
-		images = append(images, image)
+	results := make(md.ImageList, len(covers))
+	for coverImage := range coverImages {
+		p.Add(1)
+		results = append(results, coverImage)
 	}
 
 	if err := eg.Wait(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("covers: %w", err)
 	} else {
-		return images, nil
+		return results, nil
 	}
 }
 
+func MangadexPages(chapters md.ChapterList, p formats.Progress) (md.ImageList, error) {
+	ch := make(chan md.Chapter, queueSizeChapters)
+	ctx, cancel := context.WithCancel(context.TODO())
+	eg, ctx := errgroup.WithContext(ctx)
+
+	go func() {
+		for _, chapter := range chapters {
+			ch <- chapter
+			p.Increase(1)
+		}
+		close(ch)
+	}()
+
+	paths, ceg := chaptersToPaths(ch, ctx, cancel, p)
+	eg.Go(ceg.Wait)
+
+	images, peg := pathsToImages(paths, ctx, cancel)
+	eg.Go(peg.Wait)
+
+	results := make(md.ImageList, 0)
+	for image := range images {
+		p.Add(1)
+		results = append(results, image)
+	}
+
+	if err := eg.Wait(); err != nil {
+		return nil, fmt.Errorf("pages: %w", err)
+	} else {
+		return results, nil
+	}
+
+}
+
 func chaptersToPaths(
-	chapterQueue <-chan md.Chapter,
-	pathQueue chan<- md.Path,
+	chapters <-chan md.Chapter,
 	ctx context.Context,
-	progress formats.Progress,
-) *errgroup.Group {
-	return spinUp(ctx, maxJobsChapter, func() error {
+	cancel context.CancelFunc,
+	p formats.Progress,
+) (<-chan md.Path, *errgroup.Group) {
+	ch := make(chan md.Path, queueSizePaths)
+	eg, ctx := errgroup.WithContext(ctx)
+	eg.SetLimit(maxJobsChapter + 1)
+
+	eg.Go(func() error {
 		for {
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("cancelled")
-			case chapter, running := <-chapterQueue:
-				if !running {
+				return fmt.Errorf("canceled")
+			case chapter, ok := <-chapters:
+				if !ok {
 					return nil
 				}
-
-				progress.Increase(1)
-				paths, err := mangadexClient.FetchPaths(&chapter)
-				if err != nil {
-					return fmt.Errorf("chapter %v: paths: %w", chapter.Info.Identifier, err)
-				}
-
-				progress.Increase(len(paths) - 1)
-				for _, path := range paths {
-					pathQueue <- path
-				}
+				eg.Go(func() error {
+					paths, err := mangadexClient.FetchPaths(&chapter)
+					if err != nil {
+						defer cancel()
+						return fmt.Errorf("chapter %v: paths: %w", chapter.Info.Identifier, err)
+					} else {
+						p.Add(1)
+						for _, path := range paths {
+							select {
+							case <-ctx.Done():
+								return fmt.Errorf("canceled")
+							case ch <- path:
+								p.Increase(1)
+							}
+						}
+						return nil
+					}
+				})
 			}
 		}
-	}, func() { close(pathQueue) })
+	})
+
+	go func() {
+		eg.Wait()
+		close(ch)
+	}()
+
+	return ch, eg
 }
 
 func pathsToImages(
-	pathQueue <-chan md.Path,
-	imageQueue chan<- md.Image,
+	paths <-chan md.Path,
 	ctx context.Context,
-	progress formats.Progress,
-) *errgroup.Group {
-	return spinUp(ctx, maxJobsImage, func() error {
+	cancel context.CancelFunc,
+) (<-chan md.Image, *errgroup.Group) {
+	ch := make(chan md.Image, queueSizeImages)
+	eg, ctx := errgroup.WithContext(ctx)
+	eg.SetLimit(maxJobsImage + 1)
+
+	eg.Go(func() error {
 		for {
 			select {
 			case <-ctx.Done():
-				return fmt.Errorf("cancelled")
-			case path, running := <-pathQueue:
-				if !running {
+				return fmt.Errorf("canceled")
+			case path, ok := <-paths:
+				if !ok {
 					return nil
 				}
-
-				img, err := getImage(httpClient, path.URL)
-				if err != nil {
-					return fmt.Errorf("chapter %v: image %v: %w", path.ChapterIdentifier, path.ImageIdentifier, err)
-				}
-
-				progress.Add(1)
-				imageQueue <- path.WithImage(img)
+				eg.Go(func() error {
+					image, err := getImage(httpClient, ctx, path.URL)
+					if err != nil {
+						defer cancel()
+						return fmt.Errorf("image %v: %w", path.ImageIdentifier, err)
+					} else {
+						select {
+						case <-ctx.Done():
+							return fmt.Errorf("canceled")
+						case ch <- path.WithImage(image):
+							return nil
+						}
+					}
+				})
 			}
 		}
-	}, func() { close(imageQueue) })
+	})
+
+	go func() {
+		eg.Wait()
+		close(ch)
+	}()
+
+	return ch, eg
 }
 
-func getImage(client *http.Client, url string) (image.Image, error) {
-	resp, err := client.Get(url)
+func getImage(client *http.Client, ctx context.Context, url string) (image.Image, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		panic(err)
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -176,17 +225,4 @@ func getImage(client *http.Client, url string) (image.Image, error) {
 
 	img, _, err := image.Decode(resp.Body)
 	return img, err
-}
-
-func spinUp(ctx context.Context, concurrency int, f func() error, cleanup func()) *errgroup.Group {
-	eg, _ := errgroup.WithContext(ctx)
-	for i := 0; i < concurrency; i++ {
-		eg.Go(f)
-	}
-	go func() {
-		eg.Wait() //nolint:errcheck
-		cleanup()
-	}()
-
-	return eg
 }
