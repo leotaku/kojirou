@@ -56,9 +56,9 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 		return nil, err
 	}
 
-	ch := make(chan md.Path, queueSizePaths)
 	ctx, cancel := context.WithCancel(context.TODO())
 
+	ch := make(chan md.Path, queueSizePaths)
 	go func() {
 		for _, path := range covers {
 			ch <- path
@@ -83,10 +83,10 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 }
 
 func MangadexPages(chapters md.ChapterList, p formats.Progress) (md.ImageList, error) {
-	ch := make(chan md.Chapter, queueSizeChapters)
 	ctx, cancel := context.WithCancel(context.TODO())
 	eg, ctx := errgroup.WithContext(ctx)
 
+	ch := make(chan md.Chapter, queueSizeChapters)
 	go func() {
 		for _, chapter := range chapters {
 			ch <- chapter
