@@ -211,11 +211,11 @@ func pathsToImages(
 func getImage(client *http.Client, ctx context.Context, url string) (image.Image, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("prepare: %w", err)
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("do: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -224,5 +224,8 @@ func getImage(client *http.Client, ctx context.Context, url string) (image.Image
 	}
 
 	img, _, err := image.Decode(resp.Body)
-	return img, err
+	if err != nil {
+		return nil, fmt.Errorf("decode: %w", err)
+	}
+	return img, nil
 }
