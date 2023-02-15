@@ -52,16 +52,16 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 
 	ctx, cancel := context.WithCancel(context.TODO())
 
-	ch := make(chan md.Path)
+	coverPaths := make(chan md.Path)
 	go func() {
 		for _, path := range covers {
-			ch <- path
+			coverPaths <- path
 			p.Increase(1)
 		}
-		close(ch)
+		close(coverPaths)
 	}()
 
-	coverImages, eg := pathsToImages(ch, ctx, cancel)
+	coverImages, eg := pathsToImages(coverPaths, ctx, cancel)
 
 	results := make(md.ImageList, len(covers))
 	for coverImage := range coverImages {
@@ -76,24 +76,24 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 	}
 }
 
-func MangadexPages(chapters md.ChapterList, p formats.Progress) (md.ImageList, error) {
+func MangadexPages(chapterList md.ChapterList, p formats.Progress) (md.ImageList, error) {
 	ctx, cancel := context.WithCancel(context.TODO())
 	eg, ctx := errgroup.WithContext(ctx)
 
-	ch := make(chan md.Chapter)
+	chapters := make(chan md.Chapter)
 	go func() {
-		for _, chapter := range chapters {
-			ch <- chapter
+		for _, chapter := range chapterList {
+			chapters <- chapter
 			p.Increase(1)
 		}
-		close(ch)
+		close(chapters)
 	}()
 
-	paths, ceg := chaptersToPaths(ch, ctx, cancel, p)
-	eg.Go(ceg.Wait)
+	paths, childEg := chaptersToPaths(chapters, ctx, cancel, p)
+	eg.Go(childEg.Wait)
 
-	images, peg := pathsToImages(paths, ctx, cancel)
-	eg.Go(peg.Wait)
+	images, childEg := pathsToImages(paths, ctx, cancel)
+	eg.Go(childEg.Wait)
 
 	results := make(md.ImageList, 0)
 	for image := range images {
