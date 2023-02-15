@@ -70,7 +70,7 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 	}
 
 	if err := eg.Wait(); err != nil {
-		return nil, fmt.Errorf("covers: %w", err)
+		return nil, err
 	} else {
 		return results, nil
 	}
@@ -102,7 +102,7 @@ func MangadexPages(chapters md.ChapterList, p formats.Progress) (md.ImageList, e
 	}
 
 	if err := eg.Wait(); err != nil {
-		return nil, fmt.Errorf("pages: %w", err)
+		return nil, err
 	} else {
 		return results, nil
 	}
@@ -180,7 +180,7 @@ func pathsToImages(
 					image, err := getImage(httpClient, ctx, path.URL)
 					if err != nil {
 						defer cancel()
-						return fmt.Errorf("image %v: %w", path.ImageIdentifier, err)
+						return fmt.Errorf("chapter %v: image %v: %w", path.ChapterIdentifier, path.ImageIdentifier, err)
 					} else {
 						select {
 						case <-ctx.Done():
