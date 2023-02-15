@@ -151,7 +151,7 @@ func chaptersToPaths(
 	})
 
 	go func() {
-		eg.Wait()
+		eg.Wait() //nolint:errcheck
 		close(ch)
 	}()
 
@@ -195,7 +195,7 @@ func pathsToImages(
 	})
 
 	go func() {
-		eg.Wait()
+		eg.Wait() //nolint:errcheck
 		close(ch)
 	}()
 
