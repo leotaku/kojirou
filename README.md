@@ -13,11 +13,11 @@
   <a/>
 </h1>
 
-> Generate perfectly formatted Kindle EBooks from MangaDex manga
+> Generate perfectly formatted Kindle e-books from MangaDex manga
 
 ## Features
 
-### Download manga and generate Kindle EBooks
+### Download manga and generate Kindle e-books
 
 Kojirou will automatically download the series for the specified ID and language while outputting a folder with all the downloaded volumes.
 

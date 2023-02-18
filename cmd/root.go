@@ -29,7 +29,7 @@ var (
 
 var rootCmd = &cobra.Command{
 	Use:     "kojirou [flags..] <identifier>",
-	Short:   "Generate Kindle-compatible EBooks from MangaDex",
+	Short:   "Generate Kindle-compatible e-books from MangaDex",
 	Version: "0.1",
 	Args:    cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
