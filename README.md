@@ -37,7 +37,7 @@ rsync kindle/ /run/media/user/Kindle/
 
 ### Customize ranking for better scantlations
 
-Kojirou has the ability to use different [ranking algorithms](https://github.com/leotaku/kojirou/wiki/Ranking) in order to always dowload the highest-quality scantlations.
+Kojirou has the ability to use different [ranking algorithms](https://github.com/leotaku/kojirou/wiki/Ranking) in order to always download the highest-quality scantlations.
 You can preview what would be downloaded by running in dry-run mode.
 
 **Note:** Currently, the views and views-total ranking algorithms are broken because MangaDex no longer provides the required viewcount information.
