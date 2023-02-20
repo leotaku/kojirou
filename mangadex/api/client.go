@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -41,47 +42,47 @@ func (c *Client) WithHTTPClient(http *http.Client) *Client {
 	return c
 }
 
-func (c *Client) GetManga(mangaID string) (*Manga, error) {
+func (c *Client) GetManga(ctx context.Context, mangaID string) (*Manga, error) {
 	v := new(Manga)
-	err := c.doJSON("GET", "/manga/"+mangaID, v, nil)
+	err := c.doJSON(ctx, "GET", "/manga/"+mangaID, v, nil)
 	return v, err
 }
 
-func (c *Client) GetFeed(mangaID string, args QueryArgs) (*ChapterList, error) {
+func (c *Client) GetFeed(ctx context.Context, mangaID string, args QueryArgs) (*ChapterList, error) {
 	v := new(ChapterList)
 	url := fmt.Sprintf("/manga/%v/feed?%v", mangaID, args.Values().Encode())
-	err := c.doJSON("GET", url, v, nil)
+	err := c.doJSON(ctx, "GET", url, v, nil)
 	return v, err
 }
 
-func (c *Client) GetCovers(args QueryArgs) (*CoverList, error) {
+func (c *Client) GetCovers(ctx context.Context, args QueryArgs) (*CoverList, error) {
 	v := new(CoverList)
-	err := c.doJSON("GET", "/cover?"+args.Values().Encode(), v, nil)
+	err := c.doJSON(ctx, "GET", "/cover?"+args.Values().Encode(), v, nil)
 	return v, err
 }
 
-func (c *Client) GetAuthors(args QueryArgs) (*AuthorList, error) {
+func (c *Client) GetAuthors(ctx context.Context, args QueryArgs) (*AuthorList, error) {
 	v := new(AuthorList)
-	err := c.doJSON("GET", "/author?"+args.Values().Encode(), v, nil)
+	err := c.doJSON(ctx, "GET", "/author?"+args.Values().Encode(), v, nil)
 	return v, err
 }
 
-func (c *Client) GetGroups(args QueryArgs) (*GroupList, error) {
+func (c *Client) GetGroups(ctx context.Context, args QueryArgs) (*GroupList, error) {
 	v := new(GroupList)
-	err := c.doJSON("GET", "/group?"+args.Values().Encode(), v, nil)
+	err := c.doJSON(ctx, "GET", "/group?"+args.Values().Encode(), v, nil)
 	return v, err
 }
 
-func (c *Client) GetAtHome(chapterID string) (*AtHome, error) {
+func (c *Client) GetAtHome(ctx context.Context, chapterID string) (*AtHome, error) {
 	v := new(AtHome)
 	limitAtHome.Take()
-	err := c.doJSON("GET", "/at-home/server/"+chapterID, v, nil)
+	err := c.doJSON(ctx, "GET", "/at-home/server/"+chapterID, v, nil)
 	return v, err
 }
 
-func (c *Client) PostIDMapping(tp string, legacyIDs ...int) (*IDMappingList, error) {
+func (c *Client) PostIDMapping(ctx context.Context, tp string, legacyIDs ...int) (*IDMappingList, error) {
 	v := new(IDMappingList)
-	err := c.doJSON("POST", "/legacy/mapping", &v, map[string]interface{}{
+	err := c.doJSON(ctx, "POST", "/legacy/mapping", &v, map[string]interface{}{
 		"ids":  legacyIDs,
 		"type": tp,
 	})
@@ -89,7 +90,7 @@ func (c *Client) PostIDMapping(tp string, legacyIDs ...int) (*IDMappingList, err
 	return v, err
 }
 
-func (c *Client) doJSON(method, ref string, result, body interface{}) error {
+func (c *Client) doJSON(ctx context.Context, method, ref string, result, body interface{}) error {
 	url, err := c.baseURL.Parse(ref)
 	if err != nil {
 		return fmt.Errorf("url: %w", err)
@@ -103,7 +104,7 @@ func (c *Client) doJSON(method, ref string, result, body interface{}) error {
 		}
 	}
 
-	req, err := http.NewRequest(method, url.String(), rw)
+	req, err := http.NewRequestWithContext(ctx, method, url.String(), rw)
 	if err != nil {
 		return fmt.Errorf("prepare: %w", err)
 	}

@@ -36,21 +36,22 @@ func init() {
 }
 
 func MangadexSkeleton(mangaID string) (*md.Manga, error) {
-	return mangadexClient.FetchManga(mangaID)
+	return mangadexClient.FetchManga(context.TODO(), mangaID)
 
 }
 
 func MangadexChapters(mangaID string) (md.ChapterList, error) {
-	return mangadexClient.FetchChapters(mangaID)
+	return mangadexClient.FetchChapters(context.TODO(), mangaID)
 }
 
 func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
-	covers, err := mangadexClient.FetchCovers(manga.Info.ID)
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+
+	covers, err := mangadexClient.FetchCovers(ctx, manga.Info.ID)
 	if err != nil {
 		return nil, err
 	}
-
-	ctx, cancel := context.WithCancel(context.TODO())
 
 	coverPaths := make(chan md.Path)
 	go func() {
@@ -78,6 +79,8 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 
 func MangadexPages(chapterList md.ChapterList, p formats.Progress) (md.ImageList, error) {
 	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+
 	eg, ctx := errgroup.WithContext(ctx)
 
 	chapters := make(chan md.Chapter)
@@ -129,7 +132,7 @@ func chaptersToPaths(
 					return nil
 				}
 				eg.Go(func() error {
-					paths, err := mangadexClient.FetchPaths(&chapter)
+					paths, err := mangadexClient.FetchPaths(ctx, &chapter)
 					if err != nil {
 						defer cancel()
 						return fmt.Errorf("chapter %v: paths: %w", chapter.Info.Identifier, err)

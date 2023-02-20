@@ -1,6 +1,7 @@
 package mangadex
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -27,8 +28,8 @@ func (c *Client) WithHTTPClient(http *http.Client) *Client {
 	return c
 }
 
-func (c *Client) FetchLegacy(tp string, legacyID int) (string, error) {
-	mapping, err := c.base.PostIDMapping(tp, legacyID)
+func (c *Client) FetchLegacy(ctx context.Context, tp string, legacyID int) (string, error) {
+	mapping, err := c.base.PostIDMapping(ctx, tp, legacyID)
 	if err != nil {
 		return "", fmt.Errorf("post mapping: %w", err)
 	}
@@ -40,14 +41,14 @@ func (c *Client) FetchLegacy(tp string, legacyID int) (string, error) {
 	return mapping.Data[0].Attributes.NewID, nil
 }
 
-func (c *Client) FetchManga(mangaID string) (*Manga, error) {
-	base, err := c.base.GetManga(mangaID)
+func (c *Client) FetchManga(ctx context.Context, mangaID string) (*Manga, error) {
+	base, err := c.base.GetManga(ctx, mangaID)
 	if err != nil {
 		return nil, fmt.Errorf("get manga: %w", err)
 	}
 
 	// Only retrieves at most 100 authors
-	authors, err := c.base.GetAuthors(api.QueryArgs{
+	authors, err := c.base.GetAuthors(ctx, api.QueryArgs{
 		IDs:   base.Data.Relationships.Author,
 		Limit: 100,
 	})
@@ -56,7 +57,7 @@ func (c *Client) FetchManga(mangaID string) (*Manga, error) {
 	}
 
 	// Only retrieves at most 100 artists
-	artists, err := c.base.GetAuthors(api.QueryArgs{
+	artists, err := c.base.GetAuthors(ctx, api.QueryArgs{
 		IDs:   base.Data.Relationships.Artist,
 		Limit: 100,
 	})
@@ -70,12 +71,12 @@ func (c *Client) FetchManga(mangaID string) (*Manga, error) {
 	}, nil
 }
 
-func (c *Client) FetchChapters(mangaID string) (ChapterList, error) {
+func (c *Client) FetchChapters(ctx context.Context, mangaID string) (ChapterList, error) {
 	chapters := make([]api.ChapterData, 0)
 
 	limit := 500
 	for offset := 0; ; offset += limit {
-		feed, err := c.base.GetFeed(mangaID, api.QueryArgs{
+		feed, err := c.base.GetFeed(ctx, mangaID, api.QueryArgs{
 			Limit:         limit,
 			Offset:        offset,
 			Order:         map[string]string{"updatedAt": "asc"},
@@ -94,7 +95,7 @@ func (c *Client) FetchChapters(mangaID string) (ChapterList, error) {
 		}
 	}
 
-	groupMap, err := c.fetchGroupMap(chapters)
+	groupMap, err := c.fetchGroupMap(ctx, chapters)
 	if err != nil {
 		return nil, fmt.Errorf("get groups: %w", err)
 	}
@@ -102,11 +103,11 @@ func (c *Client) FetchChapters(mangaID string) (ChapterList, error) {
 	return convertChapters(chapters, groupMap), nil
 }
 
-func (c *Client) FetchCovers(mangaID string) (PathList, error) {
+func (c *Client) FetchCovers(ctx context.Context, mangaID string) (PathList, error) {
 	covers := make([]api.CoverData, 0)
 	limit := 100
 	for offset := 0; ; offset += limit {
-		feed, err := c.base.GetCovers(api.QueryArgs{
+		feed, err := c.base.GetCovers(ctx, api.QueryArgs{
 			Mangas: []string{mangaID},
 			Limit:  limit,
 			Offset: offset,
@@ -125,8 +126,8 @@ func (c *Client) FetchCovers(mangaID string) (PathList, error) {
 	return convertCovers(c.coverBaseURL.String(), mangaID, covers), nil
 }
 
-func (c *Client) FetchPaths(chapter *Chapter) (PathList, error) {
-	ah, err := c.base.GetAtHome(chapter.Info.ID)
+func (c *Client) FetchPaths(ctx context.Context, chapter *Chapter) (PathList, error) {
+	ah, err := c.base.GetAtHome(ctx, chapter.Info.ID)
 	if err != nil {
 		return nil, fmt.Errorf("get at home: %w", err)
 	}
@@ -134,7 +135,7 @@ func (c *Client) FetchPaths(chapter *Chapter) (PathList, error) {
 	return convertChapter(chapter, ah), nil
 }
 
-func (c *Client) fetchGroupMap(chapters []api.ChapterData) (map[string]api.GroupData, error) {
+func (c *Client) fetchGroupMap(ctx context.Context, chapters []api.ChapterData) (map[string]api.GroupData, error) {
 	dedup := make(map[string]struct{})
 	groupIDs := make([]string, 0)
 	for _, chap := range chapters {
@@ -155,7 +156,7 @@ func (c *Client) fetchGroupMap(chapters []api.ChapterData) (map[string]api.Group
 			end = offset + limit
 		}
 
-		gs, err := c.base.GetGroups(api.QueryArgs{
+		gs, err := c.base.GetGroups(ctx, api.QueryArgs{
 			IDs:   groupIDs[offset:end],
 			Limit: limit,
 		})
