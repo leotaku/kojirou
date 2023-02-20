@@ -37,7 +37,6 @@ func init() {
 
 func MangadexSkeleton(mangaID string) (*md.Manga, error) {
 	return mangadexClient.FetchManga(context.TODO(), mangaID)
-
 }
 
 func MangadexChapters(mangaID string) (md.ChapterList, error) {
@@ -109,7 +108,6 @@ func MangadexPages(chapterList md.ChapterList, p formats.Progress) (md.ImageList
 	} else {
 		return results, nil
 	}
-
 }
 
 func chaptersToPaths(

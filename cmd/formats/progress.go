@@ -36,7 +36,7 @@ func (p CliProgress) Add(n int) {
 	p.bar.Add(n)
 }
 
-func (p CliProgress) NewProxyWriter(w io.Writer) io.Writer  {
+func (p CliProgress) NewProxyWriter(w io.Writer) io.Writer {
 	return p.bar.NewProxyWriter(w)
 }
 
