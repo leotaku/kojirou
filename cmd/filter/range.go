@@ -27,8 +27,7 @@ func ParseRanges(s string) Ranges {
 
 func (rs *Ranges) Contains(id md.Identifier) bool {
 	for _, r := range rs.ranges {
-		ok := r.contains(id)
-		if ok {
+		if ok := r.contains(id); ok {
 			return !rs.negated
 		}
 	}
@@ -43,17 +42,17 @@ type singleRange struct {
 
 func parseRangeList(s string) []singleRange {
 	ranges := make([]singleRange, 0)
-	for _, it := range strings.Split(s, ",") {
-		if se := strings.Split(it, ".."); len(se) == 2 {
-			start := md.NewIdentifier(se[0])
-			end := md.NewIdentifier(se[1])
+	for _, rangeExpr := range strings.Split(s, ",") {
+		if startAndEnd := strings.Split(rangeExpr, ".."); len(startAndEnd) == 2 {
+			start := md.NewIdentifier(startAndEnd[0])
+			end := md.NewIdentifier(startAndEnd[1])
 			ranges = append(ranges, singleRange{
 				start: start,
 				end:   &end,
 			})
 		} else {
 			ranges = append(ranges, singleRange{
-				start: md.NewIdentifier(it),
+				start: md.NewIdentifier(rangeExpr),
 				end:   nil,
 			})
 		}

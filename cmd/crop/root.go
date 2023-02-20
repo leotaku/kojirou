@@ -13,10 +13,10 @@ func Crop(img image.Image, bounds image.Rectangle) (image.Image, error) {
 		SubImage(r image.Rectangle) image.Image
 	}
 
-	if simg, ok := img.(subImager); !ok {
+	if img, ok := img.(subImager); !ok {
 		return nil, fmt.Errorf("image does not support cropping")
 	} else {
-		return simg.SubImage(bounds), nil
+		return img.SubImage(bounds), nil
 	}
 }
 
@@ -38,20 +38,20 @@ func Bounds(img image.Image) image.Rectangle {
 func findBorder(img image.Image, dir image.Point) image.Point {
 	bounds := img.Bounds()
 	scan := image.Pt(dir.Y, dir.X)
-	dpt := pointInScanCorner(bounds, dir)
+	pt := pointInScanCorner(bounds, dir)
 
-	for !scanLineForNonWhitespace(img, dpt, scan) {
-		dpt = dpt.Add(dir)
-		if !dpt.In(bounds) {
-			dpt = pointInScanCorner(bounds, dir)
+	for !scanLineForNonWhitespace(img, pt, scan) {
+		pt = pt.Add(dir)
+		if !pt.In(bounds) {
+			pt = pointInScanCorner(bounds, dir)
 			break
 		}
 	}
 
 	if dir.X < 0 || dir.Y < 0 {
-		return dpt.Sub(dir)
+		return pt.Sub(dir)
 	} else {
-		return dpt
+		return pt
 	}
 }
 
@@ -64,8 +64,8 @@ func pointInScanCorner(rect image.Rectangle, dir image.Point) image.Point {
 }
 
 func scanLineForNonWhitespace(img image.Image, pt image.Point, scan image.Point) bool {
-	for spt := pt; spt.In(img.Bounds()); spt = spt.Add(scan) {
-		if gray, ok := color.GrayModel.Convert(img.At(spt.X, spt.Y)).(color.Gray); ok {
+	for ; pt.In(img.Bounds()); pt = pt.Add(scan) {
+		if gray, ok := color.GrayModel.Convert(img.At(pt.X, pt.Y)).(color.Gray); ok {
 			if gray.Y <= grayDarknessLimit {
 				return true
 			}
