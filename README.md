@@ -94,8 +94,8 @@ Afterwards, verify your installation succeeded by executing the application on t
 
 ## Install from source
 
-Kojirou can be installed easily if you already have Go installed, using the following command.
-Otherwise, follow the [Go installation instructions](https://go.dev/doc/install) for your operating system and then run the command.
+Kojirou can be installed from source easily if you already have access to a Go toolchain.
+Otherwise, follow the [Go installation instructions](https://go.dev/doc/install) for your operating system, then execute the following command.
 
 ``` shell
 go install github.com/leotaku/kojirou@latest
