@@ -47,6 +47,25 @@ kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rank newest --dry-run
 kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rank most
 ```
 
+### Load chapters from the filesystem
+
+Kojirou has the ability to load chapters from your local filesystem.
+This can be useful if certain chapters are not available on MangaDex, or you want to convert your existing collection.
+Chapters found locally are always preferred, even if they are also available on MangaDex.
+
+``` shell
+kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --disk /path/to/directory
+```
+
+The directory structure should follow the following pattern.
+Sorting of volumes, chapters and pages is done numerically and an arbitrary number of leading zeros is supported.
+
++ `root/`
+  + `01/` :: Volume
+    + `cover.{jpeg,jpg,png,bmp}` :: Volume cover (optional)
+    + `01: Title/` :: Chapter (with optional title, use colon ":")
+      + `01.{jpeg,jpg,png,bmp}` :: Page
+
 ### Crop whitespace from pages automatically
 
 Kojirou has the ability to crop whitespace from the borders of manga pages.
