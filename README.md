@@ -94,6 +94,25 @@ So, for example, volume "2" would be placed before "10", while "02" would be cor
 kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --fill-volume-number 2
 ```
 
+### Use lower quality images to save space
+
+Kojirou has the ability to download lower-quality images from MangaDex.
+This can be useful to save space on your device, or to reduce the amount of data downloaded on slow or limited connections.
+Legal arguments to this option are "no", "prefer" and "fallback".
+
+```
+kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --data-saver=prefer
+```
+
+### Fallback to lower quality alternatives for broken images
+
+MangaDex sometimes hosts images that are broken and can not be reliably converted to a format compatible with Kindle e-books.
+Kojirou can be configured to fall back on reencoded lower-quality versions of these images, which are unlikely to also be broken.
+
+```
+kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --data-saver=fallback
+```
+
 ## Prebuilt binaries
 
 Prebuilt binaries for Linux, Windows and MacOS on x86 and ARM processors are provided.
