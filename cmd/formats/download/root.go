@@ -178,7 +178,7 @@ func pathsToImages(
 					return nil
 				}
 				eg.Go(func() error {
-					image, err := getImage(httpClient, ctx, path.URL)
+					image, err := getImage(httpClient, ctx, path.DataURL)
 					if err != nil {
 						defer cancel()
 						return fmt.Errorf("chapter %v: image %v: %w", path.ChapterIdentifier, path.ImageIdentifier, err)

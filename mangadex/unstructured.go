@@ -41,7 +41,8 @@ type Image struct {
 }
 
 type Path struct {
-	URL string
+	DataURL      string
+	DataSaverURL string
 
 	// identifiers
 	ImageIdentifier   int
