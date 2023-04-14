@@ -9,8 +9,8 @@ import (
 
 type Identifier struct {
 	special  bool
-	before   int
-	after    int
+	major    int
+	minor    int
 	fallback string
 }
 
@@ -26,12 +26,12 @@ func UnknownIdentifier() Identifier {
 }
 
 func NewWithFallback(id string, fallback string) Identifier {
-	before, after, ok := parseTwoPart(id)
+	major, minor, ok := parseTwoPart(id)
 	switch {
 	case ok:
 		return Identifier{
-			before: before,
-			after:  after,
+			major: major,
+			minor: minor,
 		}
 	case fallback == "Unknown":
 		return Identifier{
@@ -55,19 +55,19 @@ func (n Identifier) StringFilled(before, after int, forceAfter bool) string {
 		return "Unknown"
 	case n.IsSpecial():
 		return n.fallback
-	case n.after == 0 && !forceAfter:
+	case n.minor == 0 && !forceAfter:
 		f := fmt.Sprintf("%%0%dd", before)
-		return fmt.Sprintf(f, n.before)
+		return fmt.Sprintf(f, n.major)
 	default:
 		f := fmt.Sprintf("%%0%dd.%%0%dd", before, after)
-		return fmt.Sprintf(f, n.before, n.after)
+		return fmt.Sprintf(f, n.major, n.minor)
 	}
 }
 
 func (n Identifier) Equal(o Identifier) bool {
 	switch {
 	case !n.IsSpecial() && !o.IsSpecial():
-		return n.before == o.before && n.after == o.after
+		return n.major == o.major && n.minor == o.minor
 	case !n.IsUnknown() && !o.IsUnknown():
 		return n.fallback == o.fallback
 	default:
@@ -85,10 +85,10 @@ func (n Identifier) Less(o Identifier) bool {
 		return true
 	case n.IsSpecial() && o.IsSpecial():
 		return n.fallback < o.fallback
-	case n.before == o.before:
-		return n.after < o.after
+	case n.major == o.major:
+		return n.minor < o.minor
 	default:
-		return n.before < o.before
+		return n.major < o.major
 	}
 }
 
@@ -108,9 +108,9 @@ func (n Identifier) IsNext(o Identifier) bool {
 	switch {
 	case n.IsSpecial() || o.IsSpecial():
 		return true
-	case n.before == o.before && n.after < o.after:
+	case n.major == o.major && n.minor < o.minor:
 		return true
-	case n.before+1 == o.before && o.after == 0:
+	case n.major+1 == o.major && o.minor == 0:
 		return true
 	default:
 		return false
