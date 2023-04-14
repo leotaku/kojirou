@@ -1,12 +1,14 @@
 package download
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+	"io"
 	"net/http"
 	"time"
 
@@ -31,6 +33,7 @@ func init() {
 	retry.Logger = nil
 	retry.RetryWaitMin = time.Second * 5
 	retry.Backoff = retryablehttp.LinearJitterBackoff
+	retry.CheckRetry = bodyReadableErrorPolicy
 	httpClient = retry.StandardClient()
 	mangadexClient = md.NewClient().WithHTTPClient(httpClient)
 }
@@ -223,4 +226,21 @@ func getImage(client *http.Client, ctx context.Context, url string) (image.Image
 		return nil, fmt.Errorf("decode: %w", err)
 	}
 	return img, nil
+}
+
+func bodyReadableErrorPolicy(ctx context.Context, resp *http.Response, err error) (bool, error) {
+	if retry, err := retryablehttp.DefaultRetryPolicy(ctx, resp, err); retry || err != nil {
+		return retry, err
+	}
+
+	buf := bytes.NewBuffer(nil)
+	_, err = buf.ReadFrom(resp.Body)
+	resp.Body.Close()
+	resp.Body = io.NopCloser(buf)
+
+	if err != nil {
+		return true, nil
+	} else {
+		return false, nil
+	}
 }
