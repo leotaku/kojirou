@@ -106,7 +106,7 @@ func getChapters(manga md.Manga) (md.ChapterList, error) {
 
 	// Ensure chapters from disk are preferred
 	if diskArg != "" {
-		chapters.SortBy(func(a md.ChapterInfo, b md.ChapterInfo) bool {
+		chapters = chapters.SortBy(func(a md.ChapterInfo, b md.ChapterInfo) bool {
 			return a.GroupNames.String() == "Filesystem" && b.GroupNames.String() != "Filesystem"
 		})
 	}
