@@ -106,8 +106,8 @@ kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --data-saver=prefer
 
 ### Fallback to lower quality alternatives for broken images
 
-MangaDex sometimes hosts images that are broken and can not be reliably converted to a format compatible with Kindle e-books.
-Kojirou can be configured to fall back on reencoded lower-quality versions of these images, which are unlikely to also be broken.
+MangaDex sometimes hosts images that are subtly broken and cannot be reliably converted to an image format compatible with Kindle devices.
+Kojirou can be configured to fall back on reencoded lower-quality versions of these images, which often do not have the same problems.
 
 ```
 kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --data-saver=fallback
