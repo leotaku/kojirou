@@ -130,6 +130,8 @@ func (c *Client) FetchPaths(ctx context.Context, chapter *Chapter) (PathList, er
 	ah, err := c.base.GetAtHome(ctx, chapter.Info.ID)
 	if err != nil {
 		return nil, fmt.Errorf("get at home: %w", err)
+	} else if len(ah.Chapter.Data) != len(ah.Chapter.DataSaver) {
+		return nil, fmt.Errorf("broken chapter image list")
 	}
 
 	return convertChapter(chapter, ah), nil

@@ -64,7 +64,7 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 		close(coverPaths)
 	}()
 
-	coverImages, eg := pathsToImages(coverPaths, ctx, cancel)
+	coverImages, eg := pathsToImages(coverPaths, ctx, cancel, DataSaverPolicyNo)
 
 	results := make(md.ImageList, len(covers))
 	for coverImage := range coverImages {
@@ -79,7 +79,7 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 	}
 }
 
-func MangadexPages(chapterList md.ChapterList, p formats.Progress) (md.ImageList, error) {
+func MangadexPages(chapterList md.ChapterList, policy DataSaverPolicy, p formats.Progress) (md.ImageList, error) {
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
 
@@ -97,7 +97,7 @@ func MangadexPages(chapterList md.ChapterList, p formats.Progress) (md.ImageList
 	paths, childEg := chaptersToPaths(chapters, ctx, cancel, p)
 	eg.Go(childEg.Wait)
 
-	images, childEg := pathsToImages(paths, ctx, cancel)
+	images, childEg := pathsToImages(paths, ctx, cancel, policy)
 	eg.Go(childEg.Wait)
 
 	results := make(md.ImageList, 0)
@@ -166,6 +166,7 @@ func pathsToImages(
 	paths <-chan md.Path,
 	ctx context.Context,
 	cancel context.CancelFunc,
+	policy DataSaverPolicy,
 ) (<-chan md.Image, *errgroup.Group) {
 	ch := make(chan md.Image)
 	eg, ctx := errgroup.WithContext(ctx)
@@ -181,17 +182,17 @@ func pathsToImages(
 					return nil
 				}
 				eg.Go(func() error {
-					image, err := getImage(httpClient, ctx, path.URL)
+					img, err := getImageWithPolicy(httpClient, ctx, path, policy)
 					if err != nil {
 						defer cancel()
 						return fmt.Errorf("chapter %v: image %v: %w", path.ChapterIdentifier, path.ImageIdentifier, err)
-					} else {
-						select {
-						case <-ctx.Done():
-							return fmt.Errorf("canceled")
-						case ch <- path.WithImage(image):
-							return nil
-						}
+					}
+
+					select {
+					case <-ctx.Done():
+						return fmt.Errorf("canceled")
+					case ch <- path.WithImage(img):
+						return nil
 					}
 				})
 			}
@@ -206,7 +207,34 @@ func pathsToImages(
 	return ch, eg
 }
 
-func getImage(client *http.Client, ctx context.Context, url string) (image.Image, error) {
+func getImageWithPolicy(client *http.Client, ctx context.Context, path md.Path, policy DataSaverPolicy) (image.Image, error) {
+	resp := new(http.Response)
+	err := error(nil)
+
+	switch policy {
+	case DataSaverPolicyNo, DataSaverPolicyFallback:
+		resp, err = getResp(httpClient, ctx, path.DataURL)
+	case DataSaverPolicyPrefer:
+		resp, err = getResp(httpClient, ctx, path.DataSaverURL)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("download: %w", err)
+	}
+
+	img, _, err := image.Decode(resp.Body)
+	defer resp.Body.Close()
+
+	if err != nil && policy == DataSaverPolicyFallback {
+		return getImageWithPolicy(client, ctx, path, DataSaverPolicyPrefer)
+	} else if err != nil {
+		return nil, fmt.Errorf("decode: %w", err)
+	} else {
+		return img, nil
+	}
+}
+
+func getResp(client *http.Client, ctx context.Context, url string) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("prepare: %w", err)
@@ -215,17 +243,12 @@ func getImage(client *http.Client, ctx context.Context, url string) (image.Image
 	if err != nil {
 		return nil, fmt.Errorf("do: %w", err)
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("status: %v", resp.Status)
 	}
 
-	img, _, err := image.Decode(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("decode: %w", err)
-	}
-	return img, nil
+	return resp, nil
 }
 
 func bodyReadableErrorPolicy(ctx context.Context, resp *http.Response, err error) (bool, error) {
