@@ -38,13 +38,13 @@ func (m ChapterList) FilterBy(f func(ChapterInfo) bool) ChapterList {
 	return sorted
 }
 
+// this function currently also affects the contents of the original slice
 func (m ChapterList) SortBy(f func(ChapterInfo, ChapterInfo) bool) ChapterList {
-	sorted := m
-	sort.SliceStable(sorted, func(i, j int) bool {
-		return f(sorted[i].Info, sorted[j].Info)
+	sort.SliceStable(m, func(i, j int) bool {
+		return f(m[i].Info, m[j].Info)
 	})
 
-	return sorted
+	return m
 }
 
 func (m PathList) FilterBy(f func(Path) bool) PathList {
