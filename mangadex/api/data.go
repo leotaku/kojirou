@@ -239,6 +239,7 @@ type Relationships struct {
 	CoverArt   []string
 	Leader     []string
 	Member     []string
+	Creator    []string
 }
 
 func (rs *Relationships) UnmarshalJSON(data []byte) error {
@@ -271,6 +272,8 @@ func (rs *Relationships) UnmarshalJSON(data []byte) error {
 			rs.Leader = append(rs.Leader, r.ID)
 		case "member":
 			rs.Member = append(rs.Member, r.ID)
+		case "creator":
+			rs.Creator = append(rs.Creator, r.ID)
 		default:
 			return fmt.Errorf("unsupported relationship: %v", r.Type)
 		}
