@@ -150,7 +150,7 @@ If you get a "command not found" or similar error after the previous command, ru
 If you are using Windows, please find out how to add directories to the lookup path yourself, as there does not seem to be any quality documentation that I could link here.
 
 ``` shell
-export PATH=$PATH:$(go env GOPATH)/bin
+export PATH="$PATH:$(go env GOPATH)/bin"
 ```
 
 ## License
