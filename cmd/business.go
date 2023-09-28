@@ -99,7 +99,7 @@ func getChapters(manga md.Manga) (md.ChapterList, error) {
 		chapters = append(chapters, diskChapters...)
 	}
 
-	chapters, err = sortFromFlags(chapters)
+	chapters, err = filterAndSortFromFlags(chapters)
 	if err != nil {
 		return nil, fmt.Errorf("filter: %w", err)
 	}
@@ -178,7 +178,7 @@ func autoCrop(pages md.ImageList) error {
 	return nil
 }
 
-func sortFromFlags(cl md.ChapterList) (md.ChapterList, error) {
+func filterAndSortFromFlags(cl md.ChapterList) (md.ChapterList, error) {
 	if languageArg != "" {
 		lang := language.Make(languageArg)
 		cl = filter.FilterByLanguage(cl, lang)
