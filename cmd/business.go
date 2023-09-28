@@ -207,7 +207,7 @@ func filterAndSortFromFlags(cl md.ChapterList) (md.ChapterList, error) {
 	case "most":
 		cl = filter.SortByMost(cl)
 	default:
-		return nil, fmt.Errorf(`not a valid rankinging algorithm: "%v"`, rankArg)
+		return nil, fmt.Errorf(`not a valid ranking algorithm: "%v"`, rankArg)
 	}
 
 	return cl, nil
