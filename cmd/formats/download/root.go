@@ -58,8 +58,10 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 	coverPaths := make(chan md.Path)
 	go func() {
 		for _, path := range covers {
-			coverPaths <- path
-			p.Increase(1)
+			if _, ok := manga.Volumes[path.VolumeIdentifier]; ok {
+				coverPaths <- path
+				p.Increase(1)
+			}
 		}
 		close(coverPaths)
 	}()
