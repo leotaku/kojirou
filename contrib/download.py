@@ -166,12 +166,12 @@ async def run_with_semaphore(
         async with semaphore:
             return (await coroutine, context)
 
-    for result in asyncio.as_completed(
-        (
-            asyncio.create_task(await_with_semaphore(semaphore, coroutine, context))
-            for (coroutine, context) in generator
-        )
-    ):
+    tasks = [
+        asyncio.create_task(await_with_semaphore(semaphore, coroutine, context))
+        for (coroutine, context) in generator
+    ]
+
+    for result in asyncio.as_completed(tasks):
         yield await result
 
 
