@@ -22,6 +22,7 @@ var (
 	dataSaverArg        download.DataSaverPolicy
 	diskArg             string
 	cpuprofileArg       string
+	memprofileArg       string
 	groupsFilter        string
 	chaptersFilter      string
 	volumesFilter       string
@@ -53,8 +54,22 @@ var rootCmd = &cobra.Command{
 
 		return nil
 	},
-	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+	PersistentPostRunE: func(cmd *cobra.Command, args []string) error {
 		pprof.StopCPUProfile()
+
+		if memprofileArg != "" {
+			f, err := os.Create(memprofileArg)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			if err := pprof.WriteHeapProfile(f); err != nil {
+				return err
+			}
+		}
+
+		return nil
 	},
 	DisableFlagsInUseLine: true,
 }
@@ -164,6 +179,7 @@ func init() {
 	rootCmd.Flags().BoolVarP(&forceArg, "force", "f", false, "overwrite existing volumes")
 	rootCmd.Flags().StringVarP(&diskArg, "disk", "D", "", "load additional content from disk")
 	rootCmd.Flags().StringVarP(&cpuprofileArg, "cpuprofile", "", "", "write CPU profile to this file")
+	rootCmd.Flags().StringVarP(&memprofileArg, "memprofile", "", "", "write heap profile to this file")
 	rootCmd.Flags().StringVarP(&volumesFilter, "volumes", "V", "", "volume identifiers for chapter downloads")
 	rootCmd.Flags().StringVarP(&chaptersFilter, "chapters", "C", "", "chapter identifiers for chapter downloads")
 	rootCmd.Flags().StringVarP(&groupsFilter, "groups", "G", "", "scantlation groups for chapter downloads")
@@ -171,6 +187,7 @@ func init() {
 	rootCmd.Flags().BoolVarP(&helpFilterFlag, "help-filter", "F", false, "Help for chapter filtering")
 	rootCmd.Flags().SortFlags = false
 	rootCmd.Flags().MarkHidden("cpuprofile") //nolint:errcheck
+	rootCmd.Flags().MarkHidden("memprofile") //nolint:errcheck
 	rootCmd.MarkFlagRequired("language")     //nolint:errcheck
 	rootCmd.SetHelpFunc(help)
 	rootCmd.SetUsageFunc(usage)
