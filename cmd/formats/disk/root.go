@@ -10,8 +10,6 @@ import (
 	"io/fs"
 	"os"
 	"path"
-	"strconv"
-	"strings"
 
 	"github.com/leotaku/kojirou/cmd/formats"
 	md "github.com/leotaku/kojirou/mangadex"
@@ -76,13 +74,8 @@ func LoadPages(cl md.ChapterList, p formats.Progress) (md.ImageList, error) {
 		}
 
 		p.Increase(len(pages))
-		for _, page := range pages {
+		for id, page := range pages {
 			p.Add(1)
-
-			id, err := strconv.Atoi(strings.TrimSuffix(page.Name(), path.Ext(page.Name())))
-			if err != nil {
-				continue
-			}
 
 			f, err := os.Open(path.Join(chap.Info.ID, page.Name()))
 			if err != nil {
