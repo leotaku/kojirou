@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/leotaku/kojirou/cmd/crop"
 	"github.com/leotaku/kojirou/cmd/filter"
@@ -9,6 +10,7 @@ import (
 	"github.com/leotaku/kojirou/cmd/formats/disk"
 	"github.com/leotaku/kojirou/cmd/formats/download"
 	"github.com/leotaku/kojirou/cmd/formats/kindle"
+	"github.com/leotaku/kojirou/cmd/split"
 	md "github.com/leotaku/kojirou/mangadex"
 	"golang.org/x/text/language"
 )
@@ -61,6 +63,18 @@ func handleVolume(skeleton md.Manga, volume md.Volume, dir kindle.NormalizedDire
 	if autocropArg {
 		if err := autoCrop(pages); err != nil {
 			return fmt.Errorf("autocrop: %w", err)
+		}
+	}
+	
+	if rotateAndSplitArg {
+		if pages, err = rotateAndSplit(pages); err != nil {
+			return fmt.Errorf("rotateAndSplit: %w", err)
+		}
+	}
+
+	if rotateArg {
+		if err := rotateDoublePage(pages); err != nil {
+			return fmt.Errorf("rotateDoublePage: %w", err)
 		}
 	}
 
@@ -211,4 +225,77 @@ func filterAndSortFromFlags(cl md.ChapterList) (md.ChapterList, error) {
 	}
 
 	return cl, nil
+}
+
+func rotateDoublePage(pages md.ImageList) error {
+	p := formats.VanishingProgress("Rotating..")
+	p.Increase(len(pages))
+
+	sort.Slice(pages, func(i, j int) bool {
+		return pages[i].ImageIdentifier < pages[j].ImageIdentifier
+	})
+
+	for i, page := range pages {
+		if split.IsDoublePage(page.Image) {
+			landscapeImage, _ := split.RotateImage(page.Image)
+			pages[i].Image = landscapeImage
+		} 
+		p.Add(1)
+	}
+
+	p.Done()
+	return nil
+}
+
+func rotateAndSplit(pages md.ImageList) (md.ImageList, error) {
+	p := formats.VanishingProgress("Splitting..")
+	p.Increase(len(pages))
+
+	sort.Slice(pages, func(i, j int) bool {
+		return pages[i].ImageIdentifier < pages[j].ImageIdentifier
+	})
+
+	occupied := make(map[int]bool)
+	newPages := make(md.ImageList, len(pages))
+	copy(newPages, pages)
+
+	for i, page := range pages {
+		imgId := split.GetNextImageIdentifier(page.ImageIdentifier, occupied)
+		image := page.Image
+
+		if split.IsDoublePage(image) {
+			landscapeImage, _ := split.RotateImage(image)
+			newPages[i].Image = landscapeImage
+			newPages[i].ImageIdentifier = imgId
+
+			leftImage, rightImage, _ := split.SplitVertically(image)
+
+			rightPage := md.Image{
+				Image:             rightImage,
+				ChapterIdentifier: page.ChapterIdentifier,
+				VolumeIdentifier:  page.VolumeIdentifier,
+				ImageIdentifier:   imgId+1,
+			}
+
+			leftPage := md.Image{
+				Image:             leftImage,
+				ChapterIdentifier: page.ChapterIdentifier,
+				VolumeIdentifier:  page.VolumeIdentifier,
+				ImageIdentifier:   imgId+2,
+			}
+
+			newPages = append(newPages, rightPage, leftPage)
+			occupied[rightPage.ImageIdentifier] = true
+			occupied[leftPage.ImageIdentifier] = true
+		} else {
+			newPages[i].Image = image
+			newPages[i].ImageIdentifier = imgId
+		}
+
+		occupied[imgId] = true
+		p.Add(1)
+	}
+
+	p.Done()
+	return newPages, nil
 }

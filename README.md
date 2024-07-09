@@ -113,6 +113,21 @@ Kojirou can be configured to fall back on reencoded lower-quality versions of th
 kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --data-saver=fallback
 ```
 
+### Rotate and split double panel pages
+
+Kojirou has the ability to rotate and split double panel pages into two new pages.
+It's possible to only rotate or rotate and split them.
+
+Only rotating
+``` shell
+kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rotate
+```
+
+Rotating and splitting
+``` shell
+kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --rotateAndSplit
+```
+
 ## Prebuilt binaries
 
 Prebuilt binaries for Linux, Windows and MacOS on x86 and ARM processors are provided.
