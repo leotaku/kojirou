@@ -34,6 +34,7 @@ func init() {
 	retry.RetryWaitMin = time.Second * 5
 	retry.Backoff = retryablehttp.LinearJitterBackoff
 	retry.CheckRetry = bodyReadableErrorPolicy
+
 	httpClient = retry.StandardClient()
 	mangadexClient = md.NewClient().WithHTTPClient(httpClient)
 }
