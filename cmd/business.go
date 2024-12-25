@@ -83,7 +83,7 @@ func handleVolume(skeleton md.Manga, volume md.Volume, dir kindle.NormalizedDire
 }
 
 func getChapters(manga md.Manga) (md.ChapterList, error) {
-	chapters, err := download.MangadexChapters(identifierArg)
+	chapters, err := download.MangadexChapters(manga.Info.ID)
 	if err != nil {
 		return nil, fmt.Errorf("mangadex: %w", err)
 	}
