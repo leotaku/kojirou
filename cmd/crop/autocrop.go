@@ -1,24 +1,11 @@
 package crop
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 )
 
 const grayDarknessLimit = 128
-
-func Crop(img image.Image, bounds image.Rectangle) (image.Image, error) {
-	type subImager interface {
-		SubImage(r image.Rectangle) image.Image
-	}
-
-	if img, ok := img.(subImager); !ok {
-		return nil, fmt.Errorf("image does not support cropping")
-	} else {
-		return img.SubImage(bounds), nil
-	}
-}
 
 func Limited(img image.Image, limit float32) image.Rectangle {
 	bounds := img.Bounds()

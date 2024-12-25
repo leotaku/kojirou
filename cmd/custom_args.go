@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/leotaku/kojirou/cmd/formats/download"
+	"github.com/leotaku/kojirou/cmd/formats/kindle"
 )
 
 type DataSaverPolicyArg download.DataSaverPolicy
@@ -38,4 +39,38 @@ func (p *DataSaverPolicyArg) Set(v string) error {
 
 func (p *DataSaverPolicyArg) Type() string {
 	return "data-saver policy"
+}
+
+type AutosplitPolicyArg kindle.AutosplitPolicy
+
+func (p *AutosplitPolicyArg) String() string {
+	switch kindle.AutosplitPolicy(*p) {
+	case kindle.AutosplitPolicyPreserve:
+		return "preserve"
+	case kindle.AutosplitPolicySplit:
+		return "split"
+	case kindle.AutosplitPolicyBoth:
+		return "both"
+	default:
+		panic("unreachable")
+	}
+}
+
+func (p *AutosplitPolicyArg) Set(v string) error {
+	switch v {
+	case "preserve":
+		*p = AutosplitPolicyArg(kindle.AutosplitPolicyPreserve)
+	case "split":
+		*p = AutosplitPolicyArg(kindle.AutosplitPolicySplit)
+	case "both":
+		*p = AutosplitPolicyArg(kindle.AutosplitPolicyBoth)
+	default:
+		return fmt.Errorf(`must be one of: "preserve", "split", or "both"`)
+	}
+
+	return nil
+}
+
+func (p *AutosplitPolicyArg) Type() string {
+	return "auto-split policy"
 }

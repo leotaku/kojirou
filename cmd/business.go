@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/leotaku/kojirou/cmd/crop"
 	"github.com/leotaku/kojirou/cmd/filter"
 	"github.com/leotaku/kojirou/cmd/formats"
 	"github.com/leotaku/kojirou/cmd/formats/disk"
@@ -58,14 +57,13 @@ func handleVolume(skeleton md.Manga, volume md.Volume, dir kindle.NormalizedDire
 		return fmt.Errorf("pages: %w", err)
 	}
 
-	if autocropArg {
-		if err := autoCrop(pages); err != nil {
-			return fmt.Errorf("autocrop: %w", err)
-		}
-	}
-
 	mangaForVolume := skeleton.WithChapters(volume.Sorted()).WithPages(pages)
-	mobi := kindle.GenerateMOBI(mangaForVolume)
+	mobi := kindle.GenerateMOBI(
+		mangaForVolume,
+		kindle.AutosplitPolicy(autosplitArg),
+		autocropArg,
+		leftToRightArg,
+	)
 	mobi.RightToLeft = !leftToRightArg
 	mobi.Title = fmt.Sprintf("%v: %v",
 		skeleton.Info.Title,
@@ -158,24 +156,6 @@ func getPages(volume md.Volume, p formats.CliProgress) (md.ImageList, error) {
 	p.Done()
 
 	return append(mangadexPages, diskPages...), nil
-}
-
-func autoCrop(pages md.ImageList) error {
-	p := formats.VanishingProgress("Cropping..")
-	p.Increase(len(pages))
-
-	for i, page := range pages {
-		if cropped, err := crop.Crop(pages[i].Image, crop.Limited(pages[i].Image, 0.1)); err != nil {
-			p.Cancel("Error")
-			return fmt.Errorf("chapter %v: page %v: %w", page.ChapterIdentifier, page.ImageIdentifier, err)
-		} else {
-			pages[i].Image = cropped
-			p.Add(1)
-		}
-	}
-	p.Done()
-
-	return nil
 }
 
 func filterAndSortFromFlags(cl md.ChapterList) (md.ChapterList, error) {
