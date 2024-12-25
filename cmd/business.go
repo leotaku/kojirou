@@ -143,7 +143,7 @@ func getCovers(manga *md.Manga) (md.ImageList, error) {
 func getPages(volume md.Volume, p formats.CliProgress) (md.ImageList, error) {
 	mangadexPages, err := download.MangadexPages(volume.Sorted().FilterBy(func(ci md.ChapterInfo) bool {
 		return ci.GroupNames.String() != "Filesystem"
-	}), dataSaverArg, p)
+	}), download.DataSaverPolicy(dataSaverArg), p)
 	if err != nil {
 		p.Cancel("Error")
 		return nil, fmt.Errorf("mangadex: %w", err)

@@ -4,7 +4,6 @@ import (
 	"os"
 	"runtime/pprof"
 
-	"github.com/leotaku/kojirou/cmd/formats/download"
 	"github.com/spf13/cobra"
 )
 
@@ -19,7 +18,7 @@ var (
 	forceArg            bool
 	leftToRightArg      bool
 	fillVolumeNumberArg int
-	dataSaverArg        download.DataSaverPolicy
+	dataSaverArg        DataSaverPolicyArg
 	diskArg             string
 	cpuprofileArg       string
 	memprofileArg       string

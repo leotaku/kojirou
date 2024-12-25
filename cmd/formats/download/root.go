@@ -18,6 +18,14 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+type DataSaverPolicy int
+
+const (
+	DataSaverPolicyNo DataSaverPolicy = iota
+	DataSaverPolicyPrefer
+	DataSaverPolicyFallback
+)
+
 const (
 	maxJobsChapter = 8
 	maxJobsImage   = 16
