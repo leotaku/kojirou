@@ -75,6 +75,16 @@ This may be useful if your e-reader has a small screen.
 kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --autocrop
 ```
 
+### Split panorama pages automatically
+
+Kojirou has the ability to split panorama pages into two separate pages for better viewing.
+It is also possible to include both the split pages and the original page.
+Legal arguments to this option are "preserve", "split" and "both".
+
+``` shell
+kojirou d86cf65b-5f6c-437d-a0af-19a31f94ec55 -l en --autosplit=both
+```
+
 ### Change reading direction
 
 Kojirou, by default, generates e-books with right-to-left reading direction, as this is the default convention for most manga.
