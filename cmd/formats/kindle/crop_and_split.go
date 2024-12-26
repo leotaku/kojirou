@@ -6,15 +6,16 @@ import (
 	"github.com/leotaku/kojirou/cmd/crop"
 )
 
-type AutosplitPolicy int
+type WidepagePolicy int
 
 const (
-	AutosplitPolicyPreserve AutosplitPolicy = iota
-	AutosplitPolicySplit
-	AutosplitPolicyBoth
+	WidepagePolicyPreserve WidepagePolicy = iota
+	WidepagePolicySplit
+	WidepagePolicyPreserveAndSplit
+	WidepagePolicySplitAndPreserve
 )
 
-func cropAndSplit(img image.Image, autosplit AutosplitPolicy, autocrop bool, ltr bool) []image.Image {
+func cropAndSplit(img image.Image, widepage WidepagePolicy, autocrop bool, ltr bool) []image.Image {
 	if autocrop {
 		croppedImg, err := crop.Crop(img, crop.Bounds(img))
 		if err != nil {
@@ -23,20 +24,26 @@ func cropAndSplit(img image.Image, autosplit AutosplitPolicy, autocrop bool, ltr
 		img = croppedImg
 	}
 
-	if autosplit != AutosplitPolicyPreserve && crop.ShouldSplit(img) {
+	if widepage != WidepagePolicyPreserve && crop.ShouldSplit(img) {
 		left, right, err := crop.Split(img)
 		if err != nil {
 			panic("unsupported image type for splitting")
 		}
 
-		switch autosplit {
-		case AutosplitPolicySplit:
+		switch widepage {
+		case WidepagePolicySplit:
 			if ltr {
 				return []image.Image{left, right}
 			} else {
 				return []image.Image{right, left}
 			}
-		case AutosplitPolicyBoth:
+		case WidepagePolicyPreserveAndSplit:
+			if ltr {
+				return []image.Image{img, left, right}
+			} else {
+				return []image.Image{img, right, left}
+			}
+		case WidepagePolicySplitAndPreserve:
 			if ltr {
 				return []image.Image{left, right, img}
 			} else {

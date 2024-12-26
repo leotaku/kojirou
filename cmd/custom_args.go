@@ -41,29 +41,33 @@ func (p *DataSaverPolicyArg) Type() string {
 	return "data-saver policy"
 }
 
-type AutosplitPolicyArg kindle.AutosplitPolicy
+type WidepagePolicyArg kindle.WidepagePolicy
 
-func (p *AutosplitPolicyArg) String() string {
-	switch kindle.AutosplitPolicy(*p) {
-	case kindle.AutosplitPolicyPreserve:
+func (p *WidepagePolicyArg) String() string {
+	switch kindle.WidepagePolicy(*p) {
+	case kindle.WidepagePolicyPreserve:
 		return "preserve"
-	case kindle.AutosplitPolicySplit:
+	case kindle.WidepagePolicySplit:
 		return "split"
-	case kindle.AutosplitPolicyBoth:
-		return "both"
+	case kindle.WidepagePolicyPreserveAndSplit:
+		return "preserve-and-split"
+	case kindle.WidepagePolicySplitAndPreserve:
+		return "split-and-preserve"
 	default:
 		panic("unreachable")
 	}
 }
 
-func (p *AutosplitPolicyArg) Set(v string) error {
+func (p *WidepagePolicyArg) Set(v string) error {
 	switch v {
 	case "preserve":
-		*p = AutosplitPolicyArg(kindle.AutosplitPolicyPreserve)
+		*p = WidepagePolicyArg(kindle.WidepagePolicyPreserve)
 	case "split":
-		*p = AutosplitPolicyArg(kindle.AutosplitPolicySplit)
-	case "both":
-		*p = AutosplitPolicyArg(kindle.AutosplitPolicyBoth)
+		*p = WidepagePolicyArg(kindle.WidepagePolicySplit)
+	case "preserve-and-split":
+		*p = WidepagePolicyArg(kindle.WidepagePolicyPreserveAndSplit)
+	case "split-and-preserve":
+		*p = WidepagePolicyArg(kindle.WidepagePolicySplitAndPreserve)
 	default:
 		return fmt.Errorf(`must be one of: "preserve", "split", or "both"`)
 	}
@@ -71,6 +75,6 @@ func (p *AutosplitPolicyArg) Set(v string) error {
 	return nil
 }
 
-func (p *AutosplitPolicyArg) Type() string {
-	return "auto-split policy"
+func (p *WidepagePolicyArg) Type() string {
+	return "wide-page policy"
 }

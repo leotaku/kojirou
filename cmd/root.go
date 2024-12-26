@@ -12,7 +12,7 @@ var (
 	languageArg         string
 	rankArg             string
 	autocropArg         bool
-	autosplitArg        AutosplitPolicyArg
+	widepageArg         WidepagePolicyArg
 	kindleFolderModeArg bool
 	dryRunArg           bool
 	outArg              string
@@ -170,7 +170,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&languageArg, "language", "l", "en", "language for chapter downloads")
 	rootCmd.Flags().StringVarP(&rankArg, "rank", "r", "most", "chapter ranking method to use")
 	rootCmd.Flags().BoolVarP(&autocropArg, "autocrop", "a", false, "crop whitespace from pages automatically")
-	rootCmd.Flags().VarP(&autosplitArg, "autosplit", "w", "split wide pages automatically")
+	rootCmd.Flags().VarP(&widepageArg, "widepage", "w", "split wide pages automatically")
 	rootCmd.Flags().BoolVarP(&kindleFolderModeArg, "kindle-folder-mode", "k", false, "generate folder structure for Kindle devices")
 	rootCmd.Flags().BoolVarP(&leftToRightArg, "left-to-right", "p", false, "make reading direction left to right")
 	rootCmd.Flags().IntVarP(&fillVolumeNumberArg, "fill-volume-number", "n", 0, "fill volume number with leading zeros in title")

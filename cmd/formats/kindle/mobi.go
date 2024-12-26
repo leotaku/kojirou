@@ -32,7 +32,7 @@ img {
 
 var pageTemplate = template.Must(template.New("page").Parse(pageTemplateString))
 
-func GenerateMOBI(manga mangadex.Manga, split AutosplitPolicy, crop bool, ltr bool) mobi.Book {
+func GenerateMOBI(manga mangadex.Manga, widepage WidepagePolicy, crop bool, ltr bool) mobi.Book {
 	chapters := make([]mobi.Chapter, 0)
 	images := make([]image.Image, 0)
 	pageImageIndex := 1
@@ -43,7 +43,7 @@ func GenerateMOBI(manga mangadex.Manga, split AutosplitPolicy, crop bool, ltr bo
 			groupNames = append(groupNames, chap.Info.GroupNames...)
 			pages := make([]string, 0)
 			for _, img := range chap.Sorted() {
-				images = append(images, cropAndSplit(img, split, crop, ltr)...)
+				images = append(images, cropAndSplit(img, widepage, crop, ltr)...)
 				pages = append(pages, templateToString(pageTemplate, records.To32(pageImageIndex)))
 				pageImageIndex++
 			}

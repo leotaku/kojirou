@@ -60,7 +60,7 @@ func handleVolume(skeleton md.Manga, volume md.Volume, dir kindle.NormalizedDire
 	mangaForVolume := skeleton.WithChapters(volume.Sorted()).WithPages(pages)
 	mobi := kindle.GenerateMOBI(
 		mangaForVolume,
-		kindle.AutosplitPolicy(autosplitArg),
+		kindle.WidepagePolicy(widepageArg),
 		autocropArg,
 		leftToRightArg,
 	)
