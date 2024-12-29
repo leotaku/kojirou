@@ -28,6 +28,7 @@ var (
 	volumesFilter       string
 	helpRankingFlag     bool
 	helpFilterFlag      bool
+	saveRawArg          bool
 )
 
 var rootCmd = &cobra.Command{
@@ -186,6 +187,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&groupsFilter, "groups", "G", "", "scantlation groups for chapter downloads")
 	rootCmd.Flags().BoolVarP(&helpRankingFlag, "help-ranking", "R", false, "Help for chapter ranking")
 	rootCmd.Flags().BoolVarP(&helpFilterFlag, "help-filter", "F", false, "Help for chapter filtering")
+	rootCmd.Flags().BoolVarP(&saveRawArg, "save-raw", "S", false, "save raw images to disk")
 	rootCmd.Flags().SortFlags = false
 	rootCmd.Flags().MarkHidden("cpuprofile") //nolint:errcheck
 	rootCmd.Flags().MarkHidden("memprofile") //nolint:errcheck

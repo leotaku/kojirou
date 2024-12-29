@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"image"
 	_ "image/gif"
+	"image/jpeg"
 	_ "image/jpeg"
 	_ "image/png"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -75,7 +78,7 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 		close(coverPaths)
 	}()
 
-	coverImages, eg := pathsToImages(coverPaths, ctx, cancel, DataSaverPolicyNo)
+	coverImages, eg := pathsToImages(coverPaths, ctx, cancel, DataSaverPolicyNo, true)
 
 	results := make(md.ImageList, len(covers))
 	for coverImage := range coverImages {
@@ -90,7 +93,7 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 	}
 }
 
-func MangadexPages(chapterList md.ChapterList, policy DataSaverPolicy, p formats.Progress) (md.ImageList, error) {
+func MangadexPages(chapterList md.ChapterList, policy DataSaverPolicy, saveRawArg bool, p formats.Progress) (md.ImageList, error) {
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
 
@@ -108,7 +111,7 @@ func MangadexPages(chapterList md.ChapterList, policy DataSaverPolicy, p formats
 	paths, childEg := chaptersToPaths(chapters, ctx, cancel, p)
 	eg.Go(childEg.Wait)
 
-	images, childEg := pathsToImages(paths, ctx, cancel, policy)
+	images, childEg := pathsToImages(paths, ctx, cancel, policy, saveRawArg)
 	eg.Go(childEg.Wait)
 
 	results := make(md.ImageList, 0)
@@ -178,6 +181,7 @@ func pathsToImages(
 	ctx context.Context,
 	cancel context.CancelFunc,
 	policy DataSaverPolicy,
+	saveRawArg bool,
 ) (<-chan md.Image, *errgroup.Group) {
 	ch := make(chan md.Image)
 	eg, ctx := errgroup.WithContext(ctx)
@@ -193,7 +197,7 @@ func pathsToImages(
 					return nil
 				}
 				eg.Go(func() error {
-					img, err := getImageWithPolicy(httpClient, ctx, path, policy)
+					img, err := getImageWithPolicy(httpClient, ctx, path, policy, saveRawArg)
 					if err != nil {
 						defer cancel()
 						return fmt.Errorf("chapter %v: image %v: %w", path.ChapterIdentifier, path.ImageIdentifier, err)
@@ -218,15 +222,15 @@ func pathsToImages(
 	return ch, eg
 }
 
-func getImageWithPolicy(client *http.Client, ctx context.Context, path md.Path, policy DataSaverPolicy) (image.Image, error) {
+func getImageWithPolicy(client *http.Client, ctx context.Context, path md.Path, policy DataSaverPolicy, saveRawArg bool) (image.Image, error) {
 	resp := new(http.Response)
 	err := error(nil)
 
 	switch policy {
 	case DataSaverPolicyNo, DataSaverPolicyFallback:
-		resp, err = getResp(httpClient, ctx, path.DataURL)
+		resp, err = getResp(client, ctx, path.DataURL)
 	case DataSaverPolicyPrefer:
-		resp, err = getResp(httpClient, ctx, path.DataSaverURL)
+		resp, err = getResp(client, ctx, path.DataSaverURL)
 	}
 
 	if err != nil {
@@ -237,12 +241,37 @@ func getImageWithPolicy(client *http.Client, ctx context.Context, path md.Path, 
 	defer resp.Body.Close()
 
 	if err != nil && policy == DataSaverPolicyFallback {
-		return getImageWithPolicy(client, ctx, path, DataSaverPolicyPrefer)
+		return getImageWithPolicy(client, ctx, path, DataSaverPolicyPrefer, saveRawArg)
 	} else if err != nil {
 		return nil, fmt.Errorf("decode: %w", err)
-	} else {
-		return img, nil
 	}
+
+	if saveRawArg {
+		// Save the image to a temporary directory
+		tempDir := filepath.Join("raw_images", fmt.Sprintf("Volume %s", path.VolumeIdentifier))
+		// if chapter id & img id are both 0, it's a cover image
+		if !(path.ChapterIdentifier.String() == "0" && path.ImageIdentifier == 0) {
+			tempDir = filepath.Join(tempDir, fmt.Sprintf("Chapter %s", path.ChapterIdentifier))
+		}
+		if err := os.MkdirAll(tempDir, os.ModePerm); err != nil {
+			return nil, fmt.Errorf("create temp dir: %w", err)
+		}
+		tempFilePath := filepath.Join(tempDir, fmt.Sprintf("%d.jpg", path.ImageIdentifier))
+		if path.ChapterIdentifier.String() == "0" && path.ImageIdentifier == 0 {
+			tempFilePath = filepath.Join(tempDir, "cover.jpg")
+		}
+		tempFile, err := os.Create(tempFilePath)
+		if err != nil {
+			return nil, fmt.Errorf("create temp file: %w", err)
+		}
+		defer tempFile.Close()
+
+		if err := jpeg.Encode(tempFile, img, nil); err != nil {
+			return nil, fmt.Errorf("save temp image: %w", err)
+		}
+	}
+
+	return img, nil
 }
 
 func getResp(client *http.Client, ctx context.Context, url string) (*http.Response, error) {
