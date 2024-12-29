@@ -57,7 +57,7 @@ func MangadexChapters(mangaID string) (md.ChapterList, error) {
 	return mangadexClient.FetchChapters(context.TODO(), mangaID)
 }
 
-func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
+func MangadexCovers(manga *md.Manga, saveRawArg bool, fillVolumeNumberArg int, p formats.Progress) (md.ImageList, error) {
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
 
@@ -77,7 +77,7 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 		close(coverPaths)
 	}()
 
-	coverImages, eg := pathsToImages(coverPaths, ctx, cancel, DataSaverPolicyNo, true)
+	coverImages, eg := pathsToImages(coverPaths, ctx, cancel, DataSaverPolicyNo, saveRawArg, fillVolumeNumberArg, manga.Info.Title)
 
 	results := make(md.ImageList, len(covers))
 	for coverImage := range coverImages {
@@ -92,7 +92,14 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 	}
 }
 
-func MangadexPages(chapterList md.ChapterList, policy DataSaverPolicy, saveRawArg bool, p formats.Progress) (md.ImageList, error) {
+func MangadexPages(
+	chapterList md.ChapterList,
+	policy DataSaverPolicy,
+	saveRawArg bool,
+	fillVolumeNumberArg int,
+	mangaTitle string,
+	p formats.Progress,
+) (md.ImageList, error) {
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
 
@@ -110,7 +117,7 @@ func MangadexPages(chapterList md.ChapterList, policy DataSaverPolicy, saveRawAr
 	paths, childEg := chaptersToPaths(chapters, ctx, cancel, p)
 	eg.Go(childEg.Wait)
 
-	images, childEg := pathsToImages(paths, ctx, cancel, policy, saveRawArg)
+	images, childEg := pathsToImages(paths, ctx, cancel, policy, saveRawArg, fillVolumeNumberArg, mangaTitle)
 	eg.Go(childEg.Wait)
 
 	results := make(md.ImageList, 0)
@@ -181,6 +188,8 @@ func pathsToImages(
 	cancel context.CancelFunc,
 	policy DataSaverPolicy,
 	saveRawArg bool,
+	fillVolumeNumberArg int,
+	mangaTitle string,
 ) (<-chan md.Image, *errgroup.Group) {
 	ch := make(chan md.Image)
 	eg, ctx := errgroup.WithContext(ctx)
@@ -196,7 +205,7 @@ func pathsToImages(
 					return nil
 				}
 				eg.Go(func() error {
-					img, err := getImageWithPolicy(httpClient, ctx, path, policy, saveRawArg)
+					img, err := getImageWithPolicy(httpClient, ctx, path, policy, saveRawArg, fillVolumeNumberArg, mangaTitle)
 					if err != nil {
 						defer cancel()
 						return fmt.Errorf("chapter %v: image %v: %w", path.ChapterIdentifier, path.ImageIdentifier, err)
@@ -221,7 +230,15 @@ func pathsToImages(
 	return ch, eg
 }
 
-func getImageWithPolicy(client *http.Client, ctx context.Context, path md.Path, policy DataSaverPolicy, saveRawArg bool) (image.Image, error) {
+func getImageWithPolicy(
+	client *http.Client,
+	ctx context.Context,
+	path md.Path,
+	policy DataSaverPolicy,
+	saveRawArg bool,
+	fillVolumeNumberArg int,
+	mangaTitle string,
+) (image.Image, error) {
 	resp := new(http.Response)
 	err := error(nil)
 
@@ -240,14 +257,14 @@ func getImageWithPolicy(client *http.Client, ctx context.Context, path md.Path, 
 	defer resp.Body.Close()
 
 	if err != nil && policy == DataSaverPolicyFallback {
-		return getImageWithPolicy(client, ctx, path, DataSaverPolicyPrefer, saveRawArg)
+		return getImageWithPolicy(client, ctx, path, DataSaverPolicyPrefer, saveRawArg, fillVolumeNumberArg, mangaTitle)
 	} else if err != nil {
 		return nil, fmt.Errorf("decode: %w", err)
 	}
 
 	if saveRawArg {
 		// Save the image to a temporary directory
-		tempDir := filepath.Join("raw_images", fmt.Sprintf("Volume %s", path.VolumeIdentifier))
+		tempDir := filepath.Join("raw_images", mangaTitle, "Volume "+path.VolumeIdentifier.StringFilled(fillVolumeNumberArg, 0, false))
 		// if chapter id & img id are both 0, it's a cover image
 		if !(path.ChapterIdentifier.String() == "0" && path.ImageIdentifier == 0) {
 			tempDir = filepath.Join(tempDir, fmt.Sprintf("Chapter %s", path.ChapterIdentifier))
