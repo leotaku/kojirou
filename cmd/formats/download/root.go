@@ -57,7 +57,7 @@ func MangadexChapters(mangaID string) (md.ChapterList, error) {
 	return mangadexClient.FetchChapters(context.TODO(), mangaID)
 }
 
-func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
+func MangadexCovers(manga *md.Manga, saveRawArg bool, p formats.Progress) (md.ImageList, error) {
 	ctx, cancel := context.WithCancel(context.TODO())
 	defer cancel()
 
@@ -77,7 +77,7 @@ func MangadexCovers(manga *md.Manga, p formats.Progress) (md.ImageList, error) {
 		close(coverPaths)
 	}()
 
-	coverImages, eg := pathsToImages(coverPaths, ctx, cancel, DataSaverPolicyNo, true)
+	coverImages, eg := pathsToImages(coverPaths, ctx, cancel, DataSaverPolicyNo, saveRawArg)
 
 	results := make(md.ImageList, len(covers))
 	for coverImage := range coverImages {

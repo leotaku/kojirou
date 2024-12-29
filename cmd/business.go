@@ -114,7 +114,7 @@ func getChapters(manga md.Manga) (md.ChapterList, error) {
 
 func getCovers(manga *md.Manga) (md.ImageList, error) {
 	p := formats.VanishingProgress("Covers")
-	covers, err := download.MangadexCovers(manga, p)
+	covers, err := download.MangadexCovers(manga, saveRawArg, p)
 	if err != nil {
 		p.Cancel("Error")
 		return nil, fmt.Errorf("mangadex: %w", err)
