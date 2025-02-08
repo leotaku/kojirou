@@ -52,7 +52,7 @@ func handleVolume(skeleton md.Manga, volume md.Volume, dir kindle.NormalizedDire
 		return nil
 	}
 
-	pages, err := getPages(volume, p)
+	pages, err := getPages(volume, skeleton.Info.Title, p)
 	if err != nil {
 		return fmt.Errorf("pages: %w", err)
 	}
@@ -114,7 +114,7 @@ func getChapters(manga md.Manga) (md.ChapterList, error) {
 
 func getCovers(manga *md.Manga) (md.ImageList, error) {
 	p := formats.VanishingProgress("Covers")
-	covers, err := download.MangadexCovers(manga, p)
+	covers, err := download.MangadexCovers(manga, saveRawArg, fillVolumeNumberArg, p)
 	if err != nil {
 		p.Cancel("Error")
 		return nil, fmt.Errorf("mangadex: %w", err)
@@ -138,10 +138,10 @@ func getCovers(manga *md.Manga) (md.ImageList, error) {
 	return covers, nil
 }
 
-func getPages(volume md.Volume, p formats.CliProgress) (md.ImageList, error) {
+func getPages(volume md.Volume, mangaTitle string, p formats.CliProgress) (md.ImageList, error) {
 	mangadexPages, err := download.MangadexPages(volume.Sorted().FilterBy(func(ci md.ChapterInfo) bool {
 		return ci.GroupNames.String() != "Filesystem"
-	}), download.DataSaverPolicy(dataSaverArg), p)
+	}), download.DataSaverPolicy(dataSaverArg), saveRawArg, fillVolumeNumberArg, mangaTitle, p)
 	if err != nil {
 		p.Cancel("Error")
 		return nil, fmt.Errorf("mangadex: %w", err)
