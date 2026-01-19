@@ -13,7 +13,7 @@ jobs:
       contents: write
     steps:
       - name: Create release draft with assets
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: |
             const run = await github.rest.actions.getWorkflowRun({
