@@ -39,21 +39,21 @@ func writeHelp(cmd *cobra.Command, w io.Writer) {
 		return result
 	}
 
-	fmt.Fprintf(w, "Usage:\n  %v\n", cmd.Use)
+	fmt.Fprintf(w, "Usage:\n  %v\n", cmd.Use) //nolint:errcheck
 	for _, name := range keys(groups) {
-		fmt.Fprintf(w, "\n%v:\n", name[1:])
+		fmt.Fprintf(w, "\n%v:\n", name[1:]) //nolint:errcheck
 		for _, f := range groups[name] {
 			shorthand := ""
 			if len(f.Shorthand) > 0 {
 				shorthand = "-" + f.Shorthand + ", "
 			}
-			fmt.Fprintf(w, "  %4v--%-20v%v\n", shorthand, f.Name, toSentenceCase(f.Usage))
+			fmt.Fprintf(w, "  %4v--%-20v%v\n", shorthand, f.Name, toSentenceCase(f.Usage)) //nolint:errcheck
 		}
 	}
 }
 
 func help(cmd *cobra.Command, args []string) {
-	fmt.Fprintf(os.Stdout, "%v\n", cmd.Short)
+	fmt.Fprintf(os.Stdout, "%v\n", cmd.Short) //nolint:errcheck
 	writeHelp(cmd, os.Stdout)
 }
 

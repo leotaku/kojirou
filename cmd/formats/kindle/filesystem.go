@@ -58,22 +58,20 @@ func (n *NormalizedDirectory) Write(identifier md.Identifier, mobi mobi.Book, p 
 	if err != nil {
 		return fmt.Errorf("create: %w", err)
 	}
+	defer f.Close() //nolint:errcheck
 	if err := mobi.Realize().Write(p.NewProxyWriter(f)); err != nil {
-		f.Close()
 		return fmt.Errorf("write: %w", err)
 	}
-	f.Close()
 
 	if n.thumbnailDirectory != "" && mobi.CoverImage != nil {
 		f, err := create(path.Join(n.thumbnailDirectory, mobi.GetThumbFilename()))
 		if err != nil {
 			return fmt.Errorf("create: %w", err)
 		}
+		defer f.Close() //nolint:errcheck
 		if err := jpeg.Encode(p.NewProxyWriter(f), mobi.CoverImage, nil); err != nil {
-			f.Close()
 			return fmt.Errorf("write: %w", err)
 		}
-		f.Close()
 	}
 
 	return nil

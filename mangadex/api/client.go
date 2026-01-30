@@ -115,7 +115,7 @@ func (c *Client) doJSON(ctx context.Context, method, ref string, result, body in
 	if err != nil {
 		return fmt.Errorf("do: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	dec := json.NewDecoder(resp.Body)
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {

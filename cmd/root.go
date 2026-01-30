@@ -62,7 +62,7 @@ var rootCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			defer f.Close()
+			defer f.Close() //nolint:errcheck
 
 			if err := pprof.WriteHeapProfile(f); err != nil {
 				return err

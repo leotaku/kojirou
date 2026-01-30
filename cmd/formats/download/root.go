@@ -234,7 +234,7 @@ func getImageWithPolicy(client *http.Client, ctx context.Context, path md.Path, 
 	}
 
 	img, _, err := image.Decode(resp.Body)
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if err != nil && policy == DataSaverPolicyFallback {
 		return getImageWithPolicy(client, ctx, path, DataSaverPolicyPrefer)
@@ -269,7 +269,7 @@ func bodyReadableErrorPolicy(ctx context.Context, resp *http.Response, err error
 
 	buf := bytes.NewBuffer(nil)
 	_, err = buf.ReadFrom(resp.Body)
-	resp.Body.Close()
+	resp.Body.Close() //nolint:errcheck
 	resp.Body = io.NopCloser(buf)
 
 	if err != nil {
